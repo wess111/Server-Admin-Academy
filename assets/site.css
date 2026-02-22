@@ -92,26 +92,29 @@ a{color:inherit;text-decoration:none}
 }
 .btnGhost:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.22)}
 
-/* --- HERO (bigger, fixed height) --- */
+/* HERO: big and vertically centered */
 .heroTall{
-  height:680px;                 /* fixed size like SaaSto feel */
+  height:720px;
   display:flex;
-  align-items:center;
+  align-items:center;     /* vertical center */
 }
 
 .heroInner{
-  padding:0;                    /* center vertically within height */
-  gap:28px;
+  width:100%;
+  padding:0;              /* avoid shifting */
+  gap:26px;
 }
 
 .heroTitle{
-  font-size:clamp(2.9rem, 6.2vw, 5.0rem);
+  margin:0;
+  font-size:clamp(3.0rem, 6.2vw, 5.1rem);
   line-height:1.02;
 }
 
 .heroSub{
-  font-size:1.12rem;
+  margin:0;
   max-width:920px;
+  font-size:1.12rem;
   line-height:1.9;
 }
 
