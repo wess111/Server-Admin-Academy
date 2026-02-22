@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Admin Academy | Home</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="home-view" class="view">
+        <header class="hero">
+            <h1>Server Admin Academy</h1>
+            <p>Select a specialized module to begin your infrastructure troubleshooting training.</p>
+        </header>
+
+        <div class="module-container">
+            <div class="module-card" onclick="enterModule('dns')">
+                <div class="card-icon">🌐</div>
+                <h2>DNS Infrastructure</h2>
+                <p>Troubleshoot SRV records, CNAME aliases, and zone replication issues.</p>
+                <button class="enter-btn">Enter Lab</button>
+            </div>
+
+            <div class="module-card" onclick="enterModule('dhcp')">
+                <div class="card-icon">🔌</div>
+                <h2>DHCP Services</h2>
+                <p>Manage IP exhaustion, MAC filtering, and failover synchronization.</p>
+                <button class="enter-btn">Enter Lab</button>
+            </div>
+
+            <div class="module-card locked">
+                <div class="card-icon">🔒</div>
+                <h2>Active Directory</h2>
+                <p>Coming Soon: Group Policy and User Identity Management.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="lab-view" class="view" style="display:none;">
+        <div class="sidebar">
+            <button class="back-btn" onclick="showHome()">← Back to Dashboard</button>
+            <h2 id="module-title">Tickets</h2>
+            <div id="ticket-list"></div>
+        </div>
+
+        <main class="workspace">
+            <div id="empty-state">
+                <h2>Select a ticket from the sidebar to begin triage.</h2>
+            </div>
+            <div id="ticket-workspace" style="display:none;">
+                <div class="ticket-header">
+                    <h2 id="active-title">Ticket Name</h2>
+                    <span id="active-category" class="badge">Category</span>
+                </div>
+                
+                <div class="step-container">
+                    <div class="section">
+                        <h3>1. Triage (Symptom)</h3>
+                        <p id="problem-desc"></p>
+                        <div id="triage-options" class="options-grid"></div>
+                    </div>
+                    
+                    <div id="diagnosis-section" class="section hidden">
+                        <h3>2. Diagnosis (Root Cause)</h3>
+                        <div id="diagnosis-options" class="options-grid"></div>
+                    </div>
+
+                    <div id="fix-section" class="section hidden">
+                        <h3>3. Fix (Administrative Action)</h3>
+                        <div id="fix-options" class="options-grid"></div>
+                    </div>
+
+                    <div id="note-section" class="section hidden">
+                        <h3>4. Change Note</h3>
+                        <textarea id="change-note" placeholder="Explain your administrative reasoning for this fix..."></textarea>
+                        <button class="submit-btn" onclick="submitTicket()">Submit Resolved Ticket</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
