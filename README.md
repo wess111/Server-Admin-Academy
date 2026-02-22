@@ -1,1 +1,1 @@
-# sysadmin-challenges
+# Server-Admin-Academy
