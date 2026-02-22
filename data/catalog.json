@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "updated": "2026-02-22",
+  "tracks": [
+    {"id":"HelpDesk","title":"Help Desk Support","level":"Intro → Intermediate","description":"Foundational troubleshooting: endpoints, users, basic networking, and service desk workflow."},
+    {"id":"ServerAdmin","title":"Server Administration","level":"Intermediate","description":"Windows Server services, infrastructure troubleshooting, and enterprise operations."},
+    {"id":"Security","title":"Security","level":"Intermediate → Advanced","description":"Hardening, detection, and response-aligned practice."}
+  ],
+  "labs": [
+    {
+      "id":"dns-dhcp",
+      "title":"DNS & DHCP Troubleshooting",
+      "track":"ServerAdmin",
+      "subject":"Networking Services",
+      "status":"active",
+      "tickets": 4,
+      "description":"Sample lab: 4 tickets (2 DNS, 2 DHCP) using the 4-step workflow.",
+      "tags":["DNS","DHCP","SRV","Scopes","Relay"]
+    }
+  ],
+  "knowledgeChecks": [
+    {"id":"serveradmin-dns-basics","title":"DNS Fundamentals Knowledge Check","track":"ServerAdmin","subject":"Networking Services","status":"soon","description":"Records, resolution flow, and troubleshooting patterns.","types":["Matching","Ordering","MCQ"]},
+    {"id":"serveradmin-dhcp-basics","title":"DHCP Fundamentals Knowledge Check","track":"ServerAdmin","subject":"Networking Services","status":"soon","description":"Scopes, options, relays, and failover.","types":["MCQ","Ordering"]}
+  ]
+}

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Academy Activity</title>
+  <link rel="stylesheet" href="./assets/styles-activity.css" />
+</head>
+<body>
+  <header class="appbar">
+    <div class="appbar-left">
+      <a class="home-link" href="./index.html">← Home</a>
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <div class="brand-title" id="labTitleTop">Activity</div>
+          <div class="brand-sub" id="labSubTop">Troubleshooting lab runner</div>
+        </div>
+      </div>
+    </div>
+    <div class="appbar-right">
+      <div class="pill"><span class="dot" aria-hidden="true"></span><span id="labProgress">Progress: 0/0</span></div>
+      <button class="btn ghost" id="btnResetLab" type="button">Reset Lab</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="banner">
+      <div class="banner-inner">
+        <div class="toprow">
+          <div class="role-pill" id="rolePill">Role: Junior Systems Administrator</div>
+          <div class="health-row">
+            <div class="pill health good" id="healthOverall">Overall Health: 100%</div>
+            <div class="pill health good" id="healthA">Category A: 100%</div>
+            <div class="pill health good" id="healthB">Category B: 100%</div>
+          </div>
+        </div>
+        <h1 id="labTitle">Loading…</h1>
+        <p class="p" id="labDesc">If this persists, verify the lab id and JSON path.</p>
+        <div class="tabs" id="tabs"></div>
+        <div class="hint">Workflow: <strong>Triage → Diagnosis → Fix → Change Note</strong>. Saves locally in your browser.</div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <div class="panel left">
+        <div class="panel-title">Ticket Queue</div>
+        <div class="panel-sub">Select a ticket to complete the workflow.</div>
+        <div class="toolbar-row">
+          <input class="input" id="searchInput" placeholder="Search tickets..." />
+          <button class="btn" id="btnRandom" type="button">Random</button>
+        </div>
+        <div class="list" id="ticketList"></div>
+      </div>
+
+      <div class="panel right">
+        <div class="detail-root" id="ticketDetail">
+          <div class="card">
+            <div class="card-title">Select a ticket</div>
+            <div class="card-desc">Choose a ticket from the queue to start.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="muted" id="footerLeft">Academy Activity Runner</div>
+      <div class="muted" id="footerRight">GitHub Pages</div>
+    </footer>
+  </main>
+
+  <script src="./assets/app-activity.js"></script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Server Administration Academy</title>
+  <link rel="stylesheet" href="./assets/styles-home.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-row">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">SA</div>
+        <div>
+          <div class="brand-name">Server Administration Academy</div>
+          <div class="brand-tag">GitHub Pages • Update once, students always see latest</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a class="nav-link" href="#tracks">Tracks</a>
+        <a class="nav-link" href="#labs">Labs</a>
+        <a class="nav-link" href="#checks">Knowledge Checks</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <p class="pill">Student Practice Hub</p>
+          <h1>Labs, tickets, and checks that mirror real IT work.</h1>
+          <p class="lead">Everything is driven by <code>data/catalog.json</code>.</p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#labs">Start a Lab</a>
+            <a class="btn" href="#checks">Browse Checks</a>
+          </div>
+          <div class="hero-metrics">
+            <div class="metric"><div class="metric-k">Tracks</div><div class="metric-v" id="metricTracks">—</div></div>
+            <div class="metric"><div class="metric-k">Labs</div><div class="metric-v" id="metricLabs">—</div></div>
+            <div class="metric"><div class="metric-k">Checks</div><div class="metric-v" id="metricChecks">—</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Lab workflow</div>
+          <ol class="steps">
+            <li><strong>Triage</strong> (symptom)</li>
+            <li><strong>Diagnosis</strong> (root cause)</li>
+            <li><strong>Fix</strong> (GUI steps)</li>
+            <li><strong>Change Note</strong> (document what/why/validation)</li>
+          </ol>
+          <div class="card-note">Progress saves locally (localStorage).</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="tracks">
+      <div class="wrap">
+        <div class="section-head"><h2>Tracks</h2><p>Organize content by role/domain.</p></div>
+        <div id="tracksGrid" class="grid grid-3"></div>
+      </div>
+    </section>
+
+    <section class="section" id="labs">
+      <div class="wrap">
+        <div class="section-head"><h2>Troubleshooting Labs</h2><p>Open a lab in the activity runner.</p></div>
+        <div class="filters">
+          <label class="filter"><span>Track</span><select id="labTrackFilter"><option value="all">All</option></select></label>
+          <label class="filter"><span>Subject</span><select id="labSubjectFilter"><option value="all">All</option></select></label>
+          <label class="filter grow"><span>Search</span><input id="labSearch" type="search" placeholder="Search labs..." /></label>
+        </div>
+        <div id="labsGrid" class="grid grid-3"></div>
+      </div>
+    </section>
+
+    <section class="section" id="checks">
+      <div class="wrap">
+        <div class="section-head"><h2>Knowledge Checks</h2><p>Tiles are ready; runner page can be added later.</p></div>
+        <div class="filters">
+          <label class="filter"><span>Track</span><select id="checkTrackFilter"><option value="all">All</option></select></label>
+          <label class="filter"><span>Subject</span><select id="checkSubjectFilter"><option value="all">All</option></select></label>
+          <label class="filter grow"><span>Search</span><input id="checkSearch" type="search" placeholder="Search checks..." /></label>
+        </div>
+        <div id="checksGrid" class="grid grid-3"></div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="wrap footer-row">
+        <div class="muted">Server Administration Academy</div>
+        <div class="muted">Hosted on GitHub Pages</div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="./assets/app-home.js"></script>
+</body>
+</html>

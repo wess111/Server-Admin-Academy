@@ -1,0 +1,63 @@
+{
+  "id": "dns-dhcp",
+  "title": "DNS & DHCP Troubleshooting",
+  "track": "ServerAdmin",
+  "subject": "Networking Services",
+  "description": "Practice enterprise incident tickets using the 4-step workflow: Triage, Diagnosis, Fix (GUI), and Change Note.",
+  "rolePill": "Role: Junior Systems Administrator",
+  "categories": ["DNS", "DHCP"],
+  "tickets": [
+    {
+      "id": "DNS-001",
+      "category": "DNS",
+      "title": "Domain join fails due to missing SRV records",
+      "tags": ["SRV records", "Domain Join"],
+      "summary": "A new workstation can resolve the domain name but cannot locate a domain controller during domain join.",
+      "workflow": {
+        "triage": "Domain join fails with 'cannot locate a domain controller'.",
+        "diagnosis": "Client cannot resolve required AD SRV records (e.g., _ldap._tcp.dc._msdcs) because it is using the wrong DNS server or SRV records are missing.",
+        "fix": "DNS Manager: verify SRV records in _msdcs zone. DHCP: ensure option 006 points to AD DNS only. Flush DNS cache and retry.",
+        "changeNote": ""
+      }
+    },
+    {
+      "id": "DNS-002",
+      "category": "DNS",
+      "title": "Split-brain zone blocks public subdomains",
+      "tags": ["Authoritative", "Split-brain"],
+      "summary": "Internal clients cannot resolve careers.example.com after an internal zone for example.com was created.",
+      "workflow": {
+        "triage": "Internal lookups return NXDOMAIN for public subdomains.",
+        "diagnosis": "Internal DNS is authoritative for example.com but lacks records for public subdomains, so it returns negative answers instead of forwarding.",
+        "fix": "Adjust split-brain design: add required records, delegate/stub/conditional forward as appropriate, or revise internal naming.",
+        "changeNote": ""
+      }
+    },
+    {
+      "id": "DHCP-001",
+      "category": "DHCP",
+      "title": "Scope exhaustion causes intermittent IP failures",
+      "tags": ["Scopes", "Utilization"],
+      "summary": "Warehouse devices intermittently fail to obtain an IP during peak hours.",
+      "workflow": {
+        "triage": "Clients show APIPA or long DHCP delays; scope utilization is high.",
+        "diagnosis": "Scope is exhausted due to insufficient pool and/or long leases.",
+        "fix": "DHCP Manager: check scope statistics, expand pool or add new subnet, shorten lease if appropriate.",
+        "changeNote": ""
+      }
+    },
+    {
+      "id": "DHCP-002",
+      "category": "DHCP",
+      "title": "Clients in new VLAN cannot reach DHCP",
+      "tags": ["Relay", "IP Helper"],
+      "summary": "A new subnet was added, but devices only get APIPA addresses.",
+      "workflow": {
+        "triage": "No leases issued for the new subnet; DHCP server sees no DISCOVER packets from that VLAN.",
+        "diagnosis": "Router/L3 switch is missing DHCP relay (IP helper) for that VLAN.",
+        "fix": "Configure DHCP relay on the gateway to forward to the DHCP server; ensure the matching scope exists and is active.",
+        "changeNote": ""
+      }
+    }
+  ]
+}
