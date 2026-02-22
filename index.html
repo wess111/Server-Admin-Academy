@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Server Administration Academy</title>
-  <meta name="description" content="Practice real-world IT skills through tracks, labs, knowledge checks, guided labs, and projects." />
+  <meta name="description" content="Practice real-world IT skills through tracks, labs, guided labs, knowledge checks, and projects." />
   <link rel="stylesheet" href="./assets/site.css" />
 </head>
 
 <body>
-  <!-- NAV (not sticky) -->
+  <!-- NAV (scrolls with page; not sticky) -->
   <header class="top">
     <div class="container">
       <div class="navGlass">
@@ -43,16 +43,16 @@
         </h1>
 
         <p class="heroSub">
-          Choose a track, work through guided troubleshooting and labs, and validate learning with clean knowledge checks.
-          Built for clarity, consistency, and enterprise workflows.
+          Choose a track, work through structured practice, and build confidence through hands-on troubleshooting,
+          guided labs, and clear knowledge checks designed for enterprise workflows.
         </p>
       </div>
     </section>
 
     <div class="sectionDivider"></div>
 
-    <!-- TRACKS -->
-    <section class="section" id="tracks">
+    <!-- TRACKS (Band 1) -->
+    <section class="section sectionBand" id="tracks">
       <div class="container">
         <div class="sectionHead center">
           <h2 class="h2">Pick your learning track</h2>
@@ -65,14 +65,11 @@
           <!-- HelpDesk -->
           <a class="card cardSquare" href="./helpdesk.html">
             <div class="cardTop">
-              <div class="iconBadge" aria-hidden="true">
-                <!-- headset -->
-                <svg viewBox="0 0 24 24" class="ico">
-                  <path d="M4 12a8 8 0 0 1 16 0v5a3 3 0 0 1-3 3h-2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-                  <path d="M4 12v3a2 2 0 0 0 2 2h1v-6H6a2 2 0 0 0-2 2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-                  <path d="M20 12v3a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-                </svg>
-              </div>
+              <svg viewBox="0 0 24 24" class="trackIcon" aria-hidden="true">
+                <path d="M4 12a8 8 0 0 1 16 0v5a3 3 0 0 1-3 3h-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M4 12v3a2 2 0 0 0 2 2h1v-6H6a2 2 0 0 0-2 2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M20 12v3a2 2 0 0 1-2 2h-1v-6h1a2 2 0 0 1 2 2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
             </div>
 
             <div class="cardSpacer"></div>
@@ -87,14 +84,11 @@
           <!-- System Admin -->
           <a class="card cardSquare" href="./sysadmin.html">
             <div class="cardTop">
-              <div class="iconBadge" aria-hidden="true">
-                <!-- servers -->
-                <svg viewBox="0 0 24 24" class="ico">
-                  <path d="M5 7c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v2c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2V7Z" fill="none" stroke="currentColor" stroke-width="1.7"/>
-                  <path d="M5 15c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v2c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2v-2Z" fill="none" stroke="currentColor" stroke-width="1.7"/>
-                  <path d="M8 8h.01M8 16h.01" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
-                </svg>
-              </div>
+              <svg viewBox="0 0 24 24" class="trackIcon" aria-hidden="true">
+                <path d="M5 7c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v2c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2V7Z" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M5 15c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v2c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2v-2Z" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M8 8h.01M8 16h.01" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+              </svg>
             </div>
 
             <div class="cardSpacer"></div>
@@ -109,20 +103,17 @@
           <!-- Security -->
           <a class="card cardSquare" href="./security.html">
             <div class="cardTop">
-              <div class="iconBadge" aria-hidden="true">
-                <!-- shield -->
-                <svg viewBox="0 0 24 24" class="ico">
-                  <path d="M12 3l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-                  <path d="M9.5 12.2l1.8 1.8 3.7-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
+              <svg viewBox="0 0 24 24" class="trackIcon" aria-hidden="true">
+                <path d="M12 3l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M9.5 12.2l1.8 1.8 3.7-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
 
             <div class="cardSpacer"></div>
 
             <div class="cardTitle">Security</div>
             <div class="cardText">
-              Validation thinking, investigation cues, and secure administration practices.
+              Investigation cues, validation thinking, and secure administration practices.
             </div>
             <div class="cardAction">View track →</div>
           </a>
@@ -132,8 +123,8 @@
 
     <div class="sectionDivider"></div>
 
-    <!-- ACTIVITY TYPES (your sketch layout) -->
-    <section class="section" id="activities">
+    <!-- ACTIVITIES (Band 2) -->
+    <section class="section sectionBandAlt" id="activities">
       <div class="container">
         <div class="sectionHead center">
           <h2 class="h2">Choose your activity type</h2>
@@ -142,28 +133,46 @@
           </p>
         </div>
 
-        <!-- Top row: 3 tiles -->
-        <div class="activityGridTop">
-          <a class="activityTile" href="./sysadmin.html#checks">
-            <div class="activityTileTitle">Knowledge check</div>
+        <!-- Top row: 3 cards -->
+        <div class="grid3">
+          <a class="card activityCard" href="./sysadmin.html#checks">
+            <div class="activityTitle">Knowledge check</div>
+            <div class="activityText">
+              Short questions to confirm understanding: matching, ordering, and select-the-best-answer.
+            </div>
+            <div class="activityFooter">
+              <span class="btn btnGhost btnSquare">Explore</span>
+            </div>
           </a>
 
-          <a class="activityTile" href="./sysadmin.html#labs">
-            <div class="activityTileTitle">Problem Solving</div>
+          <a class="card activityCard" href="./sysadmin.html#labs">
+            <div class="activityTitle">Problem Solving</div>
+            <div class="activityText">
+              Work realistic tickets using Triage → Diagnosis → Fix → Change Note.
+            </div>
+            <div class="activityFooter">
+              <span class="btn btnGhost btnSquare">Explore</span>
+            </div>
           </a>
 
-          <a class="activityTile" href="./sysadmin.html#guided">
-            <div class="activityTileTitle">Guided Labs</div>
+          <a class="card activityCard" href="./sysadmin.html#guided">
+            <div class="activityTitle">Guided Labs</div>
+            <div class="activityText">
+              Step-by-step labs designed for practice, confidence, and repeatability.
+            </div>
+            <div class="activityFooter">
+              <span class="btn btnGhost btnSquare">Explore</span>
+            </div>
           </a>
         </div>
 
-        <!-- Bottom row: wide Projects tile -->
-        <div class="activityGridBottom">
-          <div class="projectTile">
+        <!-- Bottom row: wide Projects card -->
+        <div class="projectRow">
+          <div class="card projectCard">
             <div class="projectLeft">
               <div class="projectTitle">Projects</div>
               <div class="projectText">
-                End-to-end, multi-step scenarios that combine planning, implementation, validation, and documentation.
+                End-to-end scenarios that combine planning, implementation, validation, and documentation.
               </div>
             </div>
             <div class="projectRight">
