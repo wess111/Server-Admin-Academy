@@ -9,7 +9,7 @@
 </head>
 
 <body>
-  <!-- Glass Navbar (like your screenshot) -->
+  <!-- Navbar (NOT sticky; scrolls with page) -->
   <header class="top">
     <div class="container">
       <div class="navGlass">
@@ -26,58 +26,42 @@
         </nav>
 
         <div class="navCta">
-          <a class="btn btnPill" href="#start">Get started ✦</a>
+          <a class="btn btnPill" href="#tracks">Get started ✦</a>
         </div>
       </div>
     </div>
   </header>
 
   <main>
-    <!-- HERO (banner layout + typography like your screenshot; no images needed) -->
+    <!-- HERO (clean: no kicker, no extra buttons, no mini pills) -->
     <section class="hero">
       <div class="heroBg"></div>
       <div class="container heroInner">
-        <div class="heroKicker">
-          <span class="kickerDot"></span>
-          <span class="kickerText">Hands-on IT training</span>
-        </div>
-
         <h1 class="heroTitle">
-          Practice Real-World <br />
+          Practice Real-World<br />
           Server Administration Skills
         </h1>
 
         <p class="heroSub">
-          Choose a track, work through guided troubleshooting tickets, and validate your learning with
-          structured knowledge checks. Built for clarity, consistency, and real enterprise workflows.
+          Choose a track and build confidence through structured problem solving and clear knowledge checks.
+          Designed for consistency, clarity, and enterprise workflows.
         </p>
-
-        <div class="heroActions">
-          <a class="btn btnPrimary" href="#tracks">Explore tracks ✦</a>
-          <a class="btn btnGhost" href="#start">Choose an activity ✦</a>
-        </div>
-
-        <div class="heroMiniRow">
-          <a class="miniIcon" href="./helpdesk.html" aria-label="HelpDesk">HD</a>
-          <a class="miniIcon" href="./sysadmin.html" aria-label="System Administration">SA</a>
-          <a class="miniIcon" href="./security.html" aria-label="Security">SEC</a>
-        </div>
       </div>
     </section>
 
-    <!-- TRACKS (clean; no chips/baby tabs) -->
+    <!-- TRACKS -->
     <section class="section" id="tracks">
       <div class="container">
         <div class="sectionHead center">
           <div class="pillLabel"><span class="pillDot"></span> Tracks</div>
           <h2 class="h2">Pick your learning track</h2>
           <p class="p">
-            Each track has its own page so the site stays clean and easy to use.
+            Each track has its own page so the academy stays clean and easy to navigate.
           </p>
         </div>
 
         <div class="grid3">
-          <a class="card" href="./helpdesk.html">
+          <a class="card cardSquare" href="./helpdesk.html">
             <div class="cardIcon">☰</div>
             <div class="cardTitle">HelpDesk Support</div>
             <div class="cardText">
@@ -86,7 +70,7 @@
             <div class="cardAction">View track →</div>
           </a>
 
-          <a class="card" href="./sysadmin.html">
+          <a class="card cardSquare" href="./sysadmin.html">
             <div class="cardIcon">▦</div>
             <div class="cardTitle">System Administration</div>
             <div class="cardText">
@@ -95,11 +79,11 @@
             <div class="cardAction">View track →</div>
           </a>
 
-          <a class="card" href="./security.html">
+          <a class="card cardSquare" href="./security.html">
             <div class="cardIcon">⛨</div>
             <div class="cardTitle">Security</div>
             <div class="cardText">
-              Validation thinking, investigation cues, and secure admin practices.
+              Validation thinking, investigation cues, and secure administration practices.
             </div>
             <div class="cardAction">View track →</div>
           </a>
@@ -107,57 +91,18 @@
       </div>
     </section>
 
-    <!-- PROCESS (matches screenshot #2 structure: step pills + line + cards) -->
-    <section class="section processSection">
-      <div class="container">
-        <div class="sectionHead center">
-          <div class="pillLabel"><span class="pillDot"></span> Process</div>
-          <h2 class="h2">A smarter process for better support</h2>
-        </div>
-
-        <div class="stepsRow" aria-hidden="true">
-          <div class="stepPill isOn">Step 01</div>
-          <div class="stepPill">Step 02</div>
-          <div class="stepPill">Step 03</div>
-          <div class="stepPill">Step 04</div>
-          <div class="stepLine"></div>
-          <div class="stepDot d1"></div>
-          <div class="stepDot d2"></div>
-          <div class="stepDot d3"></div>
-          <div class="stepDot d4"></div>
-        </div>
-
-        <div class="grid4">
-          <div class="processCard">
-            <div class="pcIcon">🧭</div>
-            <div class="pcTitle">Triage the symptom</div>
-            <div class="pcText">Identify the impact, scope, and what “broken” looks like.</div>
-          </div>
-
-          <div class="processCard">
-            <div class="pcIcon">🔎</div>
-            <div class="pcTitle">Diagnose root cause</div>
-            <div class="pcText">Use logs, tools, and evidence to pinpoint the real issue.</div>
-          </div>
-
-          <div class="processCard">
-            <div class="pcIcon">🛠</div>
-            <div class="pcTitle">Apply the fix (GUI)</div>
-            <div class="pcText">Perform the correct admin action with minimal risk.</div>
-          </div>
-
-          <div class="processCard">
-            <div class="pcIcon">📝</div>
-            <div class="pcTitle">Write the change note</div>
-            <div class="pcText">Document what you changed, why, and how you validated it.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- START (matches screenshot #3: two large feature blocks) -->
+    <!-- LAB TYPES (title + brief description BEFORE boxes) -->
     <section class="section" id="start">
       <div class="container">
+        <div class="sectionHead center">
+          <div class="pillLabel"><span class="pillDot"></span> Activities</div>
+          <h2 class="h2">Choose your activity type</h2>
+          <p class="p">
+            Use problem solving labs to practice end-to-end troubleshooting, or use knowledge checks to confirm
+            understanding with short, focused questions.
+          </p>
+        </div>
+
         <div class="grid2 featureGrid">
           <div class="featureCard">
             <div class="featureTitle">Problem solving labs</div>
@@ -181,8 +126,8 @@
           <div class="featureCard">
             <div class="featureTitle">Knowledge checks</div>
             <div class="featureText">
-              Quick checks to confirm understanding: matching, ordering, drag-and-drop, and
-              select-the-best-answer—built for clarity (no confusing options).
+              Quick checks to confirm understanding: matching, ordering, drag-and-drop, and select-the-best-answer —
+              built for clarity.
             </div>
 
             <div class="featureActions">
