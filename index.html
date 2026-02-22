@@ -1,66 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Admin Academy | Hub</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Admin Academy • Enterprise Infrastructure Lab</title>
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
-    <div id="home-view" class="view">
-        <header class="appbar">
-            <div class="brand">Admin Academy</div>
-            <div class="subtitle">Infrastructure Training Portal</div>
-        </header>
-        
-        <section class="hero-section">
-            <h1>Infrastructure Training Modules</h1>
-            <p>Select a specialized track to begin the troubleshooting simulation.</p>
-            <div class="hub-grid">
-                <div class="hub-card" onclick="enterModule('dns')">
-                    <div class="hub-icon">🌐</div>
-                    <h2>DNS Architecture</h2>
-                    <p>SRV Records, Secure Updates, and Zone Transfers.</p>
-                    <button class="btn-hub">Launch Module</button>
-                </div>
-                <div class="hub-card" onclick="enterModule('dhcp')">
-                    <div class="hub-icon">🔌</div>
-                    <h2>DHCP Services</h2>
-                    <p>MAC Filtering, Failover, and Scope Management.</p>
-                    <button class="btn-hub">Launch Module</button>
-                </div>
-                <div class="hub-card locked">
-                    <div class="hub-icon">🔒</div>
-                    <h2>Active Directory</h2>
-                    <p>Coming Soon: Group Policy & Identity.</p>
-                </div>
+  <div id="home-view" class="hub-container">
+    <header class="hub-header">
+        <div class="hub-logo">AS</div>
+        <h1>Admin Academy</h1>
+        <p>Professional Infrastructure Troubleshooting Simulation</p>
+    </header>
+    <div class="hub-grid">
+        <div class="hub-card" onclick="enterModule('dns')">
+            <div class="hub-icon">🌐</div>
+            <h2>DNS Architecture</h2>
+            <p>Master SRV records, CNAME decoupling, and zone security.</p>
+            <button class="hub-btn">Enter Lab</button>
+        </div>
+        <div class="hub-card" onclick="enterModule('dhcp')">
+            <div class="hub-icon">🔌</div>
+            <h2>DHCP Services</h2>
+            <p>Manage MAC filters, failover synchronization, and scope health.</p>
+            <button class="hub-btn">Enter Lab</button>
+        </div>
+        <div class="hub-card locked">
+            <div class="hub-icon">🔒</div>
+            <h2>Active Directory</h2>
+            <p>Module locked. Available in Week 9.</p>
+        </div>
+    </div>
+  </div>
+
+  <main id="lab-view" class="container" style="display:none;">
+    <header class="appbar">
+      <div class="appbar-left">
+        <button class="btn ghost" onclick="exitToHub()">← Hub</button>
+        <div>
+          <div class="brand" id="active-mod-name">DNS Challenges</div>
+          <div class="subtitle">Enterprise Administration Simulator</div>
+        </div>
+      </div>
+      <div class="appbar-right">
+        <div class="pill pill-progress">Progress: <span id="progress-val">0/30</span></div>
+        <button class="btn primary" onclick="exportPdf()">Export PDF Report</button>
+      </div>
+    </header>
+
+    <section class="workspace">
+      <div class="panel left">
+        <div class="panel-title">Incident Queue</div>
+        <div id="ticket-list" class="list"></div>
+      </div>
+      <div class="panel right">
+        <div id="content-area">
+            <div class="empty-state">
+                <h2>Ready for Triage</h2>
+                <p>Select a ticket from the queue to begin. Follow the Triage → Diagnosis → Fix methodology.</p>
             </div>
-        </section>
-    </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-    <div id="lab-view" class="view" style="display:none;">
-        <header class="appbar">
-            <button class="btn-ghost" onclick="showHome()">← Hub</button>
-            <div id="module-display" class="pill">DNS Challenges</div>
-            <div id="health-pill" class="pill health">Health: 100%</div>
-            <button class="btn-report" onclick="exportPdf()">Export PDF Report</button>
-        </header>
-
-        <main class="workspace">
-            <aside class="panel left">
-                <div class="panel-title">Incident Queue</div>
-                <div id="ticket-list" class="list"></div>
-            </aside>
-            <section class="panel right">
-                <div id="content">
-                    <div class="empty-msg">Select a ticket from the queue to begin triage.</div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <div id="print-root" class="print-only"></div>
-
-    <script src="app.js"></script>
+  <div id="print-root" class="print-only"></div>
+  <script src="app.js"></script>
 </body>
 </html>
