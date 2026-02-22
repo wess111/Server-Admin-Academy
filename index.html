@@ -3,83 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Admin Academy | Home</title>
+    <title>Server Admin Academy | Enterprise Lab</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="home-view" class="view">
         <header class="hero">
-            <h1>Server Admin Academy</h1>
-            <p>Select a specialized module to begin your infrastructure troubleshooting training.</p>
+            <div class="logo-circle">AS</div>
+            <h1>Admin Academy</h1>
+            <p>Enterprise Infrastructure Troubleshooting Simulation</p>
         </header>
 
-        <div class="module-container">
-            <div class="module-card" onclick="enterModule('dns')">
-                <div class="card-icon">🌐</div>
-                <h2>DNS Infrastructure</h2>
-                <p>Troubleshoot SRV records, CNAME aliases, and zone replication issues.</p>
-                <button class="enter-btn">Enter Lab</button>
+        <div class="module-grid">
+            <div class="module-card" onclick="startModule('dns')">
+                <div class="icon">🌐</div>
+                <h2>DNS Mastery</h2>
+                <p>Resolve SRV records, CNAME aliases, and zone replication errors.</p>
+                <button class="btn">Launch Module</button>
             </div>
-
-            <div class="module-card" onclick="enterModule('dhcp')">
-                <div class="card-icon">🔌</div>
-                <h2>DHCP Services</h2>
-                <p>Manage IP exhaustion, MAC filtering, and failover synchronization.</p>
-                <button class="enter-btn">Enter Lab</button>
+            <div class="module-card" onclick="startModule('dhcp')">
+                <div class="icon">🔌</div>
+                <h2>DHCP Infrastructure</h2>
+                <p>Manage MAC filters, scope exhaustion, and failover secrets.</p>
+                <button class="btn">Launch Module</button>
             </div>
-
             <div class="module-card locked">
-                <div class="card-icon">🔒</div>
+                <div class="icon">🔒</div>
                 <h2>Active Directory</h2>
-                <p>Coming Soon: Group Policy and User Identity Management.</p>
+                <p>Coming Soon: Group Policy & Identity Management.</p>
             </div>
         </div>
     </div>
 
     <div id="lab-view" class="view" style="display:none;">
-        <div class="sidebar">
-            <button class="back-btn" onclick="showHome()">← Back to Dashboard</button>
-            <h2 id="module-title">Tickets</h2>
+        <aside class="sidebar">
+            <button class="back-link" onclick="goHome()">← Back to Dashboard</button>
+            <h2 id="module-label">Tickets</h2>
             <div id="ticket-list"></div>
-        </div>
+            <button class="report-btn" onclick="generateReport()">Generate Final Report</button>
+        </aside>
 
         <main class="workspace">
-            <div id="empty-state">
-                <h2>Select a ticket from the sidebar to begin triage.</h2>
+            <div id="welcome-msg">
+                <h2>Ready for Triage</h2>
+                <p>Select an incident ticket from the sidebar to begin. Follow the Triage → Diagnosis → Fix methodology.</p>
             </div>
-            <div id="ticket-workspace" style="display:none;">
-                <div class="ticket-header">
-                    <h2 id="active-title">Ticket Name</h2>
-                    <span id="active-category" class="badge">Category</span>
+
+            <div id="active-ticket" class="ticket-panel" style="display:none;">
+                <div class="panel-header">
+                    <h2 id="t-title">Ticket Name</h2>
+                    <span id="t-id" class="badge">ID</span>
                 </div>
-                
-                <div class="step-container">
-                    <div class="section">
+
+                <div class="workflow">
+                    <div class="step" id="step-1">
                         <h3>1. Triage (Symptom)</h3>
-                        <p id="problem-desc"></p>
-                        <div id="triage-options" class="options-grid"></div>
+                        <p id="t-prob"></p>
+                        <div id="t-options" class="opt-grid"></div>
                     </div>
-                    
-                    <div id="diagnosis-section" class="section hidden">
+
+                    <div class="step hidden" id="step-2">
                         <h3>2. Diagnosis (Root Cause)</h3>
-                        <div id="diagnosis-options" class="options-grid"></div>
+                        <div id="d-options" class="opt-grid"></div>
                     </div>
 
-                    <div id="fix-section" class="section hidden">
+                    <div class="step hidden" id="step-3">
                         <h3>3. Fix (Administrative Action)</h3>
-                        <div id="fix-options" class="options-grid"></div>
+                        <div id="f-options" class="opt-grid"></div>
                     </div>
 
-                    <div id="note-section" class="section hidden">
+                    <div class="step hidden" id="step-4">
                         <h3>4. Change Note</h3>
-                        <textarea id="change-note" placeholder="Explain your administrative reasoning for this fix..."></textarea>
-                        <button class="submit-btn" onclick="submitTicket()">Submit Resolved Ticket</button>
+                        <textarea id="change-note" placeholder="Document your reasoning for the fix..."></textarea>
+                        <button class="resolve-btn" onclick="resolveTicket()">Resolve Incident</button>
                     </div>
                 </div>
             </div>
         </main>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
