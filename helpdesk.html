@@ -1,1 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HelpDesk Support • Server Administration Academy</title>
+  <meta name="description" content="HelpDesk Support track: ticket triage, troubleshooting workflow, and escalation practice." />
+  <link rel="stylesheet" href="./assets/site.css" />
+</head>
 
+<body>
+  <header class="navwrap">
+    <div class="container navrow">
+      <a class="brand" href="./index.html">
+        <span class="brandMark" aria-hidden="true"></span>
+        <span class="brandText">
+          <span class="brandName">Server Administration Academy</span>
+          <span class="brandTag">HelpDesk Support</span>
+        </span>
+      </a>
+
+      <nav class="nav" aria-label="Main navigation">
+        <a class="navLink" href="./index.html">Home</a>
+        <a class="navLink isActive" href="./helpdesk.html">HelpDesk Support</a>
+        <a class="navLink" href="./sysadmin.html">System Administration</a>
+        <a class="navLink" href="./security.html">Security</a>
+      </nav>
+
+      <div class="navCta">
+        <a class="btn btnPrimary" href="#labs">Explore Labs</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="trackHero">
+      <div class="container trackHeroInner">
+        <div class="eyebrow">Track</div>
+        <h1 class="h1">HelpDesk Support</h1>
+        <p class="lead">
+          Build service desk confidence: ticket triage, user-impact thinking, communication, and escalation patterns.
+        </p>
+
+        <div class="trackMeta">
+          <div class="pill" id="trackLabsCount">Labs: —</div>
+          <div class="pill" id="trackChecksCount">Knowledge Checks: —</div>
+        </div>
+
+        <div class="heroActions">
+          <a class="btn btnPrimary" href="#labs">Troubleshooting Labs</a>
+          <a class="btn btnGhost" href="#checks">Knowledge Checks</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="labs">
+      <div class="container">
+        <div class="sectionHead split">
+          <div>
+            <h2 class="h2">Troubleshooting Labs</h2>
+            <p class="sub">Open a lab tile to launch the activity runner.</p>
+          </div>
+        </div>
+
+        <div class="cardGrid3" id="labsGrid" aria-label="HelpDesk labs"></div>
+      </div>
+    </section>
+
+    <section class="section sectionAlt" id="checks">
+      <div class="container">
+        <div class="sectionHead split">
+          <div>
+            <h2 class="h2">Knowledge Checks</h2>
+            <p class="sub">Short checks to validate accuracy after hands-on practice.</p>
+          </div>
+        </div>
+
+        <div class="cardGrid3" id="checksGrid" aria-label="HelpDesk knowledge checks"></div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container footRow">
+        <div class="mutedSmall">HelpDesk Support • Academy</div>
+        <div class="mutedSmall"><a class="link" href="./index.html">Back to Home</a></div>
+      </div>
+    </footer>
+  </main>
+
+  <script src="./assets/site.js"></script>
+  <script>
+    window.SAA.initTrackPage("HelpDesk");
+  </script>
+</body>
+</html>
