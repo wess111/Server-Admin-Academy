@@ -4,225 +4,193 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Server Administration Academy</title>
-  <meta name="description" content="A living practice hub for Help Desk Support, System Administration, and Security—hosted on GitHub Pages." />
-  <link rel="stylesheet" href="./assets/styles-home.css" />
+  <meta name="description" content="Learn and practice through gamified lessons across HelpDesk Support, System Administration, and Security." />
+  <link rel="stylesheet" href="./assets/site.css" />
 </head>
 
 <body>
-  <!-- Top Navigation (requested) -->
-  <header class="topbar">
-    <div class="wrap topbar-row">
-      <a class="brand" href="#home" aria-label="Server Administration Academy Home">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-text">
-          <span class="brand-title">Server Administration Academy</span>
-          <span class="brand-sub">Living labs • Always updated</span>
+  <!-- SaaS Nav (SaaSto-inspired) -->
+  <header class="navwrap">
+    <div class="container navrow">
+      <a class="brand" href="./index.html" aria-label="Server Administration Academy Home">
+        <span class="brandMark" aria-hidden="true"></span>
+        <span class="brandText">
+          <span class="brandName">Server Administration Academy</span>
+          <span class="brandTag">Learn • Practice • Validate</span>
         </span>
       </a>
 
       <nav class="nav" aria-label="Main navigation">
-        <a class="nav-link" href="#home">Home</a>
-        <a class="nav-link" href="#helpdesk">HelpDesk Support</a>
-        <a class="nav-link" href="#sysadmin">System Administration</a>
-        <a class="nav-link" href="#security">Security</a>
+        <a class="navLink isActive" href="./index.html">Home</a>
+        <a class="navLink" href="./helpdesk.html">HelpDesk Support</a>
+        <a class="navLink" href="./sysadmin.html">System Administration</a>
+        <a class="navLink" href="./security.html">Security</a>
       </nav>
 
-      <div class="topbar-actions">
-        <a class="btn primary" href="#start">Start</a>
+      <div class="navCta">
+        <a class="btn btnPrimary" href="#tracks">Explore Tracks</a>
       </div>
     </div>
   </header>
 
-  <main id="home">
-    <!-- HERO -->
-    <section class="hero">
-      <div class="wrap hero-grid">
-        <div class="hero-left">
-          <div class="kicker">Practical, browser-based training</div>
-          <h1>One place for labs, troubleshooting workflows, and knowledge checks.</h1>
+  <main>
+    <!-- HERO: 400px, top-aligned -->
+    <section class="hero" id="home">
+      <div class="container heroGrid">
+        <div class="heroLeft">
+          <div class="eyebrow">Modern IT Learning Platform</div>
+          <h1 class="h1">Learn and practice through gamified lessons.</h1>
           <p class="lead">
-            This academy is built like a real product: students open the site, pick a track, then work through guided activities.
-            You update content by editing the <code>data/</code> files in GitHub—no more uploading downloads to Canvas.
+            This academy is a living site hosted on GitHub Pages. Students choose a track, open labs, follow a professional
+            troubleshooting workflow, and validate learning with knowledge checks.
           </p>
 
-          <div class="hero-cta">
-            <a class="btn primary" href="#start">Explore Tracks</a>
-            <a class="btn" href="#process">How it works</a>
+          <div class="heroActions">
+            <a class="btn btnPrimary" href="#tracks">Explore Tracks</a>
+            <a class="btn btnGhost" id="btnLaunchActive" href="./sysadmin.html">Launch Active Module</a>
           </div>
 
           <div class="stats" aria-label="Academy stats">
             <div class="stat">
-              <div class="stat-k">Tracks</div>
-              <div class="stat-v" id="metricTracks">—</div>
+              <div class="statK">Tracks</div>
+              <div class="statV" id="metricTracks">—</div>
             </div>
             <div class="stat">
-              <div class="stat-k">Labs</div>
-              <div class="stat-v" id="metricLabs">—</div>
+              <div class="statK">Labs</div>
+              <div class="statV" id="metricLabs">—</div>
             </div>
             <div class="stat">
-              <div class="stat-k">Knowledge Checks</div>
-              <div class="stat-v" id="metricChecks">—</div>
+              <div class="statK">Knowledge Checks</div>
+              <div class="statV" id="metricChecks">—</div>
             </div>
           </div>
         </div>
 
-        <div class="hero-right">
-          <div class="terminal-card">
-            <div class="terminal-head">
-              <span class="dot r" aria-hidden="true"></span>
-              <span class="dot y" aria-hidden="true"></span>
-              <span class="dot g" aria-hidden="true"></span>
-              <span class="terminal-title">academy-status</span>
+        <div class="heroRight">
+          <div class="panel">
+            <div class="panelTop">
+              <div class="pill">Featured</div>
+              <div class="panelTitle">Active Module</div>
             </div>
-            <div class="terminal-body">
-              <div class="line"><span class="prompt">$</span> tracks --list</div>
-              <div class="out" id="trackPreview">Loading…</div>
-              <div class="line"><span class="prompt">$</span> labs --active</div>
-              <div class="out" id="labPreview">Loading…</div>
-              <div class="hint">
-                Tip: Click a lab tile to open the activity runner.
+
+            <div id="featuredLabCard">
+              <!-- filled by site.js -->
+              <div class="skeleton">
+                <div class="skeletonLine w60"></div>
+                <div class="skeletonLine w90"></div>
+                <div class="skeletonLine w80"></div>
+                <div class="skeletonLine w50"></div>
               </div>
             </div>
-          </div>
 
-          <div class="mini-note">
-            The activity runner uses the 4-step workflow:
-            <strong>Triage → Diagnosis → Fix (GUI) → Change Note</strong>
+            <div class="divider"></div>
+
+            <div class="miniTitle">Workflow</div>
+            <div class="processMini">
+              <div class="processChip"><span class="num">01</span> Triage</div>
+              <div class="processChip"><span class="num">02</span> Diagnosis</div>
+              <div class="processChip"><span class="num">03</span> Fix (GUI)</div>
+              <div class="processChip"><span class="num">04</span> Change Note</div>
+            </div>
+
+            <div class="mutedNote">
+              Progress saves locally in the browser. Students can resume where they stopped.
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- START / TRACKS -->
-    <section class="section" id="start">
-      <div class="wrap">
-        <div class="section-head">
-          <h2>Choose a track</h2>
-          <p>
-            Each track is organized like an academy path. Students start here, then move into labs and checks.
+    <!-- SECTION: Intro -->
+    <section class="section">
+      <div class="container">
+        <div class="sectionHead">
+          <h2 class="h2">Learn and practice through gamified lessons</h2>
+          <p class="sub">
+            Each track is organized like a professional learning path. Pick your track to access troubleshooting labs and
+            knowledge checks aligned to real job tasks.
           </p>
         </div>
-
-        <div class="track-grid" id="tracksGrid" aria-label="Tracks"></div>
       </div>
     </section>
 
-    <!-- PROCESS (inspired by the “Step 01…Step 04” style from the demo) -->
-    <section class="section" id="process">
-      <div class="wrap">
-        <div class="section-head">
-          <h2>How the academy works</h2>
-          <p>
-            A simple flow that matches real IT work. Clear steps help students understand what to do next. :contentReference[oaicite:1]{index=1}
-          </p>
-        </div>
-
-        <div class="process-grid" aria-label="Process steps">
-          <div class="process-card">
-            <div class="process-step">Step 01</div>
-            <div class="process-title">Pick a track</div>
-            <div class="process-desc">HelpDesk, System Administration, or Security—aligned to your course outcomes.</div>
-          </div>
-
-          <div class="process-card">
-            <div class="process-step">Step 02</div>
-            <div class="process-title">Open a lab ticket</div>
-            <div class="process-desc">Students work enterprise-style tickets (symptom → root cause → remediation).</div>
-          </div>
-
-          <div class="process-card">
-            <div class="process-step">Step 03</div>
-            <div class="process-title">Document the change</div>
-            <div class="process-desc">They write a short change note like a real admin: what changed, why, validation.</div>
-          </div>
-
-          <div class="process-card">
-            <div class="process-step">Step 04</div>
-            <div class="process-title">Prove & check learning</div>
-            <div class="process-desc">Knowledge checks reinforce concepts after the hands-on workflow.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TRACK SECTIONS (nav targets) -->
-    <section class="section" id="helpdesk">
-      <div class="wrap">
-        <div class="section-head split">
+    <!-- TRACKS -->
+    <section class="section" id="tracks">
+      <div class="container">
+        <div class="sectionHead split">
           <div>
-            <h2>HelpDesk Support</h2>
-            <p>Ticket triage, escalation cues, user-facing troubleshooting, and service desk workflow.</p>
+            <h2 class="h2">Pick your track</h2>
+            <p class="sub">Start where you are. Build depth through labs and validation checks.</p>
           </div>
-          <div class="pill">Track: HelpDesk</div>
         </div>
 
-        <div class="row-head">
-          <h3 class="subhead">Troubleshooting Labs</h3>
-          <a class="link" href="#start" data-jump="HelpDesk">View track tiles ↑</a>
+        <div class="cardGrid3" id="tracksGrid" aria-label="Tracks">
+          <!-- filled by site.js -->
         </div>
-        <div class="tile-grid" id="labsHelpDesk" aria-label="HelpDesk labs"></div>
-
-        <div class="row-head">
-          <h3 class="subhead">Knowledge Checks</h3>
-        </div>
-        <div class="tile-grid" id="checksHelpDesk" aria-label="HelpDesk checks"></div>
       </div>
     </section>
 
-    <section class="section" id="sysadmin">
-      <div class="wrap">
-        <div class="section-head split">
-          <div>
-            <h2>System Administration</h2>
-            <p>Windows Server roles/services, troubleshooting workflows, and enterprise operations.</p>
+    <!-- PROCESS (SaaSto-inspired) -->
+    <section class="section sectionAlt">
+      <div class="container">
+        <div class="sectionHead">
+          <h2 class="h2">How the academy works</h2>
+          <p class="sub">A simple, repeatable workflow that matches how enterprise teams troubleshoot and document changes.</p>
+        </div>
+
+        <div class="processGrid" aria-label="Process">
+          <div class="processCard">
+            <div class="processNum">01</div>
+            <div class="processTitle">Choose a track</div>
+            <div class="processDesc">Pick HelpDesk Support, System Administration, or Security.</div>
           </div>
-          <div class="pill">Track: ServerAdmin</div>
+          <div class="processCard">
+            <div class="processNum">02</div>
+            <div class="processTitle">Complete labs</div>
+            <div class="processDesc">Work ticket scenarios using a structured triage workflow.</div>
+          </div>
+          <div class="processCard">
+            <div class="processNum">03</div>
+            <div class="processTitle">Document changes</div>
+            <div class="processDesc">Write a clean change note: what, why, impact, and validation.</div>
+          </div>
+          <div class="processCard">
+            <div class="processNum">04</div>
+            <div class="processTitle">Validate learning</div>
+            <div class="processDesc">Use knowledge checks to confirm understanding and accuracy.</div>
+          </div>
         </div>
-
-        <div class="row-head">
-          <h3 class="subhead">Troubleshooting Labs</h3>
-          <a class="link" href="#start" data-jump="ServerAdmin">View track tiles ↑</a>
-        </div>
-        <div class="tile-grid" id="labsServerAdmin" aria-label="System Administration labs"></div>
-
-        <div class="row-head">
-          <h3 class="subhead">Knowledge Checks</h3>
-        </div>
-        <div class="tile-grid" id="checksServerAdmin" aria-label="System Administration checks"></div>
       </div>
     </section>
 
-    <section class="section" id="security">
-      <div class="wrap">
-        <div class="section-head split">
+    <!-- OPTIONAL: Featured strip -->
+    <section class="section">
+      <div class="container">
+        <div class="sectionHead split">
           <div>
-            <h2>Security</h2>
-            <p>Security-focused troubleshooting, validation thinking, and hardening-aligned practice.</p>
+            <h2 class="h2">Featured</h2>
+            <p class="sub">Quick entry points for students who want to jump in.</p>
           </div>
-          <div class="pill">Track: Security</div>
         </div>
 
-        <div class="row-head">
-          <h3 class="subhead">Troubleshooting Labs</h3>
-          <a class="link" href="#start" data-jump="Security">View track tiles ↑</a>
+        <div class="cardGrid2">
+          <div class="featureCard" id="featuredLabStrip"></div>
+          <div class="featureCard" id="featuredCheckStrip"></div>
         </div>
-        <div class="tile-grid" id="labsSecurity" aria-label="Security labs"></div>
-
-        <div class="row-head">
-          <h3 class="subhead">Knowledge Checks</h3>
-        </div>
-        <div class="tile-grid" id="checksSecurity" aria-label="Security checks"></div>
       </div>
     </section>
 
     <footer class="footer">
-      <div class="wrap footer-row">
-        <div class="muted">Server Administration Academy • Hosted on GitHub Pages</div>
-        <div class="muted">Update content via <code>data/</code> files</div>
+      <div class="container footRow">
+        <div class="mutedSmall">Server Administration Academy</div>
+        <div class="mutedSmall">Hosted on GitHub Pages • Update content via <code>data/</code></div>
       </div>
     </footer>
   </main>
 
-  <script src="./assets/app-home.js"></script>
+  <script src="./assets/site.js"></script>
+  <script>
+    window.SAA.initHome();
+  </script>
 </body>
 </html>
