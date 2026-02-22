@@ -5,16 +5,11 @@
   --muted:rgba(238,240,255,.72);
   --muted2:rgba(238,240,255,.55);
 
-  --line:rgba(255,255,255,.10);
-
   --p:#8b5cf6;
-  --p2:#a78bfa;
   --pSoft:rgba(139,92,246,.18);
   --pLine:rgba(139,92,246,.38);
 
   --r:18px;
-  --shadow:0 22px 70px rgba(0,0,0,.52);
-
   --sans: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
 }
 
@@ -29,10 +24,11 @@ body{
     radial-gradient(1200px 700px at 50% 120%, rgba(139,92,246,.18), transparent 55%),
     linear-gradient(180deg, var(--bg), var(--bg2));
 }
+
 a{color:inherit;text-decoration:none}
 .container{max-width:1200px;margin:0 auto;padding:0 18px}
 
-/* Navbar (not sticky) */
+/* NAV (not sticky) */
 .top{position:relative;z-index:10;padding:18px 0}
 .navGlass{
   display:flex;align-items:center;justify-content:space-between;gap:16px;
@@ -52,7 +48,6 @@ a{color:inherit;text-decoration:none}
   border:1px solid rgba(255,255,255,.12);
 }
 .brandName{font-weight:650;letter-spacing:.2px}
-
 .navLinks{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
 .navLink{
   font-weight:500;
@@ -63,8 +58,6 @@ a{color:inherit;text-decoration:none}
 }
 .navLink:hover{color:var(--ink);background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10)}
 .navLink.isActive{background:var(--pSoft);border-color:var(--pLine);color:var(--ink)}
-
-.navCta{display:flex;align-items:center}
 
 /* Buttons */
 .btn{
@@ -81,60 +74,61 @@ a{color:inherit;text-decoration:none}
   background:linear-gradient(180deg, rgba(139,92,246,.45), rgba(139,92,246,.22));
   border-color:rgba(139,92,246,.55);
 }
-.btnPrimary{
-  background:linear-gradient(180deg, rgba(139,92,246,.52), rgba(139,92,246,.22));
-  border-color:rgba(139,92,246,.55);
-}
 .btnGhost{
   background:transparent;
   border-color:rgba(255,255,255,.14);
   color:rgba(238,240,255,.88);
 }
 .btnGhost:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.22)}
+.btnSquare{ padding:12px 26px; border-radius:14px; }
 
-/* HERO: big and vertically centered */
-.heroTall{
-  height:720px;
-  display:flex;
-  align-items:center;     /* vertical center */
+/* HERO */
+.hero{position:relative}
+.heroTall{height:720px;display:flex;align-items:center}
+.heroBg{
+  position:absolute;inset:0;
+  pointer-events:none;
+  opacity:.70;
+  background:
+    radial-gradient(820px 320px at 50% 28%, rgba(139,92,246,.28), transparent 60%),
+    radial-gradient(1200px 760px at 50% 110%, rgba(139,92,246,.18), transparent 55%);
 }
-
 .heroInner{
+  position:relative;
   width:100%;
-  padding:0;              /* avoid shifting */
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
   gap:26px;
 }
-
 .heroTitle{
   margin:0;
   font-size:clamp(3.0rem, 6.2vw, 5.1rem);
   line-height:1.02;
+  font-weight:700;
+  letter-spacing:-.02em;
 }
-
 .heroSub{
   margin:0;
   max-width:920px;
   font-size:1.12rem;
   line-height:1.9;
+  color:var(--muted);
+  font-weight:400;
 }
 
-/* SECTIONS — larger spacing */
+/* Sections */
 .section{padding:86px 0}
-.sectionTall{min-height:620px}
 .sectionHead.center{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  text-align:center;
-  gap:14px;
-  margin-bottom:34px;
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+  gap:14px;margin-bottom:34px;
 }
 .h2{
   margin:0;
   font-size:clamp(1.8rem, 3.4vw, 2.35rem);
   line-height:1.1;
   font-weight:650;
-  letter-spacing:-.01em;
 }
 .p{
   margin:0;
@@ -145,143 +139,49 @@ a{color:inherit;text-decoration:none}
   font-size:1.02rem;
 }
 
-/* GRID */
+/* Track cards */
 .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
-.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
 
-/* TRACK CARDS — true squares + more top space */
 .card{
   border:1px solid rgba(255,255,255,.10);
   background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-  border-radius:var(--r);
-  padding:26px;
+  border-radius:18px;
   box-shadow:0 10px 40px rgba(0,0,0,.25);
   transition:transform .15s ease, border-color .15s ease, filter .15s ease;
 }
 .card:hover{transform:translateY(-2px);border-color:rgba(139,92,246,.38);filter:brightness(1.03)}
-/* Track cards: space between icon and text */
+
 .cardSquare{
   aspect-ratio: 1 / 1;
   display:flex;
   flex-direction:column;
   padding:40px;
 }
+.cardTop{display:flex;justify-content:flex-start}
+.cardSpacer{flex:1}
 
-.cardTop{
-  display:flex;
-  justify-content:flex-start;
-}
+.cardTitle{margin:0;font-weight:650;font-size:1.12rem}
+.cardText{margin-top:12px;color:var(--muted);line-height:1.75;font-weight:400;font-size:1.01rem}
+.cardAction{margin-top:18px;color:rgba(167,139,250,.95);font-weight:600}
 
-.cardSpacer{
-  flex: 1;            /* this is the ONLY thing that expands */
-}
-
-.cardTitle{
-  margin:0;
-  font-weight:650;
-  font-size:1.12rem;
-}
-
-.cardText{
-  margin-top:12px;
-  color:var(--muted);
-  line-height:1.75;
-  font-weight:400;
-  font-size:1.01rem;
-}
-
-.cardAction{
-  margin-top:18px;    /* fixed spacing, NOT auto */
-  color:rgba(167,139,250,.95);
-  font-weight:600;
-}
-/* --- ICON CONTAINMENT (hard clamp) --- */
+/* Icons */
 .iconBadge{
-  width:40px !important;
-  height:40px !important;
-  border-radius:12px;
-  display:grid;
-  place-items:center;
-  overflow:hidden;              /* prevents spill */
+  width:40px;height:40px;border-radius:12px;
+  display:grid;place-items:center;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);
+  overflow:hidden;
 }
+.iconBadge svg{width:18px;height:18px;display:block}
+.ico{width:18px;height:18px}
 
-/* Any SVG inside the icon badge must be small */
-.iconBadge svg{
-  width:18px !important;
-  height:18px !important;
-  display:block;
-}
-
-/* CRITICAL: stop track card SVGs from growing */
-.cardSquare svg{
-  width:18px !important;
-  height:18px !important;
-  max-width:18px !important;
-  max-height:18px !important;
-}
-
-/* Ensure we don't accidentally scale SVGs */
-.cardSquare .ico{
-  width:18px !important;
-  height:18px !important;
-}
-
-/* Activity type cards — clean (no mini boxes) */
-.featureGrid{align-items:stretch}
-.featureCard{
-  border:1px solid rgba(255,255,255,.10);
-  background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-  border-radius:22px;
-  padding:28px;
-}
-.cleanFeature{position:relative}
-.featureHeader{display:flex;gap:16px;align-items:flex-start}
-.featureTitle{
-  margin:0;
-  font-size:clamp(1.4rem, 2.6vw, 1.95rem);
-  font-weight:650;
-  letter-spacing:-.01em;
-}
-.featureText{
-  margin-top:10px;
-  color:var(--muted);
-  line-height:1.8;
-  font-weight:400;
-  max-width:62ch;
-}
-.featureActions{margin-top:20px;display:flex;gap:12px;flex-wrap:wrap}
-
-/* Footer — taller */
-.footer{border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,.10)}
-.footerTall{padding:40px 0}
-.footerRow{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-start}
-.footerBrand{font-weight:650}
-.footerMuted{margin-top:8px;color:var(--muted2);font-weight:400}
-.footerRight{display:flex;gap:14px;flex-wrap:wrap}
-.footerLink{color:rgba(238,240,255,.78);font-weight:500}
-.footerLink:hover{color:rgba(167,139,250,.95)}
-
-/* Responsive */
-@media (max-width:980px){
-  .navGlass{border-radius:22px}
-  .brand{min-width:auto}
-  .sectionTall{min-height:auto}
-}
-@media (max-width:920px){
-  .grid3{grid-template-columns:1fr}
-  .grid2{grid-template-columns:1fr}
-  .cardSquare{aspect-ratio:auto}
-  .heroTall{min-height:auto}
-}
-/* ===== Activity Type Layout (3 tiles + wide projects tile) ===== */
-
+/* Activity Type Layout */
 .activityGridTop{
   display:grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap:22px;
   margin-top:28px;
 }
-
 .activityTile{
   border:1px solid rgba(255,255,255,.12);
   background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
@@ -293,25 +193,18 @@ a{color:inherit;text-decoration:none}
   justify-content:flex-start;
   transition:transform .15s ease, border-color .15s ease, filter .15s ease;
 }
-
 .activityTile:hover{
   transform:translateY(-2px);
   border-color:rgba(139,92,246,.38);
   filter:brightness(1.03);
 }
-
 .activityTileTitle{
   font-weight:650;
   font-size:1.15rem;
   letter-spacing:-.01em;
   color:rgba(238,240,255,.92);
 }
-
-/* Projects wide tile */
-.activityGridBottom{
-  margin-top:26px;
-}
-
+.activityGridBottom{margin-top:26px}
 .projectTile{
   border:1px solid rgba(255,255,255,.12);
   background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
@@ -323,44 +216,31 @@ a{color:inherit;text-decoration:none}
   justify-content:space-between;
   gap:28px;
 }
+.projectLeft{max-width:820px}
+.projectTitle{font-weight:650;font-size:1.2rem;margin-bottom:12px}
+.projectText{color:var(--muted);line-height:1.75;font-weight:400}
 
-.projectLeft{
-  max-width:820px;
-}
-
-.projectTitle{
-  font-weight:650;
-  font-size:1.2rem;
-  margin-bottom:12px;
-}
-
-.projectText{
-  color:var(--muted);
-  line-height:1.75;
-  font-weight:400;
-}
-
-/* Explore button look like sketch */
-.btnSquare{
-  padding:12px 26px;
-  border-radius:14px;
-}
+/* Footer */
+.footer{border-top:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,.10);padding:40px 0}
+.footerRow{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.footerBrand{font-weight:650}
+.footerMuted{margin-top:8px;color:var(--muted2);font-weight:400}
+.footerRight{display:flex;gap:14px;flex-wrap:wrap}
+.footerLink{color:rgba(238,240,255,.78);font-weight:500}
+.footerLink:hover{color:rgba(167,139,250,.95)}
 
 /* Responsive */
 @media (max-width:900px){
-  .activityGridTop{
-    grid-template-columns:1fr;
-  }
+  .grid3{grid-template-columns:1fr}
+  .activityGridTop{grid-template-columns:1fr}
   .projectTile{
     border-radius:28px;
     flex-direction:column;
     align-items:flex-start;
   }
-  .projectRight{
-    width:100%;
-  }
-  .btnSquare{
-    width:100%;
-    justify-content:center;
-  }
+  .projectRight{width:100%}
+  .btnSquare{width:100%;justify-content:center}
+}
+@media (max-width:920px){
+  .heroTall{height:auto;padding:110px 0}
 }
