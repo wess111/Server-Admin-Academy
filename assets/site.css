@@ -10,7 +10,6 @@
   --pSoft:rgba(139,92,246,.18);
   --pLine:rgba(139,92,246,.38);
 
-  --r:18px;
   --sans: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
 }
 
@@ -30,7 +29,7 @@ body{
 a{color:inherit;text-decoration:none}
 .container{max-width:1200px;margin:0 auto;padding:0 18px}
 
-/* NAV (not sticky) */
+/* NAV */
 .top{position:relative;z-index:10;padding:18px 0}
 .navGlass{
   display:flex;align-items:center;justify-content:space-between;gap:16px;
@@ -84,17 +83,20 @@ a{color:inherit;text-decoration:none}
 .btnGhost:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.22)}
 .btnSquare{padding:12px 26px;border-radius:14px}
 
-/* HERO (big + centered) */
-.hero{position:relative}
-.heroTall{height:740px;display:flex;align-items:center}
-.heroBg{
-  position:absolute;inset:0;
+/* Glow overlay (used for hero + tracks to eliminate seam) */
+.glowSection{position:relative;overflow:hidden}
+.glowLayer{
+  position:absolute;inset:-1px;
   pointer-events:none;
-  opacity:.70;
+  opacity:.72;
   background:
     radial-gradient(820px 320px at 50% 28%, rgba(139,92,246,.28), transparent 60%),
     radial-gradient(1200px 760px at 50% 110%, rgba(139,92,246,.18), transparent 55%);
 }
+
+/* HERO */
+.hero{position:relative}
+.heroTall{height:740px;display:flex;align-items:center}
 .heroInner{
   position:relative;
   width:100%;
@@ -148,15 +150,14 @@ a{color:inherit;text-decoration:none}
 }
 
 /* Band background ONLY for Activities */
-.sectionBandAlt{
-  background: rgba(0,0,0,.10);
-}
+.sectionBandAlt{background: rgba(0,0,0,.10)}
 
 /* Grid */
 .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
 
 /* Cards */
 .card{
+  position:relative;
   border:1px solid rgba(255,255,255,.10);
   background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
   border-radius:18px;
@@ -174,12 +175,11 @@ a{color:inherit;text-decoration:none}
 }
 .cardTop{display:flex;justify-content:flex-start}
 .cardSpacer{flex:1}
-
 .cardTitle{margin:0;font-weight:650;font-size:1.12rem}
 .cardText{margin-top:12px;color:var(--muted);line-height:1.75;font-weight:400;font-size:1.01rem}
 .cardFooter{margin-top:22px}
 
-/* BIG Track Icons (no container, 3× size) */
+/* BIG Track Icons */
 .trackIcon{
   width:66px;
   height:66px;
@@ -194,27 +194,20 @@ a{color:inherit;text-decoration:none}
   display:flex;
   flex-direction:column;
 }
-.activityTitle{
-  font-weight:650;
-  font-size:1.2rem;
-  margin:0;
-}
+.activityTitle{font-weight:650;font-size:1.2rem;margin:0}
 .activityText{
   margin-top:12px;
   color:var(--muted);
   line-height:1.75;
   font-weight:400;
 }
-.activityFooter{
-  margin-top:auto;
-  padding-top:18px;
-}
+.activityFooter{margin-top:auto;padding-top:18px}
 
 /* Projects */
 .projectRow{margin-top:26px}
 .projectCard{
   padding:34px 40px;
-  border-radius:18px; /* uniform edges */
+  border-radius:18px;
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -237,10 +230,7 @@ a{color:inherit;text-decoration:none}
 /* Responsive */
 @media (max-width:900px){
   .grid3{grid-template-columns:1fr}
-  .projectCard{
-    flex-direction:column;
-    align-items:flex-start;
-  }
+  .projectCard{flex-direction:column;align-items:flex-start}
   .projectRight{width:100%}
   .btnSquare{width:100%;justify-content:center}
 }
