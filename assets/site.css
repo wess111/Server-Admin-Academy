@@ -1,6 +1,7 @@
 :root{
   --bg:#070912;
   --bg2:#0a0e1e;
+
   --ink:#eef0ff;
   --muted:rgba(238,240,255,.72);
   --muted2:rgba(238,240,255,.55);
@@ -15,6 +16,7 @@
 
 *{box-sizing:border-box}
 html,body{height:100%}
+
 body{
   margin:0;
   font-family:var(--sans);
@@ -28,7 +30,7 @@ body{
 a{color:inherit;text-decoration:none}
 .container{max-width:1200px;margin:0 auto;padding:0 18px}
 
-/* NAV (not sticky) */
+/* ========== NAV (not sticky) ========== */
 .top{position:relative;z-index:10;padding:18px 0}
 .navGlass{
   display:flex;align-items:center;justify-content:space-between;gap:16px;
@@ -82,9 +84,9 @@ a{color:inherit;text-decoration:none}
 .btnGhost:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.22)}
 .btnSquare{padding:12px 26px;border-radius:14px}
 
-/* HERO (big + centered) */
+/* ========== HERO (big + centered) ========== */
 .hero{position:relative}
-.heroTall{height:720px;display:flex;align-items:center}
+.heroTall{height:740px;display:flex;align-items:center}
 .heroBg{
   position:absolute;inset:0;
   pointer-events:none;
@@ -111,21 +113,29 @@ a{color:inherit;text-decoration:none}
 }
 .heroSub{
   margin:0;
-  max-width:920px;
+  max-width:940px;
   font-size:1.12rem;
   line-height:1.9;
   color:var(--muted);
   font-weight:400;
 }
 
-/* Section divider (clear separation) */
+/* Divider */
 .sectionDivider{
   height:1px;
-  background:linear-gradient(90deg, transparent, rgba(255,255,255,.10), transparent);
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
+}
+
+/* ========== SECTION BANDS (prevents visual overlap) ========== */
+.sectionBand{
+  background: rgba(255,255,255,.02);
+}
+.sectionBandAlt{
+  background: rgba(0,0,0,.10);
 }
 
 /* Sections */
-.section{padding:86px 0}
+.section{padding:92px 0}
 .sectionHead.center{
   display:flex;flex-direction:column;align-items:center;text-align:center;
   gap:14px;margin-bottom:34px;
@@ -138,16 +148,17 @@ a{color:inherit;text-decoration:none}
 }
 .p{
   margin:0;
-  max-width:860px;
+  max-width:880px;
   color:var(--muted);
   line-height:1.8;
   font-weight:400;
   font-size:1.02rem;
 }
 
-/* Track cards */
+/* Grid */
 .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
 
+/* Cards */
 .card{
   border:1px solid rgba(255,255,255,.10);
   background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
@@ -157,75 +168,67 @@ a{color:inherit;text-decoration:none}
 }
 .card:hover{transform:translateY(-2px);border-color:rgba(139,92,246,.38);filter:brightness(1.03)}
 
+/* Track cards (square; spacer between icon and text) */
 .cardSquare{
   aspect-ratio: 1 / 1;
   display:flex;
   flex-direction:column;
-  padding:40px;
+  padding:44px;
 }
 .cardTop{display:flex;justify-content:flex-start}
+
+/* The ONLY expanding space: between icon and text */
 .cardSpacer{flex:1}
 
 .cardTitle{margin:0;font-weight:650;font-size:1.12rem}
 .cardText{margin-top:12px;color:var(--muted);line-height:1.75;font-weight:400;font-size:1.01rem}
 .cardAction{margin-top:18px;color:rgba(167,139,250,.95);font-weight:600}
 
-/* Icons (slightly bigger, proportional) */
-.iconBadge{
-  width:48px;height:48px;border-radius:14px;
-  display:grid;place-items:center;
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(255,255,255,.04);
-  overflow:hidden;
+/* BIG Track Icons (no container) */
+.trackIcon{
+  width:66px;
+  height:66px;
+  display:block;
+  opacity:.95;
 }
-.iconBadge svg{width:22px;height:22px;display:block}
-.ico{width:22px;height:22px}
 
-/* Activity Type Layout (your sketch) */
-.activityGridTop{
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap:22px;
-  margin-top:28px;
-}
-.activityTile{
-  border:1px solid rgba(255,255,255,.12);
-  background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-  border-radius:28px;
-  min-height:160px;
-  padding:28px;
+/* Activities cards */
+.activityCard{
+  min-height:240px;
+  padding:34px;
   display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  transition:transform .15s ease, border-color .15s ease, filter .15s ease;
+  flex-direction:column;
 }
-.activityTile:hover{
-  transform:translateY(-2px);
-  border-color:rgba(139,92,246,.38);
-  filter:brightness(1.03);
-}
-.activityTileTitle{
+.activityTitle{
   font-weight:650;
-  font-size:1.15rem;
-  letter-spacing:-.01em;
-  color:rgba(238,240,255,.92);
+  font-size:1.2rem;
+  margin:0;
+}
+.activityText{
+  margin-top:12px;
+  color:var(--muted);
+  line-height:1.75;
+  font-weight:400;
+}
+.activityFooter{
+  margin-top:auto;
+  padding-top:18px;
 }
 
-.activityGridBottom{margin-top:26px}
-.projectTile{
-  border:1px solid rgba(255,255,255,.12);
-  background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-  border-radius:60px;
-  min-height:170px;
+/* Projects row */
+.projectRow{margin-top:26px}
+.projectCard{
   padding:34px 40px;
+  border-radius:18px; /* uniform edges */
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:28px;
 }
 .projectLeft{max-width:820px}
-.projectTitle{font-weight:650;font-size:1.2rem;margin-bottom:12px}
+.projectTitle{font-weight:650;font-size:1.2rem;margin:0 0 12px 0}
 .projectText{color:var(--muted);line-height:1.75;font-weight:400}
+.projectRight{display:flex;align-items:center}
 
 /* Footer */
 .footer{background:rgba(0,0,0,.10);padding:40px 0}
@@ -239,9 +242,7 @@ a{color:inherit;text-decoration:none}
 /* Responsive */
 @media (max-width:900px){
   .grid3{grid-template-columns:1fr}
-  .activityGridTop{grid-template-columns:1fr}
-  .projectTile{
-    border-radius:28px;
+  .projectCard{
     flex-direction:column;
     align-items:flex-start;
   }
@@ -249,5 +250,5 @@ a{color:inherit;text-decoration:none}
   .btnSquare{width:100%;justify-content:center}
 }
 @media (max-width:920px){
-  .heroTall{height:auto;padding:110px 0}
+  .heroTall{height:auto;padding:120px 0}
 }
