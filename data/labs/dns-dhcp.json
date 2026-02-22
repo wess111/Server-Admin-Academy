@@ -10,54 +10,237 @@
     {
       "id": "DNS-001",
       "category": "DNS",
-      "title": "Domain join fails due to missing SRV records",
-      "tags": ["SRV records", "Domain Join"],
-      "summary": "A new workstation can resolve the domain name but cannot locate a domain controller during domain join.",
+      "title": "Domain join fails for DEPOT-LT17 (SRV records not found)",
+      "tags": ["SRV records", "Domain Join", "AD"],
+      "summary": "A new laptop at DEPOT-03 can resolve the domain name but fails domain join with 'cannot locate a domain controller'.",
+      "env": {
+        "Client": "DEPOT-LT17",
+        "Domain": "corp.global-logistics.local",
+        "Site": "DEPOT-03",
+        "DNS": "SRV-DNS1, SRV-DNS2"
+      },
       "workflow": {
-        "triage": "Domain join fails with 'cannot locate a domain controller'.",
-        "diagnosis": "Client cannot resolve required AD SRV records (e.g., _ldap._tcp.dc._msdcs) because it is using the wrong DNS server or SRV records are missing.",
-        "fix": "DNS Manager: verify SRV records in _msdcs zone. DHCP: ensure option 006 points to AD DNS only. Flush DNS cache and retry.",
+        "triage": "Domain join wizard fails; ping to DC IP works; nslookup of the domain returns an IP.",
+        "diagnosis": "Client cannot resolve required AD SRV records (e.g., _ldap._tcp.dc._msdcs). Often caused by clients using non-AD DNS or missing SRV data in the zone.",
+        "fix": "DNS Manager: verify SRV records in _msdcs.<domain>. Ensure clients receive only AD DNS servers (DHCP option 006). If SRV records are missing, remediate DC registration/zone replication.",
         "changeNote": ""
-      }
+      },
+      "validations": [
+        "nslookup -type=SRV _ldap._tcp.dc._msdcs.corp.global-logistics.local",
+        "ipconfig /all (confirm DNS servers)",
+        "ipconfig /flushdns then retry domain join"
+      ]
     },
     {
       "id": "DNS-002",
       "category": "DNS",
-      "title": "Split-brain zone blocks public subdomains",
-      "tags": ["Authoritative", "Split-brain"],
-      "summary": "Internal clients cannot resolve careers.example.com after an internal zone for example.com was created.",
+      "title": "Secure dynamic updates failing for roaming laptops",
+      "tags": ["Secure Dynamic Updates", "DHCP", "Permissions"],
+      "summary": "Some domain-joined laptops do not register A/PTR records after moving between sites.",
+      "env": {
+        "Zone": "corp.global-logistics.local",
+        "Updates": "Secure only",
+        "DHCP": "SRV-DHCP1",
+        "Clients": "Roaming laptops"
+      },
       "workflow": {
-        "triage": "Internal lookups return NXDOMAIN for public subdomains.",
-        "diagnosis": "Internal DNS is authoritative for example.com but lacks records for public subdomains, so it returns negative answers instead of forwarding.",
-        "fix": "Adjust split-brain design: add required records, delegate/stub/conditional forward as appropriate, or revise internal naming.",
+        "triage": "Leases are normal but hostnames are missing/stale in DNS for a subset of clients.",
+        "diagnosis": "With secure updates, the updating principal matters. DHCP update credentials are missing/incorrect, or stale record ownership blocks updates.",
+        "fix": "DHCP MMC → Server Properties → DNS: configure credentials for DNS updates and enable dynamic update settings. In DNS, remove conflicting stale records or correct record security so updates can succeed.",
         "changeNote": ""
-      }
+      },
+      "validations": [
+        "On affected client: ipconfig /registerdns",
+        "Review DHCP/DNS event logs for update failures",
+        "Verify record ownership/security for the hostname"
+      ]
     },
     {
-      "id": "DHCP-001",
-      "category": "DHCP",
-      "title": "Scope exhaustion causes intermittent IP failures",
-      "tags": ["Scopes", "Utilization"],
-      "summary": "Warehouse devices intermittently fail to obtain an IP during peak hours.",
+      "id": "DNS-003",
+      "category": "DNS",
+      "title": "CNAME alias resolves but app fails due to certificate mismatch",
+      "tags": ["CNAME", "Aliases", "TLS"],
+      "summary": "Users access https://payroll.global-logistics.local (CNAME) and receive certificate name mismatch warnings.",
+      "env": {
+        "Alias": "payroll.global-logistics.local",
+        "Target": "SRV-PROD-WEB07.global-logistics.local",
+        "Service": "HTTPS 443"
+      },
       "workflow": {
-        "triage": "Clients show APIPA or long DHCP delays; scope utilization is high.",
-        "diagnosis": "Scope is exhausted due to insufficient pool and/or long leases.",
-        "fix": "DHCP Manager: check scope statistics, expand pool or add new subnet, shorten lease if appropriate.",
+        "triage": "DNS resolves the alias to the correct server, but browsers warn about certificate mismatch.",
+        "diagnosis": "DNS is correct; TLS certificate SAN does not include the alias name, causing validation failure.",
+        "fix": "DNS MMC: confirm CNAME target. On the web server, install/bind a certificate that includes the alias in SAN (IIS Manager → Site Bindings → https).",
         "changeNote": ""
-      }
+      },
+      "validations": [
+        "nslookup payroll.global-logistics.local returns expected host",
+        "Confirm certificate SAN includes alias",
+        "Browser test shows no warnings after binding update"
+      ]
     },
-    {
-      "id": "DHCP-002",
-      "category": "DHCP",
-      "title": "Clients in new VLAN cannot reach DHCP",
-      "tags": ["Relay", "IP Helper"],
-      "summary": "A new subnet was added, but devices only get APIPA addresses.",
-      "workflow": {
-        "triage": "No leases issued for the new subnet; DHCP server sees no DISCOVER packets from that VLAN.",
-        "diagnosis": "Router/L3 switch is missing DHCP relay (IP helper) for that VLAN.",
-        "fix": "Configure DHCP relay on the gateway to forward to the DHCP server; ensure the matching scope exists and is active.",
-        "changeNote": ""
-      }
+
+    { "id":"DNS-004","category":"DNS","title":"Scavenging removed critical host record unexpectedly","tags":["Scavenging","Aging","Static Records"],
+      "summary":"After enabling scavenging, SRV-PROD-SQL01 stopped resolving. Service owners report outage until record recreated.",
+      "env":{"Zone":"prod.global-logistics.local","No-Refresh/Refresh":"7/7 days","Server":"SRV-DNS1"},
+      "workflow":{"triage":"Name returns NXDOMAIN; record is missing in the zone.","diagnosis":"Aging/scavenging settings are too aggressive, or the critical record had a timestamp and became eligible for scavenging.","fix":"DNS MMC → Zone Properties → Aging/Scavenging: review intervals and eligibility. Recreate critical records as true static (no timestamp) where appropriate and align policy with lifecycle needs.","changeNote":""},
+      "validations":["Enable Advanced View and inspect record timestamps","Check DNS server event logs for scavenging events","Verify critical records persist after eligibility window"]
+    },
+    { "id":"DNS-005","category":"DNS","title":"Scavenging not cleaning stale records (zone aging disabled)","tags":["Scavenging","Aging","Stale Records"],
+      "summary":"Thousands of stale workstation A records remain from previous imaging cycles; scavenging is enabled but nothing is removed.",
+      "env":{"Zone":"corp.global-logistics.local","Server scavenging":"Enabled","Zone aging":"Disabled"},
+      "workflow":{"triage":"Old hostnames still resolve; collisions occur during re-imaging.","diagnosis":"Server scavenging is enabled, but zone aging is not enabled, so records never become eligible for scavenging.","fix":"DNS MMC → Zone Properties → Aging: enable aging and set no-refresh/refresh intervals. Confirm server scavenging schedule is enabled.","changeNote":""},
+      "validations":["Verify timestamps are being applied","Confirm scavenging events occur on schedule","Re-check stale records after interval passes"]
+    },
+    { "id":"DNS-006","category":"DNS","title":"PTR records missing for DHCP clients; monitoring shows 'unknown host'","tags":["Reverse Lookup","PTR","DHCP Updates"],
+      "summary":"Monitoring relies on reverse lookups to tag assets, but many addresses return NXDOMAIN for PTR.",
+      "env":{"DHCP":"SRV-DHCP1","Reverse zone":"10.20.0.0/16","Updates":"Secure only"},
+      "workflow":{"triage":"Reverse queries fail; some forward A records exist but PTR records do not.","diagnosis":"Reverse zone missing or DHCP is not configured to create PTRs (and/or secure update credentials are missing).","fix":"DNS MMC: create reverse lookup zone(s). DHCP MMC → Server Properties → DNS: enable A and PTR updates and configure secure update credentials if needed.","changeNote":""},
+      "validations":["nslookup <IP> returns PTR after fix","Confirm DHCP creates both A and PTR for new leases","Review DHCP audit logs for DNS update results"]
+    },
+    { "id":"DNS-007","category":"DNS","title":"Conditional forwarder points to retired resolver (partner domain fails)","tags":["Conditional Forwarder","Timeouts"],
+      "summary":"Integration jobs fail because vendor.partner.local stopped resolving after vendor DNS migration.",
+      "env":{"Local DNS":"SRV-DNS2","Zone":"vendor.partner.local","Old IP":"10.50.2.10","New IP":"10.50.2.20"},
+      "workflow":{"triage":"Queries to vendor.partner.local time out; all other DNS works normally.","diagnosis":"Conditional forwarder points to an unreachable/retired vendor resolver IP.","fix":"DNS MMC → Conditional Forwarders: update IPs to current partner DNS servers and verify connectivity (UDP/TCP 53).","changeNote":""},
+      "validations":["nslookup host.vendor.partner.local resolves quickly","Integration job succeeds","Event logs show no forwarder timeout warnings"]
+    },
+    { "id":"DNS-008","category":"DNS","title":"Clients get inconsistent answers due to duplicate authoritative zones","tags":["Zones","Authoritative","Replication"],
+      "summary":"api.prod.global-logistics.local resolves to different IPs depending on client subnet.",
+      "env":{"Servers":"SRV-DNS1 (prod), SRV-DNS3 (test)","Zone":"prod.global-logistics.local"},
+      "workflow":{"triage":"Different clients get different IPs for the same name.","diagnosis":"Multiple DNS servers host authoritative zones with the same name but different data/replication scope.","fix":"Remove/disable conflicting zone or correct replication so only intended authoritative zone is used. Ensure DHCP option 006 points to correct DNS servers.","changeNote":""},
+      "validations":["nslookup from multiple subnets returns consistent IP","Confirm authoritative zone data matches expected records"]
+    },
+    { "id":"DNS-009","category":"DNS","title":"Forwarder outage causes slow external lookups","tags":["Forwarders","Timeouts","Root Hints"],
+      "summary":"External domain lookups are slow or time out; internal name resolution remains normal.",
+      "env":{"DNS":"SRV-DNS1","Forwarders":"Old ISP resolvers","Internal zones":"Normal"},
+      "workflow":{"triage":"External lookups take several seconds; intermittent failures occur.","diagnosis":"Forwarders are unreachable, causing repeated timeouts before fallback (or fallback is disabled).","fix":"DNS MMC → Server Properties → Forwarders: replace/remove unreachable forwarders; verify fallback behavior (root hints) and upstream reachability.","changeNote":""},
+      "validations":["Measure lookup latency before/after","DNS event logs show reduced forwarder timeout warnings"]
+    },
+    { "id":"DNS-010","category":"DNS","title":"CNAME chain still points users to old server after migration","tags":["CNAME","Aliases","Migration"],
+      "summary":"Users access erp.global-logistics.local but are routed to the retired server after an app migration.",
+      "env":{"Alias":"erp.global-logistics.local","Expected":"SRV-PROD-APP07","Actual chain":"erp → erp-old → SRV-PROD-APP03"},
+      "workflow":{"triage":"ERP name resolves, but users hit the old host.","diagnosis":"CNAME points to another alias that still targets the old server (CNAME chain not updated).","fix":"DNS MMC: update the CNAME to point directly to the new host FQDN or correct the intermediate alias. Remove unused legacy aliases.","changeNote":""},
+      "validations":["nslookup erp.global-logistics.local returns new target","Application logs show traffic hitting new server"]
+    },
+    { "id":"DNS-011","category":"DNS","title":"Secure updates blocked by stale record ownership after device replacement","tags":["Secure Dynamic Updates","Ownership","Stale Records"],
+      "summary":"PRN-FLOOR3 was replaced, but the hostname still resolves to the old IP and the new device cannot register.",
+      "env":{"Hostname":"PRN-FLOOR3","Zone":"corp.global-logistics.local","Updates":"Secure only"},
+      "workflow":{"triage":"Clients resolve PRN-FLOOR3 to old IP; new device fails to update the record.","diagnosis":"Existing record ownership/ACL prevents overwrite under secure dynamic updates.","fix":"DNS MMC: delete stale A/PTR record (or adjust record security). Allow DHCP/client to re-register using correct credentials.","changeNote":""},
+      "validations":["Record reappears with correct IP","Ownership/security reflects correct updating principal"]
+    },
+    { "id":"DNS-012","category":"DNS","title":"Domain join fails because DHCP hands out public DNS","tags":["SRV records","DHCP Options"],
+      "summary":"New laptops can browse the internet but fail first-boot domain join until DNS is manually changed.",
+      "env":{"Scope":"10.30.40.0/24","Option 006":"Public DNS (wrong)","Internal DNS":"10.30.40.10"},
+      "workflow":{"triage":"Join fails; internet works; ipconfig shows public DNS servers.","diagnosis":"DHCP scope option 006 is set to public DNS, which does not host AD SRV records.","fix":"DHCP MMC → Scope Options: set option 006 to internal AD DNS servers. Renew lease and retry join.","changeNote":""},
+      "validations":["ipconfig /all shows internal DNS","SRV lookup returns active DCs","Domain join succeeds"]
+    },
+    { "id":"DNS-013","category":"DNS","title":"Secure DNS updates failing after DHCP server rebuild","tags":["Secure Dynamic Updates","DHCP Credentials","Rebuild"],
+      "summary":"After rebuilding SRV-DHCP1, leases work but DNS A/PTR registration fails across the org.",
+      "env":{"DHCP":"SRV-DHCP1 (rebuilt)","Updates":"Secure only","Zone":"corp.global-logistics.local"},
+      "workflow":{"triage":"Clients have IP connectivity but cannot be resolved by hostname; few new dynamic records appear.","diagnosis":"DHCP DNS update credentials were not restored/configured after rebuild.","fix":"DHCP MMC → Server Properties → DNS: configure dedicated credentials for secure DNS updates and verify permissions.","changeNote":""},
+      "validations":["New leases create A and PTR records","DHCP/DNS event logs show successful secure updates"]
+    },
+    { "id":"DNS-014","category":"DNS","title":"SRV record lookup returns retired domain controller","tags":["SRV records","Cleanup","Metadata"],
+      "summary":"Clients intermittently try to contact SRV-DC04 during logon/GP processing and time out.",
+      "env":{"Domain":"corp.global-logistics.local","Retired DC":"SRV-DC04"},
+      "workflow":{"triage":"Group Policy processing/logon slow; occasional timeouts contacting a DC name that should be decommissioned.","diagnosis":"AD/DNS cleanup wasn’t completed; stale SRV records still advertise the retired DC.","fix":"DNS MMC → _msdcs zone: remove SRV records referencing retired DC. Complete metadata cleanup and validate replication.","changeNote":""},
+      "validations":["SRV queries return only active DCs","Logon/GP processing times normalize"]
+    },
+    { "id":"DNS-015","category":"DNS","title":"Split-brain internal zone breaks public subdomain resolution","tags":["Split-brain","Authoritative","Design"],
+      "summary":"Internal zone for global-logistics.com exists for internal apps, but careers.global-logistics.com fails for internal users.",
+      "env":{"Internal zone":"global-logistics.com","Public subdomain":"careers.global-logistics.com"},
+      "workflow":{"triage":"Internal clients get NXDOMAIN for public subdomains not defined internally.","diagnosis":"Internal DNS is authoritative for global-logistics.com but lacks public subdomain records, so it answers negatively instead of forwarding.","fix":"DNS MMC: revise split-brain approach (populate required records, use delegation/stub/conditional forwarders, or adjust naming).","changeNote":""},
+      "validations":["nslookup careers.global-logistics.com works from internal clients","Authoritative responses occur only for intended internal names"]
+    },
+
+    { "id":"DHCP-001","category":"DHCP","title":"Scope exhaustion causes intermittent IP assignment failures","tags":["Scopes","Utilization","Lease Duration"],
+      "summary":"In the warehouse VLAN, some devices fail to obtain IPs during peak shifts; others eventually get addresses.",
+      "env":{"DHCP":"SRV-DHCP1","Scope":"10.20.50.0/24","Clients":"Scanners/Tablets"},
+      "workflow":{"triage":"Clients show APIPA or repeated 'Identifying…'; scope utilization is near 100%.","diagnosis":"Scope is exhausted due to insufficient pool, long lease duration for transient devices, or excessive reservations.","fix":"DHCP MMC → Scope: review Scope Statistics, Address Pool, Exclusions, Reservations. Expand scope (or redesign subnet) and adjust lease duration as appropriate.","changeNote":""},
+      "validations":["Scope utilization drops","New clients obtain leases quickly","DHCP audit log shows successful ACKs"]
+    },
+    { "id":"DHCP-002","category":"DHCP","title":"MAC Allow filter blocks new printers from leasing","tags":["MAC Filters","Allow List"],
+      "summary":"A secure print VLAN uses an allow list. After deploying new printers, none obtain DHCP leases.",
+      "env":{"DHCP":"SRV-DHCP1","VLAN":"PRINT-SEC","Filtering":"Allow enabled"},
+      "workflow":{"triage":"New printers show no IP address; existing printers still work.","diagnosis":"MAC allow filtering is enabled, but new printer MACs are not in the allow list.","fix":"DHCP MMC → IPv4 → Filters → Allow: add the new printer MAC addresses and confirm allow filtering is intended.","changeNote":""},
+      "validations":["Printers obtain leases after renew","DHCP logs show leases issued to approved MACs"]
+    },
+    { "id":"DHCP-003","category":"DHCP","title":"MAC Deny filter blocks an executive laptop unexpectedly","tags":["MAC Filters","Deny List"],
+      "summary":"An executive laptop cannot obtain an IP on HQ Wi-Fi while other users are fine.",
+      "env":{"DHCP":"SRV-DHCP1","Network":"HQ-WIFI","Filtering":"Deny enabled"},
+      "workflow":{"triage":"Laptop associates to Wi-Fi but gets APIPA.","diagnosis":"Device MAC address is mistakenly on the deny list (or matches a blocked entry).","fix":"DHCP MMC → IPv4 → Filters → Deny: remove incorrect MAC entry and document why.","changeNote":""},
+      "validations":["Laptop obtains lease after change","Deny list still blocks intended devices"]
+    },
+    { "id":"DHCP-004","category":"DHCP","title":"Failover relationship unhealthy after patching (shared secret mismatch)","tags":["Failover","Load Balance","Partner Auth"],
+      "summary":"After maintenance, renewals start failing intermittently and failover relationship shows warnings.",
+      "env":{"Servers":"SRV-DHCP1 + SRV-DHCP2","Mode":"Load balance"},
+      "workflow":{"triage":"Some clients fail to renew; failover shows communication retries.","diagnosis":"Failover relationship configuration is inconsistent (shared secret mismatch) or partner settings drifted.","fix":"DHCP MMC → Failover: validate partner settings/shared secret. Correct or recreate relationship. Verify both servers are authorized and reachable.","changeNote":""},
+      "validations":["Failover state returns to Normal","Renewals succeed consistently"]
+    },
+    { "id":"DHCP-005","category":"DHCP","title":"Hot standby failover does not serve leases during primary outage","tags":["Failover","Hot Standby","Authorization"],
+      "summary":"During planned outage of SRV-DHCP1, SRV-DHCP2 does not start serving leases quickly.",
+      "env":{"Primary":"SRV-DHCP1","Standby":"SRV-DHCP2","Mode":"Hot standby"},
+      "workflow":{"triage":"Clients cannot renew or obtain new leases longer than expected.","diagnosis":"Standby is not properly configured/authorized for the scope or relationship settings are incorrect.","fix":"DHCP MMC → Failover settings: verify hot standby configuration and role assignment; confirm SRV-DHCP2 is authorized and relationship applies to the scope.","changeNote":""},
+      "validations":["Standby issues leases during simulated outage","Failover status transitions as expected"]
+    },
+    { "id":"DHCP-006","category":"DHCP","title":"New VLAN clients cannot get DHCP (relay agent missing)","tags":["Relay Agents","IP Helper","Routing"],
+      "summary":"A new VLAN for IoT devices was created. Clients cannot obtain IPs from centralized DHCP.",
+      "env":{"DHCP":"SRV-DHCP1","VLAN":"IOT-70 (10.70.0.0/24)","Gateway":"L3 switch/router"},
+      "workflow":{"triage":"IoT clients show APIPA; DHCP server never sees DISCOVER packets from that subnet.","diagnosis":"DHCP broadcasts do not cross subnets; gateway lacks DHCP relay/IP helper to forward requests.","fix":"Configure DHCP relay (IP helper) on the VLAN gateway to forward to SRV-DHCP1. Ensure the scope exists and is active.","changeNote":""},
+      "validations":["DHCP logs show requests from 10.70.0.0/24","Clients obtain correct leases/options"]
+    },
+    { "id":"DHCP-007","category":"DHCP","title":"Scope options misconfigured: clients get wrong DNS servers","tags":["Scopes","Option 006","Name Resolution"],
+      "summary":"Clients get IPs but cannot resolve internal names; external browsing works.",
+      "env":{"Scope":"10.30.10.0/24","Option 006":"Public DNS (wrong)","Internal DNS":"SRV-DNS1/SRV-DNS2"},
+      "workflow":{"triage":"Clients have IP/gateway but internal hostnames fail; ipconfig shows public DNS.","diagnosis":"Scope option 006 (DNS Servers) is configured incorrectly.","fix":"DHCP MMC → Scope Options: set option 006 to internal DNS servers, then renew leases.","changeNote":""},
+      "validations":["ipconfig /all shows correct DNS servers","Internal names resolve successfully"]
+    },
+    { "id":"DHCP-008","category":"DHCP","title":"Reservation not taking effect; device keeps getting random IP","tags":["Reservations","MAC","Client Identifier"],
+      "summary":"A lobby camera must have a fixed IP via reservation but keeps getting different addresses after reboot.",
+      "env":{"Scope":"10.20.60.0/24","Reservation":"10.20.60.50","Device":"CAM-LOBBY-01"},
+      "workflow":{"triage":"Reservation exists, but device receives non-reserved address.","diagnosis":"Reservation was created using the wrong identifier (wrong MAC/interface) or device uses a DHCP Client Identifier.","fix":"DHCP MMC → Address Leases: locate the device identifier then recreate reservation using the correct identifier.","changeNote":""},
+      "validations":["Device receives reserved IP after renew","Lease indicates reservation association"]
+    },
+    { "id":"DHCP-009","category":"DHCP","title":"Rogue DHCP server causing conflicting leases","tags":["Rogue DHCP","Conflicts","Snooping"],
+      "summary":"Some clients get the wrong gateway/DNS and lose connectivity intermittently on OFFICE-20.",
+      "env":{"Expected DHCP":"SRV-DHCP1","VLAN":"OFFICE-20","Symptom":"Incorrect options"},
+      "workflow":{"triage":"Leases differ between clients; some show unexpected gateway/DNS values.","diagnosis":"A rogue DHCP server is responding on the VLAN.","fix":"Identify/remove the rogue DHCP source; enforce DHCP snooping/port security on switching. Confirm only SRV-DHCP1 serves the VLAN.","changeNote":""},
+      "validations":["Clients consistently receive leases from authorized DHCP","Packet capture shows only one DHCPOFFER source"]
+    },
+    { "id":"DHCP-010","category":"DHCP","title":"Failover load balance split misconfigured; one server issues most leases","tags":["Failover","Load Balance","Configuration"],
+      "summary":"After enabling DHCP failover, SRV-DHCP1 issues nearly all leases while SRV-DHCP2 issues very few.",
+      "env":{"Servers":"SRV-DHCP1/SRV-DHCP2","Mode":"Load balance"},
+      "workflow":{"triage":"Lease distribution is skewed; partner sometimes shows warnings.","diagnosis":"Load balance percentage is misconfigured or partner health/connectivity is inconsistent.","fix":"DHCP MMC → Failover relationship: verify load balance percentage and partner health. Correct split and resolve connectivity issues.","changeNote":""},
+      "validations":["Failover state Normal","Lease distribution begins to match the split"]
+    },
+    { "id":"DHCP-011","category":"DHCP","title":"Relay forwards requests but no offers (scope missing/inactive)","tags":["Relay Agents","Scopes","Activation"],
+      "summary":"Relay is configured. DHCP server sees requests from 10.80.0.0/24, but clients still cannot obtain an IP.",
+      "env":{"Subnet":"10.80.0.0/24","DHCP":"SRV-DHCP1","Relay":"Configured"},
+      "workflow":{"triage":"DISCOVERs appear in logs, but no OFFERs are sent.","diagnosis":"No matching scope exists for the subnet, or the scope is inactive.","fix":"DHCP MMC: create/activate a scope for 10.80.0.0/24 and configure address pool/options.","changeNote":""},
+      "validations":["Clients receive offers and ACKs","Scope statistics show active leases"]
+    },
+    { "id":"DHCP-012","category":"DHCP","title":"Global allow filtering enabled; entire branch cannot lease","tags":["MAC Filters","Allow/Deny","Branch Impact"],
+      "summary":"All devices at BRANCH-03 fail DHCP after a MAC filtering pilot was enabled on the server.",
+      "env":{"DHCP":"SRV-DHCP1","Branch":"BRANCH-03","Filtering":"Allow enabled globally"},
+      "workflow":{"triage":"Branch devices show APIPA; relay and scopes exist.","diagnosis":"Allow list enabled globally without onboarding branch MACs causes blanket denial.","fix":"Adjust filtering strategy (scope/policy-based) or add required MACs to allow list. Document change and approvals as required.","changeNote":""},
+      "validations":["Branch devices obtain leases","Filtering still meets security requirements"]
+    },
+    { "id":"DHCP-013","category":"DHCP","title":"DHCP server unauthorized after directory maintenance","tags":["Authorization","Active Directory","Service"],
+      "summary":"DHCP service is running but no new leases are issued after AD maintenance.",
+      "env":{"DHCP":"SRV-DHCP1","AD":"Recent maintenance window"},
+      "workflow":{"triage":"Clients get APIPA; DHCP console indicates unauthorized state or event logs show authorization failure.","diagnosis":"DHCP server is not authorized in Active Directory.","fix":"DHCP MMC → right-click server → Authorize. Restart DHCP service if needed and confirm authorized status.","changeNote":""},
+      "validations":["Server shows Authorized","New leases issued normally"]
+    },
+    { "id":"DHCP-014","category":"DHCP","title":"Option inheritance applies wrong default gateway","tags":["Scopes","Options","Inheritance"],
+      "summary":"Clients in 10.90.2.0/24 receive gateway for 10.90.1.0/24 and cannot route.",
+      "env":{"Subnets":"10.90.1.0/24 and 10.90.2.0/24","Option":"003 Router"},
+      "workflow":{"triage":"Clients have IP but cannot reach outside subnet; default gateway is wrong.","diagnosis":"Option 003 (Router) is configured at the wrong level, overriding per-scope settings.","fix":"DHCP MMC: remove conflicting server-level option and set option 003 correctly at each scope.","changeNote":""},
+      "validations":["Each subnet receives correct gateway","Routing works as expected"]
+    },
+    { "id":"DHCP-015","category":"DHCP","title":"Relay configured but blocked by firewall/ACLs (UDP 67/68)","tags":["Relay Agents","Firewall","UDP 67/68"],
+      "summary":"IP helper is configured and scope exists, but clients still fail DHCP after new firewall rules.",
+      "env":{"Subnet":"10.75.0.0/24","Relay":"Enabled to SRV-DHCP1","Security":"New ACLs"},
+      "workflow":{"triage":"Some requests never arrive; clients remain on APIPA.","diagnosis":"Firewall/ACL is blocking DHCP relay traffic between gateway and DHCP server (UDP 67/68).","fix":"Allow DHCP relay traffic between relay and DHCP server; verify routing and symmetry.","changeNote":""},
+      "validations":["Consistent DISCOVER/OFFER/ACK observed","Firewall logs show no DHCP drops"]
     }
   ]
 }
