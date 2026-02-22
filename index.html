@@ -9,7 +9,7 @@
 </head>
 
 <body>
-  <!-- NAV (scrolls with page; not sticky) -->
+  <!-- NAV (not sticky) -->
   <header class="top">
     <div class="container">
       <div class="navGlass">
@@ -34,8 +34,9 @@
 
   <main>
     <!-- HERO -->
-    <section class="hero heroTall">
-      <div class="heroBg"></div>
+    <section class="hero heroTall glowSection">
+      <div class="glowLayer" aria-hidden="true"></div>
+
       <div class="container heroInner">
         <h1 class="heroTitle">
           Practice Real-World<br />
@@ -51,8 +52,10 @@
 
     <div class="sectionDivider"></div>
 
-    <!-- TRACKS (same background as hero/body — no band background) -->
-    <section class="section" id="tracks">
+    <!-- TRACKS (same glow overlay as hero to remove seam) -->
+    <section class="section glowSection" id="tracks">
+      <div class="glowLayer" aria-hidden="true"></div>
+
       <div class="container">
         <div class="sectionHead center">
           <h2 class="h2">Pick your learning track</h2>
@@ -132,7 +135,7 @@
 
     <div class="sectionDivider"></div>
 
-    <!-- ACTIVITIES (band background for clear separation) -->
+    <!-- ACTIVITIES -->
     <section class="section sectionBandAlt" id="activities">
       <div class="container">
         <div class="sectionHead center">
@@ -142,7 +145,6 @@
           </p>
         </div>
 
-        <!-- Top row: 3 activity cards -->
         <div class="grid3">
           <a class="card activityCard" href="./sysadmin.html#checks">
             <div class="activityTitle">Knowledge check</div>
@@ -175,7 +177,6 @@
           </a>
         </div>
 
-        <!-- Bottom row: wide Projects card -->
         <div class="projectRow">
           <div class="card projectCard">
             <div class="projectLeft">
