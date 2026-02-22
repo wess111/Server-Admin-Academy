@@ -126,67 +126,47 @@
     </section>
 
     <!-- ACTIVITY TYPES -->
-    <section class="section sectionTall" id="start">
-      <div class="container">
-        <div class="sectionHead center">
-          <h2 class="h2">Choose your activity type</h2>
-          <p class="p">
-            Use problem solving labs to practice end-to-end troubleshooting, or use knowledge checks to confirm
-            understanding with short, focused questions.
-          </p>
+   <section class="section sectionTall" id="start">
+  <div class="container">
+    <div class="sectionHead center">
+      <h2 class="h2">Choose your activity type</h2>
+      <p class="p">
+        Mix short knowledge checks with hands-on problem solving, guided labs, and longer project work.
+      </p>
+    </div>
+
+    <!-- Top row: 3 tiles -->
+    <div class="activityGridTop">
+      <a class="activityTile" href="./sysadmin.html#checks">
+        <div class="activityTileTitle">Knowledge check</div>
+      </a>
+
+      <a class="activityTile" href="./sysadmin.html#labs">
+        <div class="activityTileTitle">Problem Solving</div>
+      </a>
+
+      <a class="activityTile" href="./sysadmin.html#guided">
+        <div class="activityTileTitle">Guided Labs</div>
+      </a>
+    </div>
+
+    <!-- Bottom row: Projects wide tile -->
+    <div class="activityGridBottom">
+      <div class="projectTile">
+        <div class="projectLeft">
+          <div class="projectTitle">Projects</div>
+          <div class="projectText">
+            End-to-end, multi-step scenarios that combine planning, implementation, validation, and documentation.
+          </div>
         </div>
 
-        <div class="grid2 featureGrid">
-          <div class="featureCard cleanFeature">
-            <div class="featureHeader">
-              <div class="iconBadge" aria-hidden="true">
-                <!-- Wrench icon -->
-                <svg viewBox="0 0 24 24" class="ico">
-                  <path d="M21 6.5a5 5 0 0 1-6.9 4.6l-7.6 7.6a2 2 0 0 1-2.8-2.8l7.6-7.6A5 5 0 0 1 17.5 3l-2.8 2.8 3.5 3.5L21 6.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <div>
-                <div class="featureTitle">Problem solving labs</div>
-                <div class="featureText">
-                  Work realistic incident tickets (DNS, DHCP, AD, storage, security). Each ticket follows:
-                  Triage → Diagnosis → Fix → Change Note.
-                </div>
-              </div>
-            </div>
-
-            <div class="featureActions">
-              <a class="btn btnPrimary" href="./sysadmin.html#labs">Open labs ✦</a>
-              <a class="btn btnGhost" href="./helpdesk.html#labs">HelpDesk labs ✦</a>
-            </div>
-          </div>
-
-          <div class="featureCard cleanFeature">
-            <div class="featureHeader">
-              <div class="iconBadge" aria-hidden="true">
-                <!-- Clipboard/check icon -->
-                <svg viewBox="0 0 24 24" class="ico">
-                  <path d="M9 5h6a2 2 0 0 0 2-2H7a2 2 0 0 0 2 2Z" fill="none" stroke="currentColor" stroke-width="1.8"/>
-                  <path d="M7 5H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                  <path d="M8 13l2 2 5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <div>
-                <div class="featureTitle">Knowledge checks</div>
-                <div class="featureText">
-                  Quick checks to confirm understanding: matching, ordering, drag-and-drop, and select-the-best-answer —
-                  built for clarity.
-                </div>
-              </div>
-            </div>
-
-            <div class="featureActions">
-              <a class="btn btnPrimary" href="./sysadmin.html#checks">Open knowledge checks ✦</a>
-              <a class="btn btnGhost" href="./security.html#checks">Security checks ✦</a>
-            </div>
-          </div>
+        <div class="projectRight">
+          <a class="btn btnGhost btnSquare" href="./sysadmin.html#projects">Explore</a>
         </div>
       </div>
-    </section>
+    </div>
+  </div>
+</section>
 
     <footer class="footer footerTall">
       <div class="container footerRow">
@@ -204,5 +184,6 @@
   </main>
 </body>
 </html>
+
 
 
