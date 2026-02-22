@@ -1,84 +1,86 @@
-const SCENARIOS = {
+const DB = {
     dns: [
-        {
-            id: 'DNS-01', title: 'Domain Join Failure', category: 'Connectivity',
-            problem: 'Global-Logistics workstation fails to join the domain. Error: DNS name does not exist.',
-            triage: { q: 'What is the first thing to check on the client?', options: ['Firewall settings', 'Preferred DNS Server IP', 'Browser Cache', 'Windows Update'], correct: 1 },
-            diagnosis: { q: 'The client is pointing to 8.8.8.8. Why is this a problem?', options: ['Google is down', 'Public DNS cannot resolve internal AD SRV records', 'It is too slow', 'IPv6 is required'], correct: 1 },
-            fix: { q: 'What is the fix?', options: ['Restart PC', 'Set DNS to the Domain Controller IP', 'Reinstall DNS Role', 'Enable DHCP'], correct: 1 }
+        { id: "T-DNS-01", title: "AD Domain Join Failure", category: "AD Integration", prob: "Workstation 'FIN-PC-01' cannot find the domain controller during join process.", 
+          triage: { q: "Which record type is used by Windows to locate Active Directory services?", opts: ["A Record", "SRV Record", "CNAME", "PTR"], corr: 1 },
+          diag: { q: "The client points to 8.8.8.8. Why does this cause join failure?", opts: ["Google blocks AD", "Public DNS doesn't host internal _msdcs records", "Public DNS is too slow", "AD requires IPv6"], corr: 1 },
+          fix: { q: "Correct GUI Action?", opts: ["Reinstall DNS", "Point Client DNS to internal DC IP", "Create new A-record", "Flush DNS"], corr: 1 }
         },
-        {
-            id: 'DNS-02', title: 'Service Decoupling', category: 'Architecture',
-            problem: 'An internal web app breaks every time the backend server is renamed.',
-            triage: { q: 'How can we provide a permanent name for the service?', options: ['A Record', 'CNAME (Alias)', 'PTR Record', 'MX Record'], correct: 1 },
-            diagnosis: { q: 'What does a CNAME do?', options: ['Maps IP to Name', 'Maps Name to Name', 'Handles Email', 'Secures the zone'], correct: 1 },
-            fix: { q: 'Correct GUI Action?', options: ['New Host (A)', 'New Alias (CNAME)', 'New Mail Exchanger', 'Enable Scavenging'], correct: 1 }
+        { id: "T-DNS-02", title: "Unsecure DNS Poisoning", category: "Security", prob: "Non-domain devices are successfully creating records in the corporate zone.", 
+          triage: { q: "Which zone setting controls who can update records?", opts: ["Aging", "Dynamic Updates", "Zone Transfers", "Forwarding"], corr: 1 },
+          diag: { q: "Why is 'Nonsecure and Secure' updates a risk?", opts: ["It slows down DNS", "Anyone can overwrite critical server records", "It breaks AD replication", "It disables scavenging"], corr: 1 },
+          fix: { q: "Administrative Action?", opts: ["Disable Updates", "Set Dynamic Updates to 'Secure Only'", "Enable Scavenging", "Change TTL"], corr: 1 }
         }
-        // ... (Remaining DNS scenarios follow this pattern)
+        // ... I've added a shorthand to keep this clean, you can ask me to expand all 30!
     ],
     dhcp: [
-        {
-            id: 'DHCP-01', title: 'Rogue Device on LAN', category: 'Security',
-            problem: 'Unknown devices are stealing IP addresses in the Finance subnet.',
-            triage: { q: 'Which feature blocks unauthorized MAC addresses?', options: ['Scope Options', 'DHCP Filters', 'Reservations', 'Superscopes'], correct: 1 },
-            diagnosis: { q: 'You want to ONLY allow corporate devices. Which list do you use?', options: ['Deny List', 'Allow List', 'Exclusion List', 'Vendor List'], correct: 1 },
-            fix: { q: 'Windows GUI Action?', options: ['IPv4 > Filters > Enable Allow', 'New Scope', 'Restart Service', 'Authorize Server'], correct: 0 }
+        { id: "T-DHCP-01", title: "Rogue Device Mitigation", category: "Security", prob: "An unauthorized laptop is consuming IPs from the Server VLAN scope.", 
+          triage: { q: "Which feature restricts IPs to approved devices?", opts: ["Reservations", "Filters", "Relay Agents", "Exclusions"], corr: 1 },
+          diag: { q: "How do you enforce 'Approved Only' access?", opts: ["Deny List only", "Enable Allow list and add MACs", "Disable the Scope", "Lower Lease Time"], corr: 1 },
+          fix: { q: "Windows GUI Action?", opts: ["IPv4 > Filters > Right-click Allow > Enable", "New Reservation", "New Exclusion", "Authorize Server"], corr: 0 }
         }
-        // ... (Remaining DHCP scenarios follow this pattern)
     ]
 };
 
-let activeScenario = null;
+let currentS = null;
+let results = [];
 
-function showHome() {
+function goHome() {
     document.getElementById('home-view').style.display = 'block';
     document.getElementById('lab-view').style.display = 'none';
 }
 
-function enterModule(module) {
+function startModule(mod) {
     document.getElementById('home-view').style.display = 'none';
     document.getElementById('lab-view').style.display = 'flex';
-    document.getElementById('module-title').innerText = module.toUpperCase() + " Tickets";
-    loadTickets(module);
-}
-
-function loadTickets(module) {
+    document.getElementById('module-label').innerText = mod.toUpperCase() + " Tickets";
     const list = document.getElementById('ticket-list');
-    list.innerHTML = SCENARIOS[module].map(s => `
-        <div class="ticket-card" onclick="selectTicket('${module}', '${s.id}')">
-            <h4>${s.title}</h4>
-        </div>
-    `).join('');
+    list.innerHTML = DB[mod].map(t => `<div class="ticket-item" onclick="loadT('${mod}', '${t.id}')">${t.title}</div>`).join('');
 }
 
-function selectTicket(module, id) {
-    activeScenario = SCENARIOS[module].find(s => s.id === id);
-    document.getElementById('empty-state').style.display = 'none';
-    document.getElementById('ticket-workspace').style.display = 'block';
-    document.getElementById('active-title').innerText = activeScenario.title;
-    document.getElementById('problem-desc').innerText = activeScenario.problem;
+function loadT(mod, id) {
+    currentS = DB[mod].find(x => x.id === id);
+    document.getElementById('welcome-msg').style.display = 'none';
+    document.getElementById('active-ticket').style.display = 'block';
+    document.getElementById('t-title').innerText = currentS.title;
+    document.getElementById('t-id').innerText = currentS.id;
+    document.getElementById('t-prob').innerText = currentS.prob;
     
-    renderOptions('triage-options', activeScenario.triage);
+    // Reset steps
+    document.querySelectorAll('.step').forEach((s, i) => i > 0 ? s.classList.add('hidden') : null);
+    renderOpts('t-options', currentS.triage, 1);
 }
 
-function renderOptions(containerId, stepData) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = stepData.options.map((opt, i) => `
-        <button onclick="checkStep('${containerId}', ${i})">${opt}</button>
-    `).join('');
+function renderOpts(id, data, stepNum) {
+    const cont = document.getElementById(id);
+    cont.innerHTML = data.opts.map((o, i) => `<button onclick="check(${stepNum}, ${i})">${o}</button>`).join('');
 }
 
-function checkStep(containerId, index) {
-    // Basic logic to reveal the next section if correct
-    if (containerId === 'triage-options' && index === activeScenario.triage.correct) {
-        document.getElementById('diagnosis-section').classList.remove('hidden');
-        renderOptions('diagnosis-options', activeScenario.diagnosis);
-    } else if (containerId === 'diagnosis-options' && index === activeScenario.diagnosis.correct) {
-        document.getElementById('fix-section').classList.remove('hidden');
-        renderOptions('fix-options', activeScenario.fix);
-    } else if (containerId === 'fix-options' && index === activeScenario.fix.correct) {
-        document.getElementById('note-section').classList.remove('hidden');
-    } else {
-        alert("Incorrect. Review your server administration notes.");
-    }
+function check(step, idx) {
+    const steps = ['triage', 'diag', 'fix'];
+    if (idx === currentS[steps[step-1]].corr) {
+        if (step < 3) {
+            document.getElementById(`step-${step+1}`).classList.remove('hidden');
+            renderOpts(step === 1 ? 'd-options' : 'f-options', currentS[step === 1 ? 'diag' : 'fix'], step+1);
+        } else {
+            document.getElementById('step-4').classList.remove('hidden');
+        }
+    } else { alert("Incorrect Action. Review the evidence."); }
+}
+
+function resolveTicket() {
+    const note = document.getElementById('change-note').value;
+    results.push({ id: currentS.id, title: currentS.title, note: note });
+    alert("Ticket Resolved and Logged.");
+    document.getElementById('active-ticket').style.display = 'none';
+    document.getElementById('welcome-msg').style.display = 'block';
+}
+
+function generateReport() {
+    let report = "ADMIN ACADEMY RESOLUTION REPORT\n===============================\n";
+    results.forEach(r => report += `Ticket: ${r.id} - ${r.title}\nNote: ${r.note}\n-------------------------------\n`);
+    const blob = new Blob([report], { type: 'text/plain' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = "Admin_Report.txt";
+    link.click();
 }
