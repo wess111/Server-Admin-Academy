@@ -162,6 +162,10 @@ a{color:inherit;text-decoration:none}
   flex-direction:column;
   padding:32px;                /* more breathing room */
 }
+.cardTop{display:flex;justify-content:flex-start;margin-bottom:6px}
+.cardTitle{margin-top:14px;font-weight:650;font-size:1.12rem}
+.cardText{margin-top:12px;color:var(--muted);line-height:1.75;font-weight:400;font-size:1.01rem}
+.cardAction{margin-top:auto;color:rgba(167,139,250,.95);font-weight:600;padding-top:18px}
 .cardTop{
   margin-bottom:auto;          /* pushes everything else downward */
 }
