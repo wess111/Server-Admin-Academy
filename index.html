@@ -3,84 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Server Admin Academy | Enterprise Lab</title>
+    <title>Enterprise Admin Academy | Hub</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="home-view" class="view">
-        <header class="hero">
-            <div class="logo-circle">AS</div>
-            <h1>Admin Academy</h1>
-            <p>Enterprise Infrastructure Troubleshooting Simulation</p>
+        <header class="appbar">
+            <div class="brand">Admin Academy</div>
+            <div class="subtitle">Infrastructure Training Portal</div>
         </header>
-
-        <div class="module-grid">
-            <div class="module-card" onclick="startModule('dns')">
-                <div class="icon">🌐</div>
-                <h2>DNS Mastery</h2>
-                <p>Resolve SRV records, CNAME aliases, and zone replication errors.</p>
-                <button class="btn">Launch Module</button>
+        
+        <section class="hero-section">
+            <h1>Infrastructure Training Modules</h1>
+            <p>Select a specialized track to begin the troubleshooting simulation.</p>
+            <div class="hub-grid">
+                <div class="hub-card" onclick="enterModule('dns')">
+                    <div class="hub-icon">🌐</div>
+                    <h2>DNS Architecture</h2>
+                    <p>SRV Records, Secure Updates, and Zone Transfers.</p>
+                    <button class="btn-hub">Launch Module</button>
+                </div>
+                <div class="hub-card" onclick="enterModule('dhcp')">
+                    <div class="hub-icon">🔌</div>
+                    <h2>DHCP Services</h2>
+                    <p>MAC Filtering, Failover, and Scope Management.</p>
+                    <button class="btn-hub">Launch Module</button>
+                </div>
+                <div class="hub-card locked">
+                    <div class="hub-icon">🔒</div>
+                    <h2>Active Directory</h2>
+                    <p>Coming Soon: Group Policy & Identity.</p>
+                </div>
             </div>
-            <div class="module-card" onclick="startModule('dhcp')">
-                <div class="icon">🔌</div>
-                <h2>DHCP Infrastructure</h2>
-                <p>Manage MAC filters, scope exhaustion, and failover secrets.</p>
-                <button class="btn">Launch Module</button>
-            </div>
-            <div class="module-card locked">
-                <div class="icon">🔒</div>
-                <h2>Active Directory</h2>
-                <p>Coming Soon: Group Policy & Identity Management.</p>
-            </div>
-        </div>
+        </section>
     </div>
 
     <div id="lab-view" class="view" style="display:none;">
-        <aside class="sidebar">
-            <button class="back-link" onclick="goHome()">← Back to Dashboard</button>
-            <h2 id="module-label">Tickets</h2>
-            <div id="ticket-list"></div>
-            <button class="report-btn" onclick="generateReport()">Generate Final Report</button>
-        </aside>
+        <header class="appbar">
+            <button class="btn-ghost" onclick="showHome()">← Hub</button>
+            <div id="module-display" class="pill">DNS Challenges</div>
+            <div id="health-pill" class="pill health">Health: 100%</div>
+            <button class="btn-report" onclick="exportPdf()">Export PDF Report</button>
+        </header>
 
         <main class="workspace">
-            <div id="welcome-msg">
-                <h2>Ready for Triage</h2>
-                <p>Select an incident ticket from the sidebar to begin. Follow the Triage → Diagnosis → Fix methodology.</p>
-            </div>
-
-            <div id="active-ticket" class="ticket-panel" style="display:none;">
-                <div class="panel-header">
-                    <h2 id="t-title">Ticket Name</h2>
-                    <span id="t-id" class="badge">ID</span>
+            <aside class="panel left">
+                <div class="panel-title">Incident Queue</div>
+                <div id="ticket-list" class="list"></div>
+            </aside>
+            <section class="panel right">
+                <div id="content">
+                    <div class="empty-msg">Select a ticket from the queue to begin triage.</div>
                 </div>
-
-                <div class="workflow">
-                    <div class="step" id="step-1">
-                        <h3>1. Triage (Symptom)</h3>
-                        <p id="t-prob"></p>
-                        <div id="t-options" class="opt-grid"></div>
-                    </div>
-
-                    <div class="step hidden" id="step-2">
-                        <h3>2. Diagnosis (Root Cause)</h3>
-                        <div id="d-options" class="opt-grid"></div>
-                    </div>
-
-                    <div class="step hidden" id="step-3">
-                        <h3>3. Fix (Administrative Action)</h3>
-                        <div id="f-options" class="opt-grid"></div>
-                    </div>
-
-                    <div class="step hidden" id="step-4">
-                        <h3>4. Change Note</h3>
-                        <textarea id="change-note" placeholder="Document your reasoning for the fix..."></textarea>
-                        <button class="resolve-btn" onclick="resolveTicket()">Resolve Incident</button>
-                    </div>
-                </div>
-            </div>
+            </section>
         </main>
     </div>
+
+    <div id="print-root" class="print-only"></div>
+
     <script src="app.js"></script>
 </body>
 </html>
