@@ -1,122 +1,172 @@
 (() => {
-  const $ = (s) => document.querySelector(s);
-  const uniq = (arr) => Array.from(new Set(arr)).sort((a,b)=>a.localeCompare(b));
-  const esc = (s) => String(s??"")
-    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+  "use strict";
+
+  const $ = (sel) => document.querySelector(sel);
 
   const els = {
     tracksGrid: $("#tracksGrid"),
-    labsGrid: $("#labsGrid"),
-    checksGrid: $("#checksGrid"),
     metricTracks: $("#metricTracks"),
     metricLabs: $("#metricLabs"),
     metricChecks: $("#metricChecks"),
-    labTrackFilter: $("#labTrackFilter"),
-    labSubjectFilter: $("#labSubjectFilter"),
-    labSearch: $("#labSearch"),
-    checkTrackFilter: $("#checkTrackFilter"),
-    checkSubjectFilter: $("#checkSubjectFilter"),
-    checkSearch: $("#checkSearch"),
+    trackPreview: $("#trackPreview"),
+    labPreview: $("#labPreview"),
+
+    labsHelpDesk: $("#labsHelpDesk"),
+    labsServerAdmin: $("#labsServerAdmin"),
+    labsSecurity: $("#labsSecurity"),
+
+    checksHelpDesk: $("#checksHelpDesk"),
+    checksServerAdmin: $("#checksServerAdmin"),
+    checksSecurity: $("#checksSecurity")
   };
 
-  const debounce=(fn,ms)=>{let t=null;return (...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}};
+  let catalog = null;
 
-  async function loadCatalog(){
-    const r = await fetch("./data/catalog.json", { cache: "no-store" });
-    if(!r.ok) throw new Error("catalog.json not found");
-    return r.json();
+  async function loadCatalog() {
+    const res = await fetch("./data/catalog.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("Failed to load data/catalog.json");
+    return res.json();
   }
 
-  function setOptions(sel, options){
-    const first = sel.querySelector("option")?.outerHTML || "";
-    sel.innerHTML = first;
-    for(const o of options){
-      const opt = document.createElement("option");
-      opt.value = o; opt.textContent = o;
-      sel.appendChild(opt);
+  function escapeHtml(s) {
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function setMetrics() {
+    els.metricTracks.textContent = String((catalog.tracks || []).length);
+    els.metricLabs.textContent = String((catalog.labs || []).length);
+    els.metricChecks.textContent = String((catalog.knowledgeChecks || []).length);
+  }
+
+  function renderTerminalPreview() {
+    const tracks = (catalog.tracks || []).map(t => `- ${t.id}: ${t.title}`).join("\n");
+    const activeLabs = (catalog.labs || [])
+      .filter(l => l.status === "active")
+      .map(l => `- ${l.id}: ${l.title} (${l.tickets || "?"} tickets)`)
+      .join("\n") || "- none";
+
+    els.trackPreview.textContent = tracks || "- none";
+    els.labPreview.textContent = activeLabs;
+  }
+
+  function renderTracks() {
+    const tracks = catalog.tracks || [];
+    els.tracksGrid.innerHTML = tracks.map(t => `
+      <a class="track-card" href="#${trackToSection(t.id)}">
+        <div class="track-title">${escapeHtml(t.title)}</div>
+        <div class="track-desc">${escapeHtml(t.description)}</div>
+        <div class="track-meta">
+          <span class="badge">${escapeHtml(t.id)}</span>
+          <span class="badge">${escapeHtml(t.level || "All Levels")}</span>
+        </div>
+      </a>
+    `).join("");
+  }
+
+  function trackToSection(trackId){
+    if(trackId === "HelpDesk") return "helpdesk";
+    if(trackId === "ServerAdmin") return "sysadmin";
+    if(trackId === "Security") return "security";
+    return "start";
+  }
+
+  function renderLabTiles(trackId, mountEl) {
+    const labs = (catalog.labs || []).filter(l => l.track === trackId);
+
+    if (!labs.length) {
+      mountEl.innerHTML = `<div class="tile"><div class="tile-title">Coming soon</div><div class="tile-desc">Labs for this track will appear here.</div></div>`;
+      return;
     }
+
+    mountEl.innerHTML = labs.map(l => {
+      const statusBadge = l.status === "active"
+        ? `<span class="badge active">Active</span>`
+        : `<span class="badge soon">Coming soon</span>`;
+
+      const href = l.status === "active"
+        ? `./activity.html?lab=${encodeURIComponent(l.id)}`
+        : "#start";
+
+      return `
+        <a class="tile" href="${href}">
+          <div class="tile-title">${escapeHtml(l.title)}</div>
+          <div class="tile-desc">${escapeHtml(l.description)}</div>
+          <div class="tile-meta">
+            ${statusBadge}
+            <span class="badge">${escapeHtml(l.subject)}</span>
+            ${l.tickets ? `<span class="badge">${escapeHtml(String(l.tickets))} tickets</span>` : ``}
+          </div>
+        </a>
+      `;
+    }).join("");
   }
 
-  function tile({title, description, badges, href}){
-    const badgeHtml = (badges||[]).map(b => `<span class="badge ${esc(b.class||"")}">${esc(b.text)}</span>`).join("");
-    const inner = `
-      <div class="tile-title">${esc(title)}</div>
-      <div class="tile-desc">${esc(description)}</div>
-      <div class="tile-meta">${badgeHtml}</div>
-    `;
-    return href ? `<a class="tile" href="${href}">${inner}</a>` : `<div class="tile">${inner}</div>`;
+  function renderCheckTiles(trackId, mountEl) {
+    const checks = (catalog.knowledgeChecks || []).filter(c => c.track === trackId);
+
+    if (!checks.length) {
+      mountEl.innerHTML = `<div class="tile"><div class="tile-title">Coming soon</div><div class="tile-desc">Knowledge checks for this track will appear here.</div></div>`;
+      return;
+    }
+
+    mountEl.innerHTML = checks.map(c => {
+      const statusBadge = c.status === "active"
+        ? `<span class="badge active">Active</span>`
+        : `<span class="badge soon">Coming soon</span>`;
+
+      return `
+        <a class="tile" href="#start">
+          <div class="tile-title">${escapeHtml(c.title)}</div>
+          <div class="tile-desc">${escapeHtml(c.description)}</div>
+          <div class="tile-meta">
+            ${statusBadge}
+            <span class="badge">${escapeHtml(c.subject)}</span>
+            <span class="badge">${escapeHtml((c.types || []).join(" • ") || "Quiz")}</span>
+          </div>
+        </a>
+      `;
+    }).join("");
   }
 
-  function filterList(list, trackSel, subjSel, q){
-    const t = trackSel.value;
-    const s = subjSel.value;
-    const needle = (q.value||"").trim().toLowerCase();
-    return list.filter(x => {
-      const okT = t==="all" ? true : x.track===t;
-      const okS = s==="all" ? true : x.subject===s;
-      const hay = `${x.title} ${x.description} ${x.track} ${x.subject} ${(x.tags||[]).join(" ")}`.toLowerCase();
-      const okQ = needle ? hay.includes(needle) : true;
-      return okT && okS && okQ;
+  function initJumpLinks(){
+    document.querySelectorAll("[data-jump]").forEach(a => {
+      a.addEventListener("click", (e) => {
+        // just keeps smooth flow, no special logic needed
+      });
     });
   }
 
-  function render(catalog){
-    els.metricTracks.textContent = String((catalog.tracks||[]).length);
-    els.metricLabs.textContent = String((catalog.labs||[]).length);
-    els.metricChecks.textContent = String((catalog.knowledgeChecks||[]).length);
+  async function init() {
+    catalog = await loadCatalog();
+    setMetrics();
+    renderTerminalPreview();
+    renderTracks();
 
-    els.tracksGrid.innerHTML = (catalog.tracks||[]).map(t => tile({
-      title: t.title,
-      description: t.description,
-      badges: [{text:t.id, class:"track"}, {text:t.level||"All levels"}]
-    })).join("");
+    renderLabTiles("HelpDesk", els.labsHelpDesk);
+    renderLabTiles("ServerAdmin", els.labsServerAdmin);
+    renderLabTiles("Security", els.labsSecurity);
 
-    setOptions(els.labTrackFilter, uniq((catalog.labs||[]).map(l=>l.track)));
-    setOptions(els.labSubjectFilter, uniq((catalog.labs||[]).map(l=>l.subject)));
-    setOptions(els.checkTrackFilter, uniq((catalog.knowledgeChecks||[]).map(k=>k.track)));
-    setOptions(els.checkSubjectFilter, uniq((catalog.knowledgeChecks||[]).map(k=>k.subject)));
+    renderCheckTiles("HelpDesk", els.checksHelpDesk);
+    renderCheckTiles("ServerAdmin", els.checksServerAdmin);
+    renderCheckTiles("Security", els.checksSecurity);
 
-    const renderLabs = () => {
-      const labs = filterList(catalog.labs||[], els.labTrackFilter, els.labSubjectFilter, els.labSearch);
-      els.labsGrid.innerHTML = labs.map(l => tile({
-        title: l.title,
-        description: l.description,
-        href: l.status==="active" ? `./activity.html?lab=${encodeURIComponent(l.id)}` : "#checks",
-        badges: [
-          {text: l.status==="active" ? "Active" : "Coming soon", class: l.status==="active" ? "active" : "soon"},
-          {text: l.track, class:"track"},
-          {text: l.subject}
-        ]
-      })).join("") || `<div class="tile"><div class="tile-title">No labs match.</div></div>`;
-    };
-
-    const renderChecks = () => {
-      const checks = filterList(catalog.knowledgeChecks||[], els.checkTrackFilter, els.checkSubjectFilter, els.checkSearch);
-      els.checksGrid.innerHTML = checks.map(k => tile({
-        title: k.title,
-        description: k.description,
-        href: "#checks",
-        badges: [
-          {text: k.status==="active" ? "Active" : "Coming soon", class: k.status==="active" ? "active" : "soon"},
-          {text: k.track, class:"track"},
-          {text: k.subject}
-        ]
-      })).join("") || `<div class="tile"><div class="tile-title">No checks match.</div></div>`;
-    };
-
-    els.labTrackFilter.addEventListener("change", renderLabs);
-    els.labSubjectFilter.addEventListener("change", renderLabs);
-    els.labSearch.addEventListener("input", debounce(renderLabs, 120));
-    els.checkTrackFilter.addEventListener("change", renderChecks);
-    els.checkSubjectFilter.addEventListener("change", renderChecks);
-    els.checkSearch.addEventListener("input", debounce(renderChecks, 120));
-
-    renderLabs();
-    renderChecks();
+    initJumpLinks();
   }
 
-  loadCatalog().then(render).catch(() => {
-    document.body.insertAdjacentHTML("afterbegin",
-      `<div style="padding:12px 18px;background:#111827;color:#fff">Missing <code>data/catalog.json</code>.</div>`);
+  init().catch(err => {
+    console.error(err);
+    const msg = document.createElement("div");
+    msg.style.margin = "16px";
+    msg.style.padding = "14px";
+    msg.style.border = "1px solid rgba(255,255,255,.12)";
+    msg.style.borderRadius = "16px";
+    msg.style.background = "rgba(255,255,255,.03)";
+    msg.textContent = "Catalog failed to load. Confirm data/catalog.json exists and files are at repo root.";
+    document.body.prepend(msg);
   });
 })();
