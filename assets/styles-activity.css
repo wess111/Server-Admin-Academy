@@ -53,6 +53,7 @@ a{color:inherit;text-decoration:none}
 
 .toolbar-row{padding:0 14px 12px;display:flex;gap:10px;align-items:center}
 .input{flex:1;background:rgba(0,0,0,.16);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 12px;color:var(--text);outline:none;font-weight:700}
+.input:focus{border-color:rgba(59,130,246,.55);box-shadow:0 0 0 4px rgba(59,130,246,.14)}
 
 .list{padding:10px 10px 14px;display:flex;flex-direction:column;gap:10px;max-height:560px;overflow:auto}
 
@@ -79,9 +80,53 @@ a{color:inherit;text-decoration:none}
 
 .toggle{display:inline-flex;gap:8px;align-items:center;font-weight:950;font-size:12px;color:rgba(238,245,255,.86)}
 
-textarea{width:100%;background:rgba(0,0,0,.16);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:10px 12px;color:var(--text);outline:none;font-weight:650;line-height:1.6}
-.note-actions{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.mini-muted{color:var(--muted);font-weight:650;font-size:12.5px}
+textarea#changeNote{width:100%;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.14);border-radius:14px;color:var(--text);padding:10px 12px;outline:none;font-weight:650;line-height:1.6}
+.note-actions{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.mini-muted{color:rgba(238,245,255,.72);font-size:12px;font-weight:650}
 
-.footer{margin-top:14px;display:flex;justify-content:space-between;gap:10px;padding:12px 4px;color:rgba(238,245,255,.55);font-size:12px}
-@media (max-width:1060px){.workspace{grid-template-columns:1fr}.list{max-height:420px}}
+.footer{margin-top:14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 2px}
+.muted{color:rgba(238,245,255,.70);font-weight:650}
+
+/* ---- NEW: Meta grid (Analyst info) ---- */
+.metaGrid{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap:10px;
+}
+.field label{
+  display:block;
+  margin-bottom:6px;
+  color:rgba(238,245,255,.75);
+  font-weight:800;
+  font-size:12px;
+}
+.fieldWide{grid-column:1 / -1}
+.metaGrid textarea.input{min-height:84px;resize:vertical}
+@media (max-width: 980px){
+  .workspace{grid-template-columns:1fr}
+  .metaGrid{grid-template-columns:1fr 1fr}
+}
+@media (max-width: 620px){
+  .metaGrid{grid-template-columns:1fr}
+}
+
+/* ---- NEW: Report modal ---- */
+.modal{position:fixed;inset:0;display:none;z-index:9999}
+.modal[aria-hidden="false"]{display:block}
+.modalBackdrop{position:absolute;inset:0;background:rgba(0,0,0,.68);backdrop-filter:blur(6px)}
+.modalCard{
+  position:relative;
+  width:min(640px, calc(100% - 28px));
+  margin:10vh auto;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(16,20,34,.94);
+  border-radius:18px;
+  box-shadow:0 24px 80px rgba(0,0,0,.60);
+  padding:16px;
+}
+.modalHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.modalKicker{color:rgba(238,245,255,.70);font-weight:850;font-size:12px}
+.modalTitle{font-weight:950;font-size:16px;margin-top:2px}
+.modalDesc{color:rgba(238,245,255,.75);font-weight:650;font-size:13px;margin-top:6px;line-height:1.55}
+.modalActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
