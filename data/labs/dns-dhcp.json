@@ -1,100 +1,173 @@
 {
   "id": "dns-dhcp",
   "title": "DNS & DHCP Troubleshooting",
-  "track": "ServerAdmin",
-  "subject": "Networking Services",
-  "description": "30 enterprise tickets. Solve the technical challenges to restore system health. The system will automatically validate your choices.",
-  "rolePill": "Role: Systems Administrator",
-  "categories": ["DNS", "DHCP"],
+  "track": "SystemsEngineering",
+  "subject": "DNS/DHCP Fundamentals",
+  "description": "30 enterprise tickets (15 DNS, 15 DHCP) using the 4-step triage workflow.",
+  "rolePill": "Role: Junior Systems Engineer (NOC)",
+  "categories": [
+    "DNS",
+    "DHCP"
+  ],
   "tickets": [
     {
-      "id": "DNS-001",
+      "id": "DD-001",
       "category": "DNS",
-      "title": "Domain join fails for DEPOT-LT17",
-      "summary": "A technician reports that joining DEPOT-LT17 to the domain fails. Connectivity to the DC IP is fine, but the domain name cannot be resolved.",
+      "title": "New internal host cannot be resolved by name",
+      "tags": [
+        "DNS",
+        "A record",
+        "Name resolution"
+      ],
+      "summary": "A newly deployed internal server cannot be resolved by its hostname from client systems.",
+      "env": {
+        "Domain": "corp.local",
+        "Client": "Windows 10/11",
+        "Impact": "Applications cannot connect using hostname"
+      },
       "workflow": {
         "triage": {
-          "q": "What is the primary indicator that this is a DNS issue rather than a Network issue?",
+          "q": "Capture symptoms and scope. Which clients are affected and what exact lookup error occurs (NXDOMAIN, timeout, etc.)?",
           "options": [
-            "Ping to IP works, but ping to Domain Name fails",
-            "The ethernet cable is unplugged",
-            "The user forgot their password"
+            "Assume it is a user mistake and close the ticket.",
+            "Confirm scope and capture exact symptoms/error text before acting.",
+            "Apply a random fix based on guesswork with no validation.",
+            "Reboot immediately without collecting any details."
           ],
-          "correct": 0
+          "correct": 1
         },
         "diagnosis": {
-          "q": "Which DNS record is specifically required for a client to locate a Domain Controller?",
-          "options": ["A Record", "MX Record", "SRV Record (_ldap._tcp)", "TXT Record"],
+          "q": "State a likely root cause and the evidence you will use (zone record, conditional forwarder, cache, replication).",
+          "options": [
+            "Rely only on user opinion rather than measurable evidence.",
+            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
+            "Skip diagnosis and go straight to changes on production systems.",
+            "Blame the network without checking any logs or configuration."
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "Document the least-risk remediation steps and how you will verify name resolution is restored.",
+          "options": [
+            "Disable security controls to make the problem go away.",
+            "Declare success without testing or validation.",
+            "Apply the least-risk remediation, then verify the service is restored and document results.",
+            "Make multiple changes at once so you cannot isolate what fixed it."
+          ],
           "correct": 2
         },
-        "fix": {
-          "q": "What is the correct remediation for this client?",
-          "options": [
-            "Flush DNS on the Domain Controller",
-            "Update Client IPv4 settings to point to the correct DNS Server IP",
-            "Reinstall Windows on the laptop"
-          ],
-          "correct": 1
-        }
-      }
+        "changeNote": "Write a change record: what changed, why, impact, and validation."
+      },
+      "validations": [
+        "nslookup resolves the hostname to the correct IP",
+        "Application connectivity restored"
+      ]
     },
     {
-      "id": "DNS-002",
-      "category": "DNS",
-      "title": "Stale Record for FileServer-01",
-      "summary": "Users are being directed to an old IP address (10.0.0.50) when trying to access FileServer-01. The server was moved to 10.0.0.75 last night.",
+      "id": "DD-002",
+      "category": "DHCP",
+      "title": "Clients are not receiving IP addresses on a VLAN",
+      "tags": [
+        "DHCP",
+        "Relay",
+        "VLAN"
+      ],
+      "summary": "Clients on a specific VLAN cannot obtain an IP address and self-assign APIPA addresses.",
+      "env": {
+        "Network": "Multiple VLANs",
+        "Client": "Windows",
+        "Impact": "No network access for the VLAN"
+      },
       "workflow": {
         "triage": {
-          "q": "What command should you run on a user's PC to see what IP the name is currently resolving to?",
-          "options": ["ipconfig /release", "nslookup FileServer-01", "netstat -an"],
-          "correct": 1
+          "q": "Confirm which VLAN is impacted and what clients report (APIPA, timeout). Capture DHCP discover/offer behavior if available.",
+          "options": [
+            "Reboot immediately without collecting any details.",
+            "Apply a random fix based on guesswork with no validation.",
+            "Confirm scope and capture exact symptoms/error text before acting.",
+            "Assume it is a user mistake and close the ticket."
+          ],
+          "correct": 2
         },
         "diagnosis": {
-          "q": "Why did the DNS record not update automatically?",
+          "q": "Identify likely cause and evidence (scope inactive, relay missing, firewall, exhaustion).",
           "options": [
-            "Scavenging is disabled or the TTL has not expired",
-            "The server is turned off",
-            "The router is blocking DNS traffic"
+            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
+            "Skip diagnosis and go straight to changes on production systems.",
+            "Blame the network without checking any logs or configuration.",
+            "Rely only on user opinion rather than measurable evidence."
           ],
           "correct": 0
         },
         "fix": {
-          "q": "How should you resolve the stale record in the DNS Manager GUI?",
+          "q": "Document remediation steps and verification (renew lease, confirm correct scope options).",
           "options": [
-            "Delete the zone and recreate it",
-            "Manually update the A record to 10.0.0.75 and clear the server cache",
-            "Change the server's MAC address"
+            "Declare success without testing or validation.",
+            "Make multiple changes at once so you cannot isolate what fixed it.",
+            "Apply the least-risk remediation, then verify the service is restored and document results.",
+            "Disable security controls to make the problem go away."
           ],
-          "correct": 1
-        }
-      }
+          "correct": 2
+        },
+        "changeNote": "Write a change record: what changed, why, impact, and validation."
+      },
+      "validations": [
+        "Clients receive correct IP configuration",
+        "Default gateway/DNS options are correct"
+      ]
     },
     {
-      "id": "DNS-003",
+      "id": "DD-003",
       "category": "DNS",
-      "title": "External Websites Not Resolving",
-      "summary": "Internal resources work fine, but no users in the office can reach google.com or office.com.",
+      "title": "External domains fail to resolve for internal clients",
+      "tags": [
+        "DNS",
+        "Forwarders",
+        "Root hints"
+      ],
+      "summary": "Internal clients cannot resolve external domains (e.g., microsoft.com), but internal names resolve successfully.",
+      "env": {
+        "DNS Server": "Windows DNS",
+        "Client": "Internal subnet",
+        "Impact": "Internet name resolution fails"
+      },
       "workflow": {
         "triage": {
-          "q": "Is this issue scoped to a single user or the whole network?",
-          "options": ["Single user", "Network-wide (Internal DNS Server level)"],
-          "correct": 1
+          "q": "Confirm internal vs external resolution behavior and capture the exact nslookup output and error type.",
+          "options": [
+            "Apply a random fix based on guesswork with no validation.",
+            "Reboot immediately without collecting any details.",
+            "Confirm scope and capture exact symptoms/error text before acting.",
+            "Assume it is a user mistake and close the ticket."
+          ],
+          "correct": 2
         },
         "diagnosis": {
-          "q": "If internal names work but external names fail, what feature is likely misconfigured on the DNS server?",
-          "options": ["Reverse Lookup Zones", "Forwarders / Root Hints", "DHCP Scope Options"],
+          "q": "Identify likely root cause and evidence (forwarders, recursion, firewall, upstream DNS).",
+          "options": [
+            "Blame the network without checking any logs or configuration.",
+            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
+            "Rely only on user opinion rather than measurable evidence.",
+            "Skip diagnosis and go straight to changes on production systems."
+          ],
           "correct": 1
         },
         "fix": {
-          "q": "What action will restore external resolution?",
+          "q": "Document least-risk remediation and validation steps.",
           "options": [
-            "Add public DNS IPs (like 8.8.8.8) to the 'Forwarders' tab in DNS Manager",
-            "Disable the Firewall on the Domain Controller",
-            "Create a new Forward Lookup Zone for 'google.com'"
+            "Apply the least-risk remediation, then verify the service is restored and document results.",
+            "Make multiple changes at once so you cannot isolate what fixed it.",
+            "Disable security controls to make the problem go away.",
+            "Declare success without testing or validation."
           ],
           "correct": 0
-        }
-      }
+        },
+        "changeNote": "Write a change record: what changed, why, impact, and validation."
+      },
+      "validations": [
+        "External domains resolve successfully",
+        "No regression to internal resolution"
+      ]
     }
   ]
 }
