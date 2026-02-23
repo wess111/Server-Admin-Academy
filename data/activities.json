@@ -1,1 +1,47 @@
-
+[
+  {
+    "title": "DNS: Secure Dynamic Update Failure",
+    "domain": "systems-engineering",
+    "mode": "incident-scenarios",
+    "difficulty": "intermediate",
+    "status": "upcoming",
+    "link": "./activities/incident-scenarios/dns-secure-updates.html",
+    "description": "Clients cannot register records due to secure dynamic update restrictions; diagnose and correct the configuration."
+  },
+  {
+    "title": "DHCP: Relay Agent Not Forwarding Requests",
+    "domain": "systems-engineering",
+    "mode": "incident-scenarios",
+    "difficulty": "intermediate",
+    "status": "upcoming",
+    "link": "./activities/incident-scenarios/dhcp-relay-agent.html",
+    "description": "A routed subnet cannot obtain leases; validate relay configuration and server-side scope settings."
+  },
+  {
+    "title": "Ticket Triage Basics (Escalation Path)",
+    "domain": "support-operations",
+    "mode": "knowledge-assessments",
+    "difficulty": "beginner",
+    "status": "upcoming",
+    "link": "./activities/knowledge-assessments/escalation-path.html",
+    "description": "Identify correct escalation paths based on symptoms, impact, and service criticality."
+  },
+  {
+    "title": "Baseline Verification: Local Admin Access",
+    "domain": "security-operations",
+    "mode": "guided-practice",
+    "difficulty": "beginner",
+    "status": "upcoming",
+    "link": "./activities/guided-practice/local-admin-baseline.html",
+    "description": "Validate local admin membership and apply least-privilege principles using documented verification steps."
+  },
+  {
+    "title": "Capstone: Department File Services Hardening",
+    "domain": "security-operations",
+    "mode": "capstone-projects",
+    "difficulty": "advanced",
+    "status": "upcoming",
+    "link": "./activities/capstone-projects/file-services-hardening.html",
+    "description": "Plan and implement a secure file services design with validation and documentation deliverables."
+  }
+]
