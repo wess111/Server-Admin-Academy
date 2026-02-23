@@ -4,6 +4,8 @@
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
   const LS_PREFIX = "sa_academy_v1_ticket_";
+  const LS_META_PREFIX = "sa_academy_v1_meta_";
+
   let lab = null;
   let tickets = [];
   let activeCategory = "ALL";
@@ -25,6 +27,7 @@
   }
 
   function lsKey(ticketId){ return `${LS_PREFIX}${lab.id}__${ticketId}`; }
+  function metaKey(){ return `${LS_META_PREFIX}${lab.id}`; }
 
   function readJSON(key, fallback){
     try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
@@ -42,6 +45,47 @@
     const res = await fetch(`./data/labs/${encodeURIComponent(labId)}.json`, { cache:"no-store" });
     if(!res.ok) throw new Error("Lab data not found");
     return res.json();
+  }
+
+  function setTodayIfEmpty(){
+    const el = $("#activityDate");
+    if(!el || el.value) return;
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    el.value = `${yyyy}-${mm}-${dd}`;
+  }
+
+  function loadMeta(){
+    const m = readJSON(metaKey(), null) || {};
+    const set = (id, v) => { const el = document.getElementById(id); if(el && typeof v === "string") el.value = v; };
+    set("analystName", m.analystName || "");
+    set("courseSection", m.courseSection || "");
+    set("courseTitle", m.courseTitle || "");
+    set("activityDate", m.activityDate || "");
+    set("globalNotes", m.globalNotes || "");
+    setTodayIfEmpty();
+  }
+
+  function saveMeta(){
+    const get = (id) => (document.getElementById(id)?.value || "").trim();
+    writeJSON(metaKey(), {
+      analystName: get("analystName"),
+      courseSection: get("courseSection"),
+      courseTitle: get("courseTitle"),
+      activityDate: get("activityDate"),
+      globalNotes: get("globalNotes")
+    });
+  }
+
+  function wireMeta(){
+    ["analystName","courseSection","courseTitle","activityDate","globalNotes"].forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.addEventListener("input", saveMeta);
+    });
+    loadMeta();
   }
 
   function buildTabs(categories){
@@ -183,8 +227,8 @@
         ${envRows}
 
         ${stepTemplate(1,"Triage (Symptom)","What the user/system reports.","doneTriage",t.workflow.triage,s.doneTriage)}
-        ${stepTemplate(2,"Diagnosis (Root Cause)","Most likely cause.","doneDiagnosis",t.workflow.diagnosis,s.doneDiagnosis)}
-        ${stepTemplate(3,"Fix (GUI Action)","What you would click/configure in MMC tools.","doneFix",t.workflow.fix,s.doneFix)}
+        ${stepTemplate(2,"Diagnosis (Root Cause)","Most likely cause, supported by evidence.","doneDiagnosis",t.workflow.diagnosis,s.doneDiagnosis)}
+        ${stepTemplate(3,"Fix (GUI Action)","What you would click/configure using Windows tools.","doneFix",t.workflow.fix,s.doneFix)}
         ${noteTemplate(s)}
 
         <div class="card" style="margin-top:12px;">
@@ -255,6 +299,187 @@
     return str.length <= n ? str : str.slice(0, n-1) + "…";
   }
 
+  /* ---------------- Report Generator ---------------- */
+
+  function openReportModal(){
+    const m = $("#reportModal");
+    if(m) m.setAttribute("aria-hidden","false");
+  }
+  function closeReportModal(){
+    const m = $("#reportModal");
+    if(m) m.setAttribute("aria-hidden","true");
+  }
+
+  function getMeta(){
+    const val = (id) => (document.getElementById(id)?.value || "").trim();
+    return {
+      analystName: val("analystName") || "Analyst",
+      courseSection: val("courseSection"),
+      courseTitle: val("courseTitle") || lab.title,
+      activityDate: val("activityDate"),
+      globalNotes: val("globalNotes")
+    };
+  }
+
+  function buildTextReport(){
+    const meta = getMeta();
+    const lines = [];
+    lines.push("Server Admin Academy");
+    lines.push(`${lab.title} — Report`);
+    lines.push("");
+    lines.push(`Analyst: ${meta.analystName}`);
+    if(meta.courseSection) lines.push(`Section: ${meta.courseSection}`);
+    if(meta.courseTitle) lines.push(`Course: ${meta.courseTitle}`);
+    if(meta.activityDate) lines.push(`Date: ${meta.activityDate}`);
+    lines.push("");
+    lines.push("Analyst Notes (Global):");
+    lines.push(meta.globalNotes ? meta.globalNotes : "(none)");
+    lines.push("");
+    lines.push("----- Ticket Notes -----");
+
+    for(const t of tickets){
+      const s = loadTicketState(t.id);
+      lines.push("");
+      lines.push(`${t.id} — ${t.title}`);
+      lines.push(`Category: ${t.category}`);
+      lines.push(`Status: ${(s.doneTriage && s.doneDiagnosis && s.doneFix && s.doneNote) ? "Complete" : "In Progress"}`);
+      lines.push(`Change Note: ${s.changeNote?.trim() ? s.changeNote.trim() : "(blank)"}`);
+    }
+    return lines.join("\n");
+  }
+
+  function downloadText(){
+    const meta = getMeta();
+    const txt = buildTextReport();
+    const blob = new Blob([txt], {type:"text/plain;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${lab.id}-${meta.analystName.replace(/\s+/g,"-").toLowerCase()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function downloadPDF(){
+    const meta = getMeta();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:"pt", format:"letter" });
+
+    const W = doc.internal.pageSize.getWidth();
+    const H = doc.internal.pageSize.getHeight();
+    const margin = 44;
+
+    let y = 56;
+
+    const ensure = (need) => {
+      if(y + need > H - 52){
+        doc.addPage();
+        y = 56;
+      }
+    };
+
+    const wrap = (text, size=10.5, width=W - margin*2, lineH=15) => {
+      doc.setFontSize(size);
+      const split = doc.splitTextToSize(String(text || ""), width);
+      ensure(split.length * lineH);
+      doc.text(split, margin, y);
+      y += split.length * lineH;
+    };
+
+    // Header
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(16);
+    doc.text("Server Admin Academy", margin, y); y += 18;
+
+    doc.setFontSize(13);
+    doc.text(`${lab.title} — Report`, margin, y); y += 18;
+
+    doc.setFont("helvetica","normal");
+    doc.setFontSize(11);
+
+    const metaLines = [
+      `Analyst: ${meta.analystName}`,
+      meta.courseSection ? `Section: ${meta.courseSection}` : null,
+      meta.courseTitle ? `Course: ${meta.courseTitle}` : null,
+      meta.activityDate ? `Date: ${meta.activityDate}` : null
+    ].filter(Boolean);
+
+    metaLines.forEach(line => { ensure(16); doc.text(line, margin, y); y += 16; });
+
+    y += 10;
+    doc.setDrawColor(167,139,250);
+    doc.setLineWidth(2);
+    doc.line(margin, y, W - margin, y);
+    y += 18;
+
+    // Global notes
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(12);
+    doc.text("Analyst Notes (Global)", margin, y); y += 14;
+
+    doc.setFont("helvetica","normal");
+    wrap(meta.globalNotes ? meta.globalNotes : "(none)", 10.5, W - margin*2, 15);
+    y += 10;
+
+    doc.setDrawColor(220);
+    doc.setLineWidth(1);
+    doc.line(margin, y, W - margin, y);
+    y += 16;
+
+    // Tickets
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(12);
+    doc.text("Tickets", margin, y); y += 16;
+
+    tickets.forEach((t, idx) => {
+      ensure(90);
+
+      const s = loadTicketState(t.id);
+      const complete = (s.doneTriage && s.doneDiagnosis && s.doneFix && s.doneNote);
+
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(11);
+      doc.text(`${idx+1}. ${t.id} — ${t.title}`, margin, y); y += 14;
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(10);
+      doc.text(`Category: ${t.category}`, margin, y); y += 14;
+      doc.text(`Status: ${complete ? "Complete" : "In Progress"}`, margin, y); y += 14;
+
+      doc.setFont("helvetica","bold");
+      doc.text("Change Note:", margin, y); y += 12;
+
+      doc.setFont("helvetica","normal");
+      wrap(s.changeNote?.trim() ? s.changeNote.trim() : "(blank)", 10, W - margin*2, 14);
+      y += 10;
+
+      doc.setDrawColor(235);
+      doc.setLineWidth(1);
+      doc.line(margin, y, W - margin, y);
+      y += 14;
+    });
+
+    doc.save(`${lab.id}-${meta.analystName.replace(/\s+/g,"-").toLowerCase()}.pdf`);
+  }
+
+  function wireReport(){
+    const openBtn = $("#btnReport");
+    if(openBtn) openBtn.addEventListener("click", openReportModal);
+
+    const modal = $("#reportModal");
+    if(modal){
+      modal.addEventListener("click", (e) => {
+        const t = e.target;
+        if(t && t.dataset && t.dataset.close === "true") closeReportModal();
+      });
+    }
+
+    const btnPDF = $("#btnReportPDF");
+    const btnTXT = $("#btnReportText");
+    if(btnPDF) btnPDF.addEventListener("click", () => { closeReportModal(); downloadPDF(); });
+    if(btnTXT) btnTXT.addEventListener("click", () => { closeReportModal(); downloadText(); });
+  }
+
   async function init(){
     const labId = getLabId();
     if(!labId){
@@ -282,6 +507,9 @@
       selectTicket(pick.id);
     });
     $("#btnResetLab").addEventListener("click", resetLab);
+
+    wireMeta();
+    wireReport();
 
     applyFilters();
     updateProgress();
