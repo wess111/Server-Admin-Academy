@@ -8,6 +8,8 @@
 
   <!-- PDF generator -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Table support for jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
   <header class="appbar">
@@ -32,11 +34,11 @@
     <section class="banner">
       <div class="banner-inner">
         <div class="toprow">
-          <div class="role-pill" id="rolePill">Role: Junior Systems Administrator</div>
+          <div class="role-pill" id="rolePill">Role: Support Analyst</div>
           <div class="health-row">
-            <div class="pill health good" id="healthOverall">Overall Health: 100%</div>
-            <div class="pill health good" id="healthA">Category A: 100%</div>
-            <div class="pill health good" id="healthB">Category B: 100%</div>
+            <div class="pill" id="healthOverall">Overall Health: —</div>
+            <div class="pill" id="healthA">—</div>
+            <div class="pill" id="healthB">—</div>
           </div>
         </div>
 
