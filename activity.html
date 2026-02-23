@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Academy Activity</title>
   <link rel="stylesheet" href="./assets/styles-activity.css" />
+
+  <!-- PDF generator -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
   <header class="appbar">
@@ -20,6 +23,7 @@
     </div>
     <div class="appbar-right">
       <div class="pill"><span class="dot" aria-hidden="true"></span><span id="labProgress">Progress: 0/0</span></div>
+      <button class="btn" id="btnReport" type="button">Generate Report</button>
       <button class="btn ghost" id="btnResetLab" type="button">Reset Lab</button>
     </div>
   </header>
@@ -35,8 +39,34 @@
             <div class="pill health good" id="healthB">Category B: 100%</div>
           </div>
         </div>
+
         <h1 id="labTitle">Loading…</h1>
         <p class="p" id="labDesc">If this persists, verify the lab id and JSON path.</p>
+
+        <!-- Analyst metadata -->
+        <div class="metaGrid" aria-label="Analyst metadata">
+          <div class="field">
+            <label for="analystName">Analyst Name</label>
+            <input class="input" id="analystName" placeholder="Enter your name" />
+          </div>
+          <div class="field">
+            <label for="courseSection">Section</label>
+            <input class="input" id="courseSection" placeholder="e.g., IT115-01" />
+          </div>
+          <div class="field">
+            <label for="courseTitle">Course</label>
+            <input class="input" id="courseTitle" placeholder="e.g., PC Analysis & Configuration" />
+          </div>
+          <div class="field">
+            <label for="activityDate">Date</label>
+            <input class="input" id="activityDate" type="date" />
+          </div>
+          <div class="field fieldWide">
+            <label for="globalNotes">Analyst Notes (Global)</label>
+            <textarea class="input" id="globalNotes" rows="3" placeholder="Overall notes, assumptions, screenshots referenced, validation summary, etc."></textarea>
+          </div>
+        </div>
+
         <div class="tabs" id="tabs"></div>
         <div class="hint">Workflow: <strong>Triage → Diagnosis → Fix → Change Note</strong>. Saves locally in your browser.</div>
       </div>
@@ -68,6 +98,25 @@
       <div class="muted" id="footerRight">GitHub Pages</div>
     </footer>
   </main>
+
+  <!-- Report modal -->
+  <div class="modal" id="reportModal" aria-hidden="true">
+    <div class="modalBackdrop" data-close="true"></div>
+    <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="reportTitle">
+      <div class="modalHead">
+        <div>
+          <div class="modalKicker">Report Generator</div>
+          <div class="modalTitle" id="reportTitle">Choose output format</div>
+          <div class="modalDesc">Export a styled PDF or plain text report of your work.</div>
+        </div>
+        <button class="btn ghost" type="button" data-close="true">Close</button>
+      </div>
+      <div class="modalActions">
+        <button class="btn" id="btnReportPDF" type="button">Generate PDF</button>
+        <button class="btn ghost" id="btnReportText" type="button">Generate Text</button>
+      </div>
+    </div>
+  </div>
 
   <script src="./assets/app-activity.js"></script>
 </body>
