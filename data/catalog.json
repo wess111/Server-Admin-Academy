@@ -6,7 +6,7 @@
       "id": "HelpDesk",
       "title": "Help Desk Support",
       "level": "Intro → Intermediate",
-      "description": "Foundational troubleshooting: endpoints, users, basic networking, and service desk workflow."
+      "description": "Foundational troubleshooting: endpoints, users, disk/storage, file sharing, and service desk workflow."
     },
     {
       "id": "ServerAdmin",
@@ -22,6 +22,27 @@
     }
   ],
   "labs": [
+    {
+      "id": "windows-support-1",
+      "title": "Windows Support I",
+      "track": "HelpDesk",
+      "subject": "Windows Fundamentals",
+      "status": "active",
+      "tickets": 8,
+      "description": "8 gamified support tickets around Windows installation, disk storage, local accounts, file sharing, and technician workflows.",
+      "tags": [
+        "Windows Setup",
+        "Disk Management",
+        "Partitions",
+        "NTFS",
+        "USB",
+        "Local Users",
+        "File Sharing",
+        "Permissions",
+        "DiskPart",
+        "Bootable Media"
+      ]
+    },
     {
       "id": "dns-dhcp",
       "title": "DNS & DHCP Troubleshooting",
