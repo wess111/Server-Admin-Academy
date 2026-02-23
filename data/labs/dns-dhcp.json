@@ -3,244 +3,557 @@
   "title": "DNS & DHCP Troubleshooting",
   "track": "ServerAdmin",
   "subject": "Networking Services",
-  "description": "Practice enterprise incident tickets using the 4-step workflow: Triage, Diagnosis, Fix (GUI), and Change Note.",
-  "rolePill": "Role: Junior Systems Administrator",
+  "description": "30 enterprise tickets (15 DNS, 15 DHCP). Use the 4-step workflow to document your triage, diagnosis, fix steps, and change note. Answers are not provided—your job is to determine the cause and the fix.",
+  "rolePill": "Role: Systems Administrator (Operations)",
   "categories": ["DNS", "DHCP"],
   "tickets": [
     {
       "id": "DNS-001",
       "category": "DNS",
-      "title": "Domain join fails for DEPOT-LT17 (SRV records not found)",
-      "tags": ["SRV records", "Domain Join", "AD"],
-      "summary": "A new laptop at DEPOT-03 can resolve the domain name but fails domain join with 'cannot locate a domain controller'.",
+      "title": "Domain join fails for DEPOT-LT17",
+      "tags": ["Domain Join", "AD", "SRV", "DNS"],
+      "summary": "A technician reports that joining DEPOT-LT17 to the domain fails. Network connectivity to the domain controller IP appears normal.",
       "env": {
         "Client": "DEPOT-LT17",
-        "Domain": "corp.global-logistics.local",
-        "Site": "DEPOT-03",
-        "DNS": "SRV-DNS1, SRV-DNS2"
+        "Site": "Warehouse A",
+        "Domain": "corp.local",
+        "Impact": "Device cannot be onboarded to domain"
       },
       "workflow": {
-        "triage": "Domain join wizard fails; ping to DC IP works; nslookup of the domain returns an IP.",
-        "diagnosis": "Client cannot resolve required AD SRV records (e.g., _ldap._tcp.dc._msdcs). Often caused by clients using non-AD DNS or missing SRV data in the zone.",
-        "fix": "DNS Manager: verify SRV records in _msdcs.<domain>. Ensure clients receive only AD DNS servers (DHCP option 006). If SRV records are missing, remediate DC registration/zone replication.",
-        "changeNote": ""
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
       },
-      "validations": [
-        "nslookup -type=SRV _ldap._tcp.dc._msdcs.corp.global-logistics.local",
-        "ipconfig /all (confirm DNS servers)",
-        "ipconfig /flushdns then retry domain join"
-      ]
+      "validations": ["Confirm name resolution for required domain resources", "Retry domain join", "Verify client uses the intended DNS servers"]
     },
     {
       "id": "DNS-002",
       "category": "DNS",
-      "title": "Secure dynamic updates failing for roaming laptops",
-      "tags": ["Secure Dynamic Updates", "DHCP", "Permissions"],
-      "summary": "Some domain-joined laptops do not register A/PTR records after moving between sites.",
+      "title": "Roaming laptops fail to register or update DNS records",
+      "tags": ["Dynamic Updates", "Secure Updates", "Clients"],
+      "summary": "Multiple roaming laptops appear in monitoring tools as stale or missing in DNS. Users report intermittent access to internal apps after moving between networks.",
       "env": {
-        "Zone": "corp.global-logistics.local",
-        "Updates": "Secure only",
-        "DHCP": "SRV-DHCP1",
-        "Clients": "Roaming laptops"
+        "Clients": "Multiple laptops",
+        "Sites": "HQ + Remote",
+        "Impact": "Intermittent internal app access"
       },
       "workflow": {
-        "triage": "Leases are normal but hostnames are missing/stale in DNS for a subset of clients.",
-        "diagnosis": "With secure updates, the updating principal matters. DHCP update credentials are missing/incorrect, or stale record ownership blocks updates.",
-        "fix": "DHCP MMC → Server Properties → DNS: configure credentials for DNS updates and enable dynamic update settings. In DNS, remove conflicting stale records or correct record security so updates can succeed.",
-        "changeNote": ""
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
       },
-      "validations": [
-        "On affected client: ipconfig /registerdns",
-        "Review DHCP/DNS event logs for update failures",
-        "Verify record ownership/security for the hostname"
-      ]
+      "validations": ["Confirm client DNS registration behavior", "Verify update permissions and policy", "Confirm apps resolve to current client address"]
     },
+
     {
       "id": "DNS-003",
       "category": "DNS",
-      "title": "CNAME alias resolves but app fails due to certificate mismatch",
-      "tags": ["CNAME", "Aliases", "TLS"],
-      "summary": "Users access https://payroll.global-logistics.local (CNAME) and receive certificate name mismatch warnings.",
+      "title": "Application alias resolves, but users cannot access the application",
+      "tags": ["CNAME", "Alias", "TLS"],
+      "summary": "Users can resolve the application alias name but the application fails to load in the browser with a certificate-related warning.",
       "env": {
-        "Alias": "payroll.global-logistics.local",
-        "Target": "SRV-PROD-WEB07.global-logistics.local",
-        "Service": "HTTPS 443"
+        "Alias": "app.corp.local",
+        "Impact": "Users cannot access internal application"
       },
       "workflow": {
-        "triage": "DNS resolves the alias to the correct server, but browsers warn about certificate mismatch.",
-        "diagnosis": "DNS is correct; TLS certificate SAN does not include the alias name, causing validation failure.",
-        "fix": "DNS MMC: confirm CNAME target. On the web server, install/bind a certificate that includes the alias in SAN (IIS Manager → Site Bindings → https).",
-        "changeNote": ""
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
       },
-      "validations": [
-        "nslookup payroll.global-logistics.local returns expected host",
-        "Confirm certificate SAN includes alias",
-        "Browser test shows no warnings after binding update"
-      ]
+      "validations": ["Confirm alias target", "Validate certificate name expectations", "Confirm users can access the app successfully after change"]
     },
 
-    { "id":"DNS-004","category":"DNS","title":"Scavenging removed critical host record unexpectedly","tags":["Scavenging","Aging","Static Records"],
-      "summary":"After enabling scavenging, SRV-PROD-SQL01 stopped resolving. Service owners report outage until record recreated.",
-      "env":{"Zone":"prod.global-logistics.local","No-Refresh/Refresh":"7/7 days","Server":"SRV-DNS1"},
-      "workflow":{"triage":"Name returns NXDOMAIN; record is missing in the zone.","diagnosis":"Aging/scavenging settings are too aggressive, or the critical record had a timestamp and became eligible for scavenging.","fix":"DNS MMC → Zone Properties → Aging/Scavenging: review intervals and eligibility. Recreate critical records as true static (no timestamp) where appropriate and align policy with lifecycle needs.","changeNote":""},
-      "validations":["Enable Advanced View and inspect record timestamps","Check DNS server event logs for scavenging events","Verify critical records persist after eligibility window"]
-    },
-    { "id":"DNS-005","category":"DNS","title":"Scavenging not cleaning stale records (zone aging disabled)","tags":["Scavenging","Aging","Stale Records"],
-      "summary":"Thousands of stale workstation A records remain from previous imaging cycles; scavenging is enabled but nothing is removed.",
-      "env":{"Zone":"corp.global-logistics.local","Server scavenging":"Enabled","Zone aging":"Disabled"},
-      "workflow":{"triage":"Old hostnames still resolve; collisions occur during re-imaging.","diagnosis":"Server scavenging is enabled, but zone aging is not enabled, so records never become eligible for scavenging.","fix":"DNS MMC → Zone Properties → Aging: enable aging and set no-refresh/refresh intervals. Confirm server scavenging schedule is enabled.","changeNote":""},
-      "validations":["Verify timestamps are being applied","Confirm scavenging events occur on schedule","Re-check stale records after interval passes"]
-    },
-    { "id":"DNS-006","category":"DNS","title":"PTR records missing for DHCP clients; monitoring shows 'unknown host'","tags":["Reverse Lookup","PTR","DHCP Updates"],
-      "summary":"Monitoring relies on reverse lookups to tag assets, but many addresses return NXDOMAIN for PTR.",
-      "env":{"DHCP":"SRV-DHCP1","Reverse zone":"10.20.0.0/16","Updates":"Secure only"},
-      "workflow":{"triage":"Reverse queries fail; some forward A records exist but PTR records do not.","diagnosis":"Reverse zone missing or DHCP is not configured to create PTRs (and/or secure update credentials are missing).","fix":"DNS MMC: create reverse lookup zone(s). DHCP MMC → Server Properties → DNS: enable A and PTR updates and configure secure update credentials if needed.","changeNote":""},
-      "validations":["nslookup <IP> returns PTR after fix","Confirm DHCP creates both A and PTR for new leases","Review DHCP audit logs for DNS update results"]
-    },
-    { "id":"DNS-007","category":"DNS","title":"Conditional forwarder points to retired resolver (partner domain fails)","tags":["Conditional Forwarder","Timeouts"],
-      "summary":"Integration jobs fail because vendor.partner.local stopped resolving after vendor DNS migration.",
-      "env":{"Local DNS":"SRV-DNS2","Zone":"vendor.partner.local","Old IP":"10.50.2.10","New IP":"10.50.2.20"},
-      "workflow":{"triage":"Queries to vendor.partner.local time out; all other DNS works normally.","diagnosis":"Conditional forwarder points to an unreachable/retired vendor resolver IP.","fix":"DNS MMC → Conditional Forwarders: update IPs to current partner DNS servers and verify connectivity (UDP/TCP 53).","changeNote":""},
-      "validations":["nslookup host.vendor.partner.local resolves quickly","Integration job succeeds","Event logs show no forwarder timeout warnings"]
-    },
-    { "id":"DNS-008","category":"DNS","title":"Clients get inconsistent answers due to duplicate authoritative zones","tags":["Zones","Authoritative","Replication"],
-      "summary":"api.prod.global-logistics.local resolves to different IPs depending on client subnet.",
-      "env":{"Servers":"SRV-DNS1 (prod), SRV-DNS3 (test)","Zone":"prod.global-logistics.local"},
-      "workflow":{"triage":"Different clients get different IPs for the same name.","diagnosis":"Multiple DNS servers host authoritative zones with the same name but different data/replication scope.","fix":"Remove/disable conflicting zone or correct replication so only intended authoritative zone is used. Ensure DHCP option 006 points to correct DNS servers.","changeNote":""},
-      "validations":["nslookup from multiple subnets returns consistent IP","Confirm authoritative zone data matches expected records"]
-    },
-    { "id":"DNS-009","category":"DNS","title":"Forwarder outage causes slow external lookups","tags":["Forwarders","Timeouts","Root Hints"],
-      "summary":"External domain lookups are slow or time out; internal name resolution remains normal.",
-      "env":{"DNS":"SRV-DNS1","Forwarders":"Old ISP resolvers","Internal zones":"Normal"},
-      "workflow":{"triage":"External lookups take several seconds; intermittent failures occur.","diagnosis":"Forwarders are unreachable, causing repeated timeouts before fallback (or fallback is disabled).","fix":"DNS MMC → Server Properties → Forwarders: replace/remove unreachable forwarders; verify fallback behavior (root hints) and upstream reachability.","changeNote":""},
-      "validations":["Measure lookup latency before/after","DNS event logs show reduced forwarder timeout warnings"]
-    },
-    { "id":"DNS-010","category":"DNS","title":"CNAME chain still points users to old server after migration","tags":["CNAME","Aliases","Migration"],
-      "summary":"Users access erp.global-logistics.local but are routed to the retired server after an app migration.",
-      "env":{"Alias":"erp.global-logistics.local","Expected":"SRV-PROD-APP07","Actual chain":"erp → erp-old → SRV-PROD-APP03"},
-      "workflow":{"triage":"ERP name resolves, but users hit the old host.","diagnosis":"CNAME points to another alias that still targets the old server (CNAME chain not updated).","fix":"DNS MMC: update the CNAME to point directly to the new host FQDN or correct the intermediate alias. Remove unused legacy aliases.","changeNote":""},
-      "validations":["nslookup erp.global-logistics.local returns new target","Application logs show traffic hitting new server"]
-    },
-    { "id":"DNS-011","category":"DNS","title":"Secure updates blocked by stale record ownership after device replacement","tags":["Secure Dynamic Updates","Ownership","Stale Records"],
-      "summary":"PRN-FLOOR3 was replaced, but the hostname still resolves to the old IP and the new device cannot register.",
-      "env":{"Hostname":"PRN-FLOOR3","Zone":"corp.global-logistics.local","Updates":"Secure only"},
-      "workflow":{"triage":"Clients resolve PRN-FLOOR3 to old IP; new device fails to update the record.","diagnosis":"Existing record ownership/ACL prevents overwrite under secure dynamic updates.","fix":"DNS MMC: delete stale A/PTR record (or adjust record security). Allow DHCP/client to re-register using correct credentials.","changeNote":""},
-      "validations":["Record reappears with correct IP","Ownership/security reflects correct updating principal"]
-    },
-    { "id":"DNS-012","category":"DNS","title":"Domain join fails because DHCP hands out public DNS","tags":["SRV records","DHCP Options"],
-      "summary":"New laptops can browse the internet but fail first-boot domain join until DNS is manually changed.",
-      "env":{"Scope":"10.30.40.0/24","Option 006":"Public DNS (wrong)","Internal DNS":"10.30.40.10"},
-      "workflow":{"triage":"Join fails; internet works; ipconfig shows public DNS servers.","diagnosis":"DHCP scope option 006 is set to public DNS, which does not host AD SRV records.","fix":"DHCP MMC → Scope Options: set option 006 to internal AD DNS servers. Renew lease and retry join.","changeNote":""},
-      "validations":["ipconfig /all shows internal DNS","SRV lookup returns active DCs","Domain join succeeds"]
-    },
-    { "id":"DNS-013","category":"DNS","title":"Secure DNS updates failing after DHCP server rebuild","tags":["Secure Dynamic Updates","DHCP Credentials","Rebuild"],
-      "summary":"After rebuilding SRV-DHCP1, leases work but DNS A/PTR registration fails across the org.",
-      "env":{"DHCP":"SRV-DHCP1 (rebuilt)","Updates":"Secure only","Zone":"corp.global-logistics.local"},
-      "workflow":{"triage":"Clients have IP connectivity but cannot be resolved by hostname; few new dynamic records appear.","diagnosis":"DHCP DNS update credentials were not restored/configured after rebuild.","fix":"DHCP MMC → Server Properties → DNS: configure dedicated credentials for secure DNS updates and verify permissions.","changeNote":""},
-      "validations":["New leases create A and PTR records","DHCP/DNS event logs show successful secure updates"]
-    },
-    { "id":"DNS-014","category":"DNS","title":"SRV record lookup returns retired domain controller","tags":["SRV records","Cleanup","Metadata"],
-      "summary":"Clients intermittently try to contact SRV-DC04 during logon/GP processing and time out.",
-      "env":{"Domain":"corp.global-logistics.local","Retired DC":"SRV-DC04"},
-      "workflow":{"triage":"Group Policy processing/logon slow; occasional timeouts contacting a DC name that should be decommissioned.","diagnosis":"AD/DNS cleanup wasn’t completed; stale SRV records still advertise the retired DC.","fix":"DNS MMC → _msdcs zone: remove SRV records referencing retired DC. Complete metadata cleanup and validate replication.","changeNote":""},
-      "validations":["SRV queries return only active DCs","Logon/GP processing times normalize"]
-    },
-    { "id":"DNS-015","category":"DNS","title":"Split-brain internal zone breaks public subdomain resolution","tags":["Split-brain","Authoritative","Design"],
-      "summary":"Internal zone for global-logistics.com exists for internal apps, but careers.global-logistics.com fails for internal users.",
-      "env":{"Internal zone":"global-logistics.com","Public subdomain":"careers.global-logistics.com"},
-      "workflow":{"triage":"Internal clients get NXDOMAIN for public subdomains not defined internally.","diagnosis":"Internal DNS is authoritative for global-logistics.com but lacks public subdomain records, so it answers negatively instead of forwarding.","fix":"DNS MMC: revise split-brain approach (populate required records, use delegation/stub/conditional forwarders, or adjust naming).","changeNote":""},
-      "validations":["nslookup careers.global-logistics.com works from internal clients","Authoritative responses occur only for intended internal names"]
+    {
+      "id": "DNS-004",
+      "category": "DNS",
+      "title": "Critical host record disappears unexpectedly",
+      "tags": ["Scavenging", "Aging", "Records"],
+      "summary": "A production server name suddenly stops resolving. The record appears to have been removed without an intentional change request.",
+      "env": {
+        "Server": "SRV-PROD-01",
+        "Impact": "Production service outage risk"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Restore resolution for the host", "Verify aging/scavenging configuration matches policy", "Confirm record ownership/update behavior"]
     },
 
-    { "id":"DHCP-001","category":"DHCP","title":"Scope exhaustion causes intermittent IP assignment failures","tags":["Scopes","Utilization","Lease Duration"],
-      "summary":"In the warehouse VLAN, some devices fail to obtain IPs during peak shifts; others eventually get addresses.",
-      "env":{"DHCP":"SRV-DHCP1","Scope":"10.20.50.0/24","Clients":"Scanners/Tablets"},
-      "workflow":{"triage":"Clients show APIPA or repeated 'Identifying…'; scope utilization is near 100%.","diagnosis":"Scope is exhausted due to insufficient pool, long lease duration for transient devices, or excessive reservations.","fix":"DHCP MMC → Scope: review Scope Statistics, Address Pool, Exclusions, Reservations. Expand scope (or redesign subnet) and adjust lease duration as appropriate.","changeNote":""},
-      "validations":["Scope utilization drops","New clients obtain leases quickly","DHCP audit log shows successful ACKs"]
+    {
+      "id": "DNS-005",
+      "category": "DNS",
+      "title": "Stale DNS records persist longer than expected",
+      "tags": ["Scavenging", "Aging", "Cleanup"],
+      "summary": "Operations reports that stale client records are not being cleaned up and are causing confusion during troubleshooting.",
+      "env": {
+        "Impact": "Inaccurate DNS data affects troubleshooting"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Confirm aging/scavenging configuration", "Verify cleanup occurs after policy window", "Spot-check record timestamps"]
     },
-    { "id":"DHCP-002","category":"DHCP","title":"MAC Allow filter blocks new printers from leasing","tags":["MAC Filters","Allow List"],
-      "summary":"A secure print VLAN uses an allow list. After deploying new printers, none obtain DHCP leases.",
-      "env":{"DHCP":"SRV-DHCP1","VLAN":"PRINT-SEC","Filtering":"Allow enabled"},
-      "workflow":{"triage":"New printers show no IP address; existing printers still work.","diagnosis":"MAC allow filtering is enabled, but new printer MACs are not in the allow list.","fix":"DHCP MMC → IPv4 → Filters → Allow: add the new printer MAC addresses and confirm allow filtering is intended.","changeNote":""},
-      "validations":["Printers obtain leases after renew","DHCP logs show leases issued to approved MACs"]
+
+    {
+      "id": "DNS-006",
+      "category": "DNS",
+      "title": "Reverse lookups fail for DHCP clients",
+      "tags": ["PTR", "Reverse Zone", "DHCP"],
+      "summary": "Monitoring tools display multiple systems as 'unknown host' even though forward lookups appear correct.",
+      "env": {
+        "Impact": "Reduced monitoring visibility"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Test forward and reverse lookups", "Validate reverse zone configuration", "Confirm expected PTR behavior"]
     },
-    { "id":"DHCP-003","category":"DHCP","title":"MAC Deny filter blocks an executive laptop unexpectedly","tags":["MAC Filters","Deny List"],
-      "summary":"An executive laptop cannot obtain an IP on HQ Wi-Fi while other users are fine.",
-      "env":{"DHCP":"SRV-DHCP1","Network":"HQ-WIFI","Filtering":"Deny enabled"},
-      "workflow":{"triage":"Laptop associates to Wi-Fi but gets APIPA.","diagnosis":"Device MAC address is mistakenly on the deny list (or matches a blocked entry).","fix":"DHCP MMC → IPv4 → Filters → Deny: remove incorrect MAC entry and document why.","changeNote":""},
-      "validations":["Laptop obtains lease after change","Deny list still blocks intended devices"]
+
+    {
+      "id": "DNS-007",
+      "category": "DNS",
+      "title": "Partner domain name resolution fails intermittently",
+      "tags": ["Forwarder", "Conditional Forwarder", "Trust"],
+      "summary": "Users cannot resolve names in a partner domain from time to time. The issue appears site-dependent.",
+      "env": {
+        "Partner": "partners.example",
+        "Impact": "Inter-organization access disrupted"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Confirm resolution path for partner domain", "Test from multiple sites", "Validate forwarder/conditional forwarder health"]
     },
-    { "id":"DHCP-004","category":"DHCP","title":"Failover relationship unhealthy after patching (shared secret mismatch)","tags":["Failover","Load Balance","Partner Auth"],
-      "summary":"After maintenance, renewals start failing intermittently and failover relationship shows warnings.",
-      "env":{"Servers":"SRV-DHCP1 + SRV-DHCP2","Mode":"Load balance"},
-      "workflow":{"triage":"Some clients fail to renew; failover shows communication retries.","diagnosis":"Failover relationship configuration is inconsistent (shared secret mismatch) or partner settings drifted.","fix":"DHCP MMC → Failover: validate partner settings/shared secret. Correct or recreate relationship. Verify both servers are authorized and reachable.","changeNote":""},
-      "validations":["Failover state returns to Normal","Renewals succeed consistently"]
+
+    {
+      "id": "DNS-008",
+      "category": "DNS",
+      "title": "Clients receive inconsistent DNS answers for the same name",
+      "tags": ["Zones", "Replication", "Split DNS"],
+      "summary": "Some clients resolve an internal service to one IP while others resolve it to a different IP, causing inconsistent access.",
+      "env": {
+        "Service": "intranet.corp.local",
+        "Impact": "Inconsistent user access"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Confirm authoritative sources for the name", "Verify consistent records across servers", "Validate clients receive consistent answers"]
     },
-    { "id":"DHCP-005","category":"DHCP","title":"Hot standby failover does not serve leases during primary outage","tags":["Failover","Hot Standby","Authorization"],
-      "summary":"During planned outage of SRV-DHCP1, SRV-DHCP2 does not start serving leases quickly.",
-      "env":{"Primary":"SRV-DHCP1","Standby":"SRV-DHCP2","Mode":"Hot standby"},
-      "workflow":{"triage":"Clients cannot renew or obtain new leases longer than expected.","diagnosis":"Standby is not properly configured/authorized for the scope or relationship settings are incorrect.","fix":"DHCP MMC → Failover settings: verify hot standby configuration and role assignment; confirm SRV-DHCP2 is authorized and relationship applies to the scope.","changeNote":""},
-      "validations":["Standby issues leases during simulated outage","Failover status transitions as expected"]
+
+    {
+      "id": "DNS-009",
+      "category": "DNS",
+      "title": "External name lookups are slow or time out",
+      "tags": ["Forwarders", "Root Hints", "Timeouts"],
+      "summary": "Internal resolution for external domains is slow; pages load after long delays or fail intermittently.",
+      "env": {
+        "Impact": "User productivity loss"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Measure resolution timing before/after", "Verify forwarder availability", "Validate external resolution reliability"]
     },
-    { "id":"DHCP-006","category":"DHCP","title":"New VLAN clients cannot get DHCP (relay agent missing)","tags":["Relay Agents","IP Helper","Routing"],
-      "summary":"A new VLAN for IoT devices was created. Clients cannot obtain IPs from centralized DHCP.",
-      "env":{"DHCP":"SRV-DHCP1","VLAN":"IOT-70 (10.70.0.0/24)","Gateway":"L3 switch/router"},
-      "workflow":{"triage":"IoT clients show APIPA; DHCP server never sees DISCOVER packets from that subnet.","diagnosis":"DHCP broadcasts do not cross subnets; gateway lacks DHCP relay/IP helper to forward requests.","fix":"Configure DHCP relay (IP helper) on the VLAN gateway to forward to SRV-DHCP1. Ensure the scope exists and is active.","changeNote":""},
-      "validations":["DHCP logs show requests from 10.70.0.0/24","Clients obtain correct leases/options"]
+
+    {
+      "id": "DNS-010",
+      "category": "DNS",
+      "title": "Users are redirected to an old server after a migration",
+      "tags": ["CNAME", "Aliases", "Records"],
+      "summary": "After moving an internal app to a new server, some users still reach the old server.",
+      "env": {
+        "Impact": "Users reach wrong server version"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Confirm clients resolve to new target", "Validate cached entries are addressed appropriately", "Confirm access path is consistent"]
     },
-    { "id":"DHCP-007","category":"DHCP","title":"Scope options misconfigured: clients get wrong DNS servers","tags":["Scopes","Option 006","Name Resolution"],
-      "summary":"Clients get IPs but cannot resolve internal names; external browsing works.",
-      "env":{"Scope":"10.30.10.0/24","Option 006":"Public DNS (wrong)","Internal DNS":"SRV-DNS1/SRV-DNS2"},
-      "workflow":{"triage":"Clients have IP/gateway but internal hostnames fail; ipconfig shows public DNS.","diagnosis":"Scope option 006 (DNS Servers) is configured incorrectly.","fix":"DHCP MMC → Scope Options: set option 006 to internal DNS servers, then renew leases.","changeNote":""},
-      "validations":["ipconfig /all shows correct DNS servers","Internal names resolve successfully"]
+
+    {
+      "id": "DNS-011",
+      "category": "DNS",
+      "title": "DNS updates fail after a device replacement",
+      "tags": ["Secure Updates", "Ownership", "Records"],
+      "summary": "A workstation was replaced. The new device cannot update the existing DNS record and name resolution is inconsistent.",
+      "env": {
+        "Impact": "Device identity/resolution issues"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Confirm record updates succeed", "Verify correct record ownership/permissions", "Confirm name resolves correctly"]
     },
-    { "id":"DHCP-008","category":"DHCP","title":"Reservation not taking effect; device keeps getting random IP","tags":["Reservations","MAC","Client Identifier"],
-      "summary":"A lobby camera must have a fixed IP via reservation but keeps getting different addresses after reboot.",
-      "env":{"Scope":"10.20.60.0/24","Reservation":"10.20.60.50","Device":"CAM-LOBBY-01"},
-      "workflow":{"triage":"Reservation exists, but device receives non-reserved address.","diagnosis":"Reservation was created using the wrong identifier (wrong MAC/interface) or device uses a DHCP Client Identifier.","fix":"DHCP MMC → Address Leases: locate the device identifier then recreate reservation using the correct identifier.","changeNote":""},
-      "validations":["Device receives reserved IP after renew","Lease indicates reservation association"]
+
+    {
+      "id": "DNS-012",
+      "category": "DNS",
+      "title": "Workstations cannot locate domain resources after receiving DHCP settings",
+      "tags": ["DHCP", "DNS Settings", "Client Config"],
+      "summary": "Several workstations can browse the internet but cannot locate domain resources and domain services behave inconsistently.",
+      "env": {
+        "Impact": "Domain-dependent access degraded"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Verify clients are using intended DNS servers", "Confirm domain resource resolution", "Confirm domain services behave normally"]
     },
-    { "id":"DHCP-009","category":"DHCP","title":"Rogue DHCP server causing conflicting leases","tags":["Rogue DHCP","Conflicts","Snooping"],
-      "summary":"Some clients get the wrong gateway/DNS and lose connectivity intermittently on OFFICE-20.",
-      "env":{"Expected DHCP":"SRV-DHCP1","VLAN":"OFFICE-20","Symptom":"Incorrect options"},
-      "workflow":{"triage":"Leases differ between clients; some show unexpected gateway/DNS values.","diagnosis":"A rogue DHCP server is responding on the VLAN.","fix":"Identify/remove the rogue DHCP source; enforce DHCP snooping/port security on switching. Confirm only SRV-DHCP1 serves the VLAN.","changeNote":""},
-      "validations":["Clients consistently receive leases from authorized DHCP","Packet capture shows only one DHCPOFFER source"]
+
+    {
+      "id": "DNS-013",
+      "category": "DNS",
+      "title": "DNS updates fail after DHCP server maintenance",
+      "tags": ["DHCP", "DNS Updates", "Credentials"],
+      "summary": "Following maintenance, dynamic DNS registrations for DHCP clients are inconsistent and records do not reflect current leases.",
+      "env": {
+        "Impact": "Name/IP mismatch for leased clients"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Verify DHCP/DNS registration behavior", "Confirm consistent A/PTR behavior", "Validate event logs for update operations"]
     },
-    { "id":"DHCP-010","category":"DHCP","title":"Failover load balance split misconfigured; one server issues most leases","tags":["Failover","Load Balance","Configuration"],
-      "summary":"After enabling DHCP failover, SRV-DHCP1 issues nearly all leases while SRV-DHCP2 issues very few.",
-      "env":{"Servers":"SRV-DHCP1/SRV-DHCP2","Mode":"Load balance"},
-      "workflow":{"triage":"Lease distribution is skewed; partner sometimes shows warnings.","diagnosis":"Load balance percentage is misconfigured or partner health/connectivity is inconsistent.","fix":"DHCP MMC → Failover relationship: verify load balance percentage and partner health. Correct split and resolve connectivity issues.","changeNote":""},
-      "validations":["Failover state Normal","Lease distribution begins to match the split"]
+
+    {
+      "id": "DNS-014",
+      "category": "DNS",
+      "title": "Clients target the wrong domain controller for authentication",
+      "tags": ["SRV", "AD", "DNS"],
+      "summary": "Clients attempt to contact a retired domain controller during authentication and group policy processing.",
+      "env": {
+        "Impact": "Authentication and policy delays"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Confirm SRV lookup behavior", "Validate only active DCs are discoverable", "Confirm authentication latency improves"]
     },
-    { "id":"DHCP-011","category":"DHCP","title":"Relay forwards requests but no offers (scope missing/inactive)","tags":["Relay Agents","Scopes","Activation"],
-      "summary":"Relay is configured. DHCP server sees requests from 10.80.0.0/24, but clients still cannot obtain an IP.",
-      "env":{"Subnet":"10.80.0.0/24","DHCP":"SRV-DHCP1","Relay":"Configured"},
-      "workflow":{"triage":"DISCOVERs appear in logs, but no OFFERs are sent.","diagnosis":"No matching scope exists for the subnet, or the scope is inactive.","fix":"DHCP MMC: create/activate a scope for 10.80.0.0/24 and configure address pool/options.","changeNote":""},
-      "validations":["Clients receive offers and ACKs","Scope statistics show active leases"]
+
+    {
+      "id": "DNS-015",
+      "category": "DNS",
+      "title": "Internal DNS overrides break a public subdomain",
+      "tags": ["Split-brain", "Zones", "Delegation"],
+      "summary": "Users cannot resolve a public subdomain from inside the network, but it resolves correctly from the internet.",
+      "env": {
+        "Impact": "Public service inaccessible internally"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Compare internal vs external resolution", "Identify authoritative zone source", "Confirm internal clients can resolve correctly after change"]
     },
-    { "id":"DHCP-012","category":"DHCP","title":"Global allow filtering enabled; entire branch cannot lease","tags":["MAC Filters","Allow/Deny","Branch Impact"],
-      "summary":"All devices at BRANCH-03 fail DHCP after a MAC filtering pilot was enabled on the server.",
-      "env":{"DHCP":"SRV-DHCP1","Branch":"BRANCH-03","Filtering":"Allow enabled globally"},
-      "workflow":{"triage":"Branch devices show APIPA; relay and scopes exist.","diagnosis":"Allow list enabled globally without onboarding branch MACs causes blanket denial.","fix":"Adjust filtering strategy (scope/policy-based) or add required MACs to allow list. Document change and approvals as required.","changeNote":""},
-      "validations":["Branch devices obtain leases","Filtering still meets security requirements"]
+
+    {
+      "id": "DHCP-001",
+      "category": "DHCP",
+      "title": "Clients on Floor 3 are not receiving IP addresses",
+      "tags": ["Scopes", "Availability", "VLAN"],
+      "summary": "Multiple clients on Floor 3 show APIPA addresses and cannot access network resources.",
+      "env": {
+        "VLAN": "Floor3-Clients",
+        "Impact": "Users offline on a segment"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Confirm clients can obtain leases", "Verify scope availability", "Validate connectivity to DHCP infrastructure"]
     },
-    { "id":"DHCP-013","category":"DHCP","title":"DHCP server unauthorized after directory maintenance","tags":["Authorization","Active Directory","Service"],
-      "summary":"DHCP service is running but no new leases are issued after AD maintenance.",
-      "env":{"DHCP":"SRV-DHCP1","AD":"Recent maintenance window"},
-      "workflow":{"triage":"Clients get APIPA; DHCP console indicates unauthorized state or event logs show authorization failure.","diagnosis":"DHCP server is not authorized in Active Directory.","fix":"DHCP MMC → right-click server → Authorize. Restart DHCP service if needed and confirm authorized status.","changeNote":""},
-      "validations":["Server shows Authorized","New leases issued normally"]
+
+    {
+      "id": "DHCP-002",
+      "category": "DHCP",
+      "title": "Phones receive IPs but cannot reach key services",
+      "tags": ["Options", "Scopes", "VoIP"],
+      "summary": "IP phones receive addresses but fail to register to call manager after a network change window.",
+      "env": {
+        "Impact": "Voice service degraded"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Confirm option values delivered to phones", "Validate phone registration post-fix", "Confirm correct scope options per VLAN"]
     },
-    { "id":"DHCP-014","category":"DHCP","title":"Option inheritance applies wrong default gateway","tags":["Scopes","Options","Inheritance"],
-      "summary":"Clients in 10.90.2.0/24 receive gateway for 10.90.1.0/24 and cannot route.",
-      "env":{"Subnets":"10.90.1.0/24 and 10.90.2.0/24","Option":"003 Router"},
-      "workflow":{"triage":"Clients have IP but cannot reach outside subnet; default gateway is wrong.","diagnosis":"Option 003 (Router) is configured at the wrong level, overriding per-scope settings.","fix":"DHCP MMC: remove conflicting server-level option and set option 003 correctly at each scope.","changeNote":""},
-      "validations":["Each subnet receives correct gateway","Routing works as expected"]
+
+    {
+      "id": "DHCP-003",
+      "category": "DHCP",
+      "title": "New scope added but clients still receive old settings",
+      "tags": ["Scopes", "Renew", "Options"],
+      "summary": "A new scope was created, but clients continue to receive old DNS/gateway settings even after restarting.",
+      "env": {
+        "Impact": "Incorrect client network configuration"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Confirm clients receive new scope options", "Validate lease renewal behavior", "Verify correct scope is serving the segment"]
     },
-    { "id":"DHCP-015","category":"DHCP","title":"Relay configured but blocked by firewall/ACLs (UDP 67/68)","tags":["Relay Agents","Firewall","UDP 67/68"],
-      "summary":"IP helper is configured and scope exists, but clients still fail DHCP after new firewall rules.",
-      "env":{"Subnet":"10.75.0.0/24","Relay":"Enabled to SRV-DHCP1","Security":"New ACLs"},
-      "workflow":{"triage":"Some requests never arrive; clients remain on APIPA.","diagnosis":"Firewall/ACL is blocking DHCP relay traffic between gateway and DHCP server (UDP 67/68).","fix":"Allow DHCP relay traffic between relay and DHCP server; verify routing and symmetry.","changeNote":""},
-      "validations":["Consistent DISCOVER/OFFER/ACK observed","Firewall logs show no DHCP drops"]
+
+    {
+      "id": "DHCP-004",
+      "category": "DHCP",
+      "title": "Reservations not taking effect for a critical printer",
+      "tags": ["Reservations", "MAC", "Lease"],
+      "summary": "A printer reservation was created, but the printer still receives a different IP address.",
+      "env": {
+        "Impact": "Printing disruptions and IP conflicts risk"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Validate reservation MAC and scope", "Confirm printer obtains reserved IP", "Check for duplicate MAC formats or relay issues"]
+    },
+
+    {
+      "id": "DHCP-005",
+      "category": "DHCP",
+      "title": "A subset of devices are blocked from obtaining leases",
+      "tags": ["MAC Filters", "Allow", "Deny"],
+      "summary": "Only certain devices fail to obtain a lease. Others on the same network segment work normally.",
+      "env": {
+        "Impact": "Selective outage / onboarding blocked"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Verify filter policy behavior", "Confirm affected devices can obtain leases after change", "Document allow/deny logic used"]
+    },
+
+    {
+      "id": "DHCP-006",
+      "category": "DHCP",
+      "title": "Unauthorized device keeps obtaining an IP address",
+      "tags": ["MAC Filters", "Policy", "Control"],
+      "summary": "Security reports a rogue device repeatedly appearing on the network. DHCP logs show it continues to obtain a lease.",
+      "env": {
+        "Impact": "Policy enforcement needed"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Confirm device cannot obtain lease after control change", "Validate scope/policy alignment", "Document audit trail"]
+    },
+
+    {
+      "id": "DHCP-007",
+      "category": "DHCP",
+      "title": "DHCP failover partner shows inconsistent lease data",
+      "tags": ["Failover", "Replication", "Lease State"],
+      "summary": "Failover appears configured, but the partner does not reflect current lease activity consistently.",
+      "env": {
+        "Impact": "Resiliency risk"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Confirm partner state is healthy", "Validate lease replication", "Verify client experience during partner loss simulation (non-disruptive)"]
+    },
+
+    {
+      "id": "DHCP-008",
+      "category": "DHCP",
+      "title": "Failover is healthy but clients get delayed responses",
+      "tags": ["Failover", "Performance", "Timeouts"],
+      "summary": "Clients eventually receive leases, but delays cause slow logons and timeouts during boot.",
+      "env": {
+        "Impact": "Performance degradation"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Measure DORA timing before/after", "Validate server performance and logs", "Confirm client boot/login improves"]
+    },
+
+    {
+      "id": "DHCP-009",
+      "category": "DHCP",
+      "title": "Remote VLAN clients fail to get DHCP leases",
+      "tags": ["Relay", "VLAN", "Routing"],
+      "summary": "Clients on a remote VLAN cannot obtain leases, but clients on the server VLAN can.",
+      "env": {
+        "Impact": "Remote segment offline"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Confirm relay path is functioning", "Validate scope serves the remote subnet", "Confirm clients obtain correct leases"]
+    },
+
+    {
+      "id": "DHCP-010",
+      "category": "DHCP",
+      "title": "Relay agent is configured but requests do not reach DHCP",
+      "tags": ["Relay Agent", "Routing", "Firewall"],
+      "summary": "Network team confirms relay configuration, but DHCP server logs show no incoming requests from the remote segment.",
+      "env": {
+        "Impact": "Remote onboarding blocked"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Verify DHCP server sees relay traffic", "Check necessary ports/ACLs", "Confirm leases obtained post-fix"]
+    },
+
+    {
+      "id": "DHCP-011",
+      "category": "DHCP",
+      "title": "Scope is depleted even though many devices are offline",
+      "tags": ["Scope", "Leases", "Duration"],
+      "summary": "The scope shows few available addresses even though the office is mostly empty. New devices cannot obtain leases.",
+      "env": {
+        "Impact": "Address exhaustion"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Analyze lease utilization patterns", "Confirm appropriate lease duration/exclusions", "Verify address availability improves"]
+    },
+
+    {
+      "id": "DHCP-012",
+      "category": "DHCP",
+      "title": "DHCP server hands out addresses from the wrong scope",
+      "tags": ["Scopes", "Superscope", "Bindings"],
+      "summary": "Clients on one subnet receive IP settings that belong to a different subnet, causing routing failures.",
+      "env": {
+        "Impact": "Clients misconfigured"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Confirm correct scope selection behavior", "Validate bindings/relay config", "Confirm clients receive correct subnet configuration"]
+    },
+
+    {
+      "id": "DHCP-013",
+      "category": "DHCP",
+      "title": "Clients lose network after renewing leases",
+      "tags": ["Renew", "Options", "Gateway/DNS"],
+      "summary": "Clients work initially, but after a lease renew they lose access to internal resources.",
+      "env": {
+        "Impact": "Intermittent outage after renew"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Compare pre/post renew configuration", "Validate scope options", "Confirm stability across renew cycles"]
+    },
+
+    {
+      "id": "DHCP-014",
+      "category": "DHCP",
+      "title": "MAC filtering policy is not behaving as expected",
+      "tags": ["MAC Filters", "Allow/Deny", "Policy"],
+      "summary": "An allow/deny policy was implemented, but results are inconsistent: some blocked devices still obtain leases or allowed devices fail.",
+      "env": {
+        "Impact": "Onboarding policy unreliable"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Validate filter list membership and precedence", "Confirm expected outcomes for test devices", "Document rule logic clearly"]
+    },
+
+    {
+      "id": "DHCP-015",
+      "category": "DHCP",
+      "title": "After maintenance, failover roles do not switch correctly",
+      "tags": ["Failover", "State Switchover", "Partner"],
+      "summary": "After a maintenance window, the failover relationship no longer behaves as expected during role transitions.",
+      "env": {
+        "Impact": "Resiliency not guaranteed"
+      },
+      "workflow": {
+        "triage": "Capture the symptom clearly: who is impacted, where, and what error message or behavior is observed. Note scope and urgency.",
+        "diagnosis": "State the most likely root cause and the evidence you would collect to confirm it (tools, logs, commands, and configuration checks).",
+        "fix": "Document the exact GUI-based remediation steps you would take (and any safe verification steps).",
+        "changeNote": "Write a concise change record: what changed, why, risk/impact, and how you validated success."
+      },
+      "validations": ["Verify failover relationship health", "Confirm role transitions function as configured", "Validate client lease experience during transition"]
     }
   ]
 }
