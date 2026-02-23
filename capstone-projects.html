@@ -1,1 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Capstone Projects • Server Admin Academy</title>
+  <link rel="stylesheet" href="./assets/site.css" />
+  <script defer src="./assets/app.js"></script>
+</head>
+<body data-page="mode" data-mode="capstone-projects">
+  <header class="top">
+    <div class="container">
+      <div class="navGlass">
+        <a class="brand" href="./index.html"><span class="brandMark">S</span><span class="brandName">Server Admin Academy</span></a>
+        <nav class="navLinks">
+          <a class="navLink" href="./index.html">Home</a>
 
+          <div class="navDrop">
+            <button class="navDropBtn" type="button">Domains <span class="chev">▾</span></button>
+            <div class="navDropMenu">
+              <a class="navDropItem" href="./support-operations.html">Support Operations</a>
+              <a class="navDropItem" href="./systems-engineering.html">Systems Engineering</a>
+              <a class="navDropItem" href="./security-operations.html">Security Operations</a>
+            </div>
+          </div>
+
+          <div class="navDrop">
+            <button class="navDropBtn" type="button">Engagement Modes <span class="chev">▾</span></button>
+            <div class="navDropMenu">
+              <a class="navDropItem" href="./knowledge-assessments.html">Knowledge Assessments</a>
+              <a class="navDropItem" href="./incident-scenarios.html">Incident Scenarios</a>
+              <a class="navDropItem" href="./guided-practice.html">Guided Practice</a>
+              <a class="navDropItem isActive" href="./capstone-projects.html">Capstone Projects</a>
+            </div>
+          </div>
+        </nav>
+        <div class="navCta"><a class="btn btnPill" href="./systems-engineering.html">Systems Eng ✦</a></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero heroCompact glowSection">
+      <div class="glowLayer" aria-hidden="true"></div>
+      <div class="container heroInner">
+        <h1 class="heroTitle heroTitleSmall">Capstone Projects</h1>
+        <p class="heroSub">
+          Multi-step, end-to-end work combining planning, implementation, validation, and documentation.
+        </p>
+      </div>
+    </section>
+
+    <div class="sectionDivider"></div>
+
+    <section class="section">
+      <div class="container">
+        <div class="sectionHead left">
+          <h2 class="h2">Filter by Domain</h2>
+          <p class="p">Show projects by professional domain.</p>
+        </div>
+
+        <div class="chipRow" id="filterRow"></div>
+
+        <div class="cardsGrid" id="cardsGrid"></div>
+        <div class="emptyState" id="emptyState" hidden>
+          No activities found for this filter yet.
+        </div>
+      </div>
+    </section>
+
+    <div class="sectionDivider"></div>
+
+    <footer class="footer">
+      <div class="container footerRow">
+        <div class="footerLeft">
+          <div class="footerBrand">Server Admin Academy</div>
+          <div class="footerMuted">Capstone Projects • Engagement Mode</div>
+        </div>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>
