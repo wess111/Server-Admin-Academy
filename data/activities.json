@@ -44,4 +44,13 @@
     "link": "./activities/capstone-projects/file-services-hardening.html",
     "description": "Plan and implement a secure file services design with validation and documentation deliverables."
   }
+  {
+  "title": "Windows Fundamentals Support Pack",
+  "domain": "support-operations",
+  "mode": "incident-scenarios",
+  "difficulty": "intermediate",
+  "status": "available",
+  "link": "./activities/incident-scenarios/windows-fundamentals-pack.html",
+  "description": "A bundled mission set covering disk storage, installation errors, local accounts, and file sharing troubleshooting."
+}
 ]
