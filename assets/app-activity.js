@@ -61,6 +61,10 @@
       changeNote: "",
       doneNote: false,
 
+      // UI state for progressive unlocking
+      uiStage: "triage", // triage | diagnosis | fix | changeNote
+      attempts: { total: 0, wrong: 0 },
+
       // Legacy fields (kept so existing saved states don’t break)
       triageNote: "",
       diagnosisNote: "",
@@ -112,7 +116,7 @@
     set("courseSection", m.courseSection || "");
     set("courseTitle", m.courseTitle || "");
     set("activityDate", m.activityDate || "");
-    setTodayIfEmpty();
+        setTodayIfEmpty();
   }
 
   function saveMeta() {
@@ -121,8 +125,8 @@
       analystName: get("analystName"),
       courseSection: get("courseSection"),
       courseTitle: get("courseTitle"),
-      activityDate: get("activityDate")
-    });
+      activityDate: get("activityDate"),
+          });
   }
 
   function wireMeta() {
@@ -261,7 +265,7 @@
       .join("");
   }
 
-  function isStageObject(v) {
+function isStageObject(v) {
     return (
       v &&
       typeof v === "object" &&
@@ -281,6 +285,12 @@
     if (!next.correct || typeof next.correct !== "object") next.correct = { triage: false, diagnosis: false, fix: false };
     if (typeof next.resolved !== "boolean") next.resolved = false;
 
+    if (!next.attempts || typeof next.attempts !== "object") next.attempts = { total: 0, wrong: 0 };
+    if (!Number.isInteger(next.attempts.total)) next.attempts.total = 0;
+    if (!Number.isInteger(next.attempts.wrong)) next.attempts.wrong = 0;
+
+    if (typeof next.uiStage !== "string") next.uiStage = "triage";
+
     // Normalize keys (avoid undefined)
     ["triage", "diagnosis", "fix"].forEach((k) => {
       if (!(k in next.answers)) next.answers[k] = null;
@@ -290,6 +300,126 @@
     // Persist normalization so the UI and progress meters stay consistent.
     saveTicketState(ticketId, next);
     return next;
+  }
+
+  const STAGES = ["triage", "diagnosis", "fix", "changeNote"];
+  const CHANGE_NOTE_MIN = 40;
+
+  function getUnlockedStages(s) {
+    // Sequential unlock based on correctness.
+    const tri = true;
+    const diag = !!s?.correct?.triage;
+    const fix = !!(s?.correct?.triage && s?.correct?.diagnosis);
+    const note = !!(s?.correct?.triage && s?.correct?.diagnosis && s?.correct?.fix);
+    return { triage: tri, diagnosis: diag, fix: fix, changeNote: note };
+  }
+
+  function computeDefaultStage(s) {
+    // First unmet stage in order.
+    if (!s?.correct?.triage) return "triage";
+    if (!s?.correct?.diagnosis) return "diagnosis";
+    if (!s?.correct?.fix) return "fix";
+    return "changeNote";
+  }
+
+  function normalizeUiStage(s) {
+    const unlocked = getUnlockedStages(s);
+    const desired = STAGES.includes(s.uiStage) ? s.uiStage : "triage";
+    if (unlocked[desired]) return desired;
+    // If current stage is locked (e.g., user cleared state), fall back.
+    return computeDefaultStage(s);
+  }
+
+  function statusLabel(s) {
+    if (s?.resolved) return "Resolved";
+    const anyAttempt = (s?.attempts?.total || 0) > 0;
+    if (!anyAttempt) return "Not started";
+    return "In progress";
+  }
+
+  function renderStageTabs(ticketId, s) {
+    const unlocked = getUnlockedStages(s);
+    const current = normalizeUiStage(s);
+
+    const label = (k) =>
+      k === "triage" ? "Triage" :
+      k === "diagnosis" ? "Diagnosis" :
+      k === "fix" ? "Fix" : "Change Note";
+
+    return `
+      <div class="tabs" style="margin-top:10px">
+        ${STAGES.map((k) => {
+          const isActive = k === current;
+          const isLocked = !unlocked[k];
+          return `
+            <button
+              type="button"
+              class="tab${isActive ? " active" : ""}"
+              data-stage-tab="true"
+              data-ticket="${escapeHtml(ticketId)}"
+              data-target-stage="${escapeHtml(k)}"
+              ${isLocked ? "disabled" : ""}
+              style="${isLocked ? "opacity:.45;cursor:not-allowed" : ""}"
+              aria-disabled="${isLocked ? "true" : "false"}"
+            >${escapeHtml(label(k))}</button>
+          `;
+        }).join("")}
+      </div>
+    `;
+  }
+
+  function changeNoteTemplate(ticket) {
+    const title = ticket?.title ? `Ticket: ${ticket.title}` : "Ticket";
+    return [
+      `${title}`,
+      "Change Summary:",
+      "- What changed:",
+      "- Why (root cause):",
+      "Impact / Risk:",
+      "- User impact:",
+      "- Risk level:",
+      "Validation:",
+      "- Tests performed:",
+      "Rollback:",
+      "- Backout steps if needed:"
+    ].join("\n");
+  }
+
+  function renderChangeNote(ticketId, ticket, s) {
+    const chars = (s.changeNote || "").length;
+    const okLen = chars >= CHANGE_NOTE_MIN;
+    const canSubmit = okLen;
+
+    return `
+      <div class="step" id="stage-changeNote">
+        <div class="step-head">
+          <div class="step-left">
+            <div class="step-num">4</div>
+            <div>
+              <div class="step-title">Change Note</div>
+              <div class="step-hint">Write a short change note (minimum ${CHANGE_NOTE_MIN} characters). Use the template if helpful.</div>
+            </div>
+          </div>
+          <div class="mini-muted" aria-live="polite">
+            ${s.doneNote ? "Submitted ✅" : (okLen ? "Ready to submit" : `Min ${CHANGE_NOTE_MIN} chars`)}
+          </div>
+        </div>
+
+        <div class="step-body">
+          <div class="note-actions" style="gap:10px;flex-wrap:wrap">
+            <button class="btn ghost" type="button" data-insert-template="true" data-ticket="${escapeHtml(ticketId)}">Insert Template</button>
+            <button class="btn" type="button" data-submit-note="true" data-ticket="${escapeHtml(ticketId)}" ${canSubmit ? "" : "disabled"} style="${canSubmit ? "" : "opacity:.45;cursor:not-allowed"}">Submit Note</button>
+            <button class="btn ghost" type="button" data-prev-stage="true" data-ticket="${escapeHtml(ticketId)}">Back to Fix</button>
+          </div>
+
+          <div style="margin-top:10px">
+            <div class="mini-muted" style="margin-bottom:6px">Change note</div>
+            <textarea class="stepText" id="changeNote" rows="7" placeholder="Write your change note here..."></textarea>
+            <div class="mini-muted" id="changeNoteChars" style="margin-top:8px">Characters: ${chars}</div>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   function renderStage(stageKey, stageObj, ticketId, ticketState) {
@@ -338,6 +468,11 @@
               `;
             }).join("")}
           </div>
+
+          <div class="note-actions" style="margin-top:10px;gap:10px;flex-wrap:wrap">
+            <button class="btn" type="button" data-next-stage="true" data-ticket="${escapeHtml(ticketId)}">Next Stage</button>
+            <button class="btn ghost" type="button" data-goto-note="true" data-ticket="${escapeHtml(ticketId)}">Go to Change Note</button>
+          </div>
         </div>
       </div>
     `;
@@ -357,27 +492,38 @@
     const s = ensureGamifiedState(ticketId, s0);
 
     s.answers[stageKey] = idx;
-    s.correct[stageKey] = (idx === stageObj.correct);
 
-    // Resolved only if all three stages are correct
-    s.resolved = !!(s.correct.triage && s.correct.diagnosis && s.correct.fix);
+    // Attempt tracking
+    s.attempts.total += 1;
+
+    const wasCorrect = (idx === stageObj.correct);
+    s.correct[stageKey] = wasCorrect;
+    if (!wasCorrect) s.attempts.wrong += 1;
+
+    // Unlock flow: if correct, advance to next stage automatically.
+    if (wasCorrect) {
+      const nextStage =
+        stageKey === "triage" ? "diagnosis" :
+        stageKey === "diagnosis" ? "fix" :
+        stageKey === "fix" ? "changeNote" : "changeNote";
+      s.uiStage = nextStage;
+    }
+
+    const allCorrect = !!(s.correct.triage && s.correct.diagnosis && s.correct.fix);
+    const noteOk = !!(s.doneNote && (s.changeNote || "").trim().length >= CHANGE_NOTE_MIN);
+    s.resolved = allCorrect && noteOk;
 
     saveTicketState(ticketId, s);
 
-    // Re-render only this stage to reflect selection + correctness
-    const stageRoot = document.getElementById(`stage-${stageKey}`);
-    if (stageRoot) {
-      stageRoot.outerHTML = renderStage(stageKey, stageObj, ticketId, s);
-    }
+    // Re-render the ticket panel (unlock state + tabs may change)
+    renderTicketDetail(ticketId);
 
     updateProgressAndHealth();
   }
 
-  function selectTicket(ticketId) {
+  function renderTicketDetail(ticketId) {
     const t = tickets.find((x) => x.id === ticketId);
     if (!t) return;
-    selectedId = ticketId;
-    renderTicketList();
 
     let s = loadTicketState(ticketId);
 
@@ -385,9 +531,68 @@
     const gamified = isStageObject(wf.triage) && isStageObject(wf.diagnosis) && isStageObject(wf.fix);
     if (gamified) s = ensureGamifiedState(ticketId, s);
 
+    const currentStage = gamified ? normalizeUiStage(s) : "triage";
+    s.uiStage = currentStage;
+    saveTicketState(ticketId, s);
+
     const noteHint =
       (wf.changeNote && typeof wf.changeNote === "string" ? wf.changeNote : "") ||
       "Write a change record: what changed, why, impact, and validation.";
+
+    const status = statusLabel(s);
+    const attemptsText = `Attempts: ${s.attempts?.total || 0} (wrong: ${s.attempts?.wrong || 0})`;
+    const resolveHint = `Resolve by answering all three stages correctly + change note (min ${CHANGE_NOTE_MIN} chars).`;
+
+    const stageBlock = (() => {
+      if (!gamified) {
+        const triageHint = wf.triage || "Capture symptoms, scope, urgency, and exact error text.";
+        const diagHint = wf.diagnosis || "State a likely root cause and what evidence confirms it.";
+        const fixHint = wf.fix || "Document the GUI steps you would take, plus verification.";
+        return (
+          stepEditor({
+            num: 1,
+            title: "Triage (Symptom)",
+            hint: triageHint,
+            fieldId: "triageNote",
+            placeholder: "What is failing? Who is impacted? How urgent is it? Include exact messages and scope.",
+            checkedKey: "doneTriage",
+            checked: s.doneTriage
+          }) +
+          stepEditor({
+            num: 2,
+            title: "Diagnosis (Root Cause)",
+            hint: diagHint,
+            fieldId: "diagnosisNote",
+            placeholder: "Likely root cause + what evidence you will collect (logs, checks, commands, config).",
+            checkedKey: "doneDiagnosis",
+            checked: s.doneDiagnosis
+          }) +
+          stepEditor({
+            num: 3,
+            title: "Fix (GUI Action)",
+            hint: fixHint,
+            fieldId: "fixNote",
+            placeholder: "GUI steps to remediate + what you will verify afterward.",
+            checkedKey: "doneFix",
+            checked: s.doneFix
+          }) +
+          stepEditor({
+            num: 4,
+            title: "Change Note",
+            hint: noteHint,
+            fieldId: "changeNote",
+            placeholder: "Change record: what changed, why, impact/risk, rollback notes (if any), validation performed.",
+            checkedKey: "doneNote",
+            checked: s.doneNote
+          })
+        );
+      }
+
+      if (currentStage === "triage") return renderStage("triage", wf.triage, ticketId, s);
+      if (currentStage === "diagnosis") return renderStage("diagnosis", wf.diagnosis, ticketId, s);
+      if (currentStage === "fix") return renderStage("fix", wf.fix, ticketId, s);
+      return renderChangeNote(ticketId, t, s);
+    })();
 
     $("#ticketDetail").innerHTML = `
       <div class="detailCard">
@@ -401,60 +606,14 @@
           ${envCards(t.env)}
         </div>
 
-        ${
-          gamified
-            ? (
-              renderStage("triage", wf.triage, ticketId, s) +
-              renderStage("diagnosis", wf.diagnosis, ticketId, s) +
-              renderStage("fix", wf.fix, ticketId, s)
-            )
-            : (
-              (() => {
-                const triageHint = wf.triage || "Capture symptoms, scope, urgency, and exact error text.";
-                const diagHint = wf.diagnosis || "State a likely root cause and what evidence confirms it.";
-                const fixHint = wf.fix || "Document the GUI steps you would take, plus verification.";
-                return (
-                  stepEditor({
-                    num: 1,
-                    title: "Triage (Symptom)",
-                    hint: triageHint,
-                    fieldId: "triageNote",
-                    placeholder: "What is failing? Who is impacted? How urgent is it? Include exact messages and scope.",
-                    checkedKey: "doneTriage",
-                    checked: s.doneTriage
-                  }) +
-                  stepEditor({
-                    num: 2,
-                    title: "Diagnosis (Root Cause)",
-                    hint: diagHint,
-                    fieldId: "diagnosisNote",
-                    placeholder: "Likely root cause + what evidence you will collect (logs, checks, commands, config).",
-                    checkedKey: "doneDiagnosis",
-                    checked: s.doneDiagnosis
-                  }) +
-                  stepEditor({
-                    num: 3,
-                    title: "Fix (GUI Action)",
-                    hint: fixHint,
-                    fieldId: "fixNote",
-                    placeholder: "GUI steps to remediate + what you will verify afterward.",
-                    checkedKey: "doneFix",
-                    checked: s.doneFix
-                  })
-                );
-              })()
-            )
-        }
+        ${gamified ? renderStageTabs(ticketId, s) : ""}
 
-        ${stepEditor({
-          num: 4,
-          title: "Change Note",
-          hint: noteHint,
-          fieldId: "changeNote",
-          placeholder: "Change record: what changed, why, impact/risk, rollback notes (if any), validation performed.",
-          checkedKey: "doneNote",
-          checked: s.doneNote
-        })}
+        <div class="hint" style="margin-top:10px">
+          <strong>Status:</strong> ${escapeHtml(status)} &nbsp;•&nbsp; <strong>${escapeHtml(attemptsText)}</strong><br/>
+          ${escapeHtml(resolveHint)}
+        </div>
+
+        ${stageBlock}
 
         <div class="miniCard" style="margin-top:12px;">
           <div class="miniTitle">Suggested Validation Checks</div>
@@ -475,10 +634,26 @@
     if (diEl) diEl.value = s.diagnosisNote || "";
     if (fiEl) fiEl.value = s.fixNote || "";
 
+    // Fill change note textarea if present.
     const chEl = $("#changeNote");
     if (chEl) chEl.value = s.changeNote || "";
 
-    // Wire checkbox "Done" toggles that exist in the DOM (legacy + change note)
+    // Live character count for change note
+    if (chEl) {
+      chEl.addEventListener("input", () => {
+        const next = ensureGamifiedState(ticketId, loadTicketState(ticketId));
+        next.changeNote = chEl.value || "";
+        const allCorrect = !!(next.correct.triage && next.correct.diagnosis && next.correct.fix);
+        const noteOk = !!(next.doneNote && (next.changeNote || "").trim().length >= CHANGE_NOTE_MIN);
+        next.resolved = allCorrect && noteOk;
+        saveTicketState(ticketId, next);
+        const charsEl = document.getElementById("changeNoteChars");
+        if (charsEl) charsEl.textContent = `Characters: ${(next.changeNote || "").length}`;
+        updateProgressAndHealth();
+      });
+    }
+
+    // Legacy wiring (checkbox toggles + save/copy) — no UI changes, just keep old behavior working.
     $$("#ticketDetail input[type='checkbox'][data-step]").forEach((cb) => {
       cb.addEventListener("change", () => {
         const key = cb.getAttribute("data-step");
@@ -489,7 +664,6 @@
       });
     });
 
-    // Wire Save/Copy buttons for any rendered textarea steps
     $$("#ticketDetail [data-save]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const fieldId = btn.getAttribute("data-save");
@@ -519,7 +693,15 @@
         }
       });
     });
+  }
 
+  function selectTicket(ticketId) {
+    const t = tickets.find((x) => x.id === ticketId);
+    if (!t) return;
+    selectedId = ticketId;
+    renderTicketList();
+
+    renderTicketDetail(ticketId);
     updateProgressAndHealth();
   }
 
@@ -532,7 +714,9 @@
       ("triage" in s.correct) && ("diagnosis" in s.correct) && ("fix" in s.correct);
 
     if (hasGamified) {
-      return !!(s.correct.triage && s.correct.diagnosis && s.correct.fix);
+      const allCorrect = !!(s.correct.triage && s.correct.diagnosis && s.correct.fix);
+      const noteOk = !!(s.doneNote && (s.changeNote || "").trim().length >= CHANGE_NOTE_MIN);
+      return allCorrect && noteOk;
     }
     return !!(s.doneTriage && s.doneDiagnosis && s.doneFix && s.doneNote);
   }
@@ -636,7 +820,6 @@
       lines.push(`Category: ${t.category}`);
       lines.push(`Status: ${computeTicketComplete(s) ? "Complete" : "In Progress"}`);
       lines.push("");
-
       // If the lab uses gamified MCQ stages, export the selected option + correctness.
       const wf = t.workflow || {};
       const gamified = isStageObject(wf.triage) && isStageObject(wf.diagnosis) && isStageObject(wf.fix);
@@ -674,7 +857,6 @@
         lines.push("");
         lines.push("Change Note:");
       }
-
       lines.push(s.changeNote?.trim() ? s.changeNote.trim() : "(blank)");
     }
     return lines.join("\n");
@@ -745,7 +927,7 @@
       headStyles: { fontStyle: "bold" }
     });
 
-    // Ticket summary table
+// Ticket summary table
     const ticketRows = tickets.map((t) => {
       const s = loadTicketState(t.id);
       const status = computeTicketComplete(s) ? "Complete" : "In Progress";
@@ -771,12 +953,15 @@
     for (const t of tickets) {
       const s = loadTicketState(t.id);
 
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.text(`${t.id} — ${t.title}`, 44, doc.lastAutoTable.finalY + 26);
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
+      doc.autoTable({
+        startY: doc.lastAutoTable.finalY + 14,
+        head: [[`${t.id} — ${t.title}`]],
+        body: [[t.summary || "—"]],
+        theme: "grid",
+        styles: { font: "helvetica", fontSize: 10, cellPadding: 8, overflow: "linebreak" },
+        headStyles: { fontStyle: "bold" },
+        columnStyles: { 0: { cellWidth: 524 } }
+      });
 
       const wf = t.workflow || {};
       const gamified = isStageObject(wf.triage) && isStageObject(wf.diagnosis) && isStageObject(wf.fix);
@@ -883,6 +1068,103 @@
       if (!ticketId || !stageKey) return;
 
       handleAnswer(ticketId, stageKey, idx);
+    });
+
+    // Delegated handlers for progressive workflow UI (tabs, next/back, change note).
+    document.addEventListener("click", (e) => {
+      const stageTab = e.target && e.target.closest ? e.target.closest("button[data-stage-tab='true']") : null;
+      if (stageTab) {
+        const ticketId = stageTab.getAttribute("data-ticket");
+        const target = stageTab.getAttribute("data-target-stage");
+        if (!ticketId || !target) return;
+        const s = ensureGamifiedState(ticketId, loadTicketState(ticketId));
+        const unlocked = getUnlockedStages(s);
+        if (!unlocked[target]) return;
+        s.uiStage = target;
+        saveTicketState(ticketId, s);
+        renderTicketDetail(ticketId);
+        return;
+      }
+
+      const nextBtn = e.target && e.target.closest ? e.target.closest("button[data-next-stage='true']") : null;
+      if (nextBtn) {
+        const ticketId = nextBtn.getAttribute("data-ticket");
+        if (!ticketId) return;
+        const s = ensureGamifiedState(ticketId, loadTicketState(ticketId));
+        const current = normalizeUiStage(s);
+
+        // Only advance if the current stage is already correct.
+        const canAdvance =
+          current === "triage" ? !!s.correct.triage :
+          current === "diagnosis" ? !!s.correct.diagnosis :
+          current === "fix" ? !!s.correct.fix : true;
+        if (!canAdvance) return;
+
+        const target =
+          current === "triage" ? "diagnosis" :
+          current === "diagnosis" ? "fix" :
+          current === "fix" ? "changeNote" : "changeNote";
+        s.uiStage = target;
+        saveTicketState(ticketId, s);
+        renderTicketDetail(ticketId);
+        return;
+      }
+
+      const gotoNote = e.target && e.target.closest ? e.target.closest("button[data-goto-note='true']") : null;
+      if (gotoNote) {
+        const ticketId = gotoNote.getAttribute("data-ticket");
+        if (!ticketId) return;
+        const s = ensureGamifiedState(ticketId, loadTicketState(ticketId));
+        const unlocked = getUnlockedStages(s);
+        if (!unlocked.changeNote) return;
+        s.uiStage = "changeNote";
+        saveTicketState(ticketId, s);
+        renderTicketDetail(ticketId);
+        return;
+      }
+
+      const prevStage = e.target && e.target.closest ? e.target.closest("button[data-prev-stage='true']") : null;
+      if (prevStage) {
+        const ticketId = prevStage.getAttribute("data-ticket");
+        if (!ticketId) return;
+        const s = ensureGamifiedState(ticketId, loadTicketState(ticketId));
+        s.uiStage = "fix";
+        saveTicketState(ticketId, s);
+        renderTicketDetail(ticketId);
+        return;
+      }
+
+      const insertTpl = e.target && e.target.closest ? e.target.closest("button[data-insert-template='true']") : null;
+      if (insertTpl) {
+        const ticketId = insertTpl.getAttribute("data-ticket");
+        if (!ticketId) return;
+        const t = tickets.find((x) => x.id === ticketId);
+        const s = ensureGamifiedState(ticketId, loadTicketState(ticketId));
+        const tpl = changeNoteTemplate(t);
+        const existing = (s.changeNote || "");
+        s.changeNote = existing.trim() ? (existing.trim() + "\n\n" + tpl) : tpl;
+        saveTicketState(ticketId, s);
+        renderTicketDetail(ticketId);
+        return;
+      }
+
+      const submitNote = e.target && e.target.closest ? e.target.closest("button[data-submit-note='true']") : null;
+      if (submitNote) {
+        const ticketId = submitNote.getAttribute("data-ticket");
+        if (!ticketId) return;
+        const s = ensureGamifiedState(ticketId, loadTicketState(ticketId));
+        const txt = (document.getElementById("changeNote")?.value || s.changeNote || "");
+        s.changeNote = txt;
+        if ((txt || "").trim().length < CHANGE_NOTE_MIN) return;
+        s.doneNote = true;
+        const allCorrect = !!(s.correct.triage && s.correct.diagnosis && s.correct.fix);
+        const noteOk = (s.changeNote || "").trim().length >= CHANGE_NOTE_MIN;
+        s.resolved = allCorrect && noteOk;
+        saveTicketState(ticketId, s);
+        renderTicketDetail(ticketId);
+        updateProgressAndHealth();
+        return;
+      }
     });
 
     applyFilters();
