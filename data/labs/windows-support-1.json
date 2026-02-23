@@ -3,26 +3,15 @@
   "title": "Windows Support I",
   "track": "HelpDesk",
   "subject": "Windows Fundamentals",
-  "description": "8 gamified support tickets focused on Windows installation, disk storage, local accounts, and file sharing. Use the 4-step workflow to document your findings and actions.",
+  "description": "8 gamified support tickets focused on Windows installation, disk storage, local accounts, and file sharing. Use the 4-step workflow to document your findings and actions. Answers are not provided.",
   "rolePill": "Role: Support Technician (Tier 1)",
-  "categories": [
-    "Storage",
-    "Accounts",
-    "File Sharing",
-    "Recovery/CLI",
-    "Deployment"
-  ],
+  "categories": ["Storage", "Accounts", "File Sharing", "Recovery/CLI", "Deployment"],
   "tickets": [
     {
       "id": "WS-001",
       "category": "Storage",
       "title": "User cannot copy a large file to a USB drive",
-      "tags": [
-        "USB",
-        "Copy",
-        "File size",
-        "Storage"
-      ],
+      "tags": ["USB", "Copy", "File size", "Storage"],
       "summary": "A user reports 'Not enough space' when copying a single large file to a USB drive that appears to have free space.",
       "env": {
         "Device": "USB Flash Drive (16GB)",
@@ -30,52 +19,18 @@
         "Impact": "User cannot transfer a required file"
       },
       "workflow": {
-        "triage": {
-          "q": "Capture symptoms and scope. What is the exact error? What is the file size? What does Windows show as free space?",
-          "options": [
-            "Apply a random fix based on guesswork with no validation.",
-            "Assume it is a user mistake and close the ticket.",
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Reboot immediately without collecting any details."
-          ],
-          "correct": 2
-        },
-        "diagnosis": {
-          "q": "State your most likely root cause and the evidence you will use to confirm it.",
-          "options": [
-            "Rely only on user opinion rather than measurable evidence.",
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Skip diagnosis and go straight to changes on production systems.",
-            "Blame the network without checking any logs or configuration."
-          ],
-          "correct": 1
-        },
-        "fix": {
-          "q": "Document the GUI steps you will take to resolve it (and what you will verify after).",
-          "options": [
-            "Disable security controls to make the problem go away.",
-            "Make multiple changes at once so you cannot isolate what fixed it.",
-            "Declare success without testing or validation.",
-            "Apply the least-risk remediation, then verify the service is restored and document results."
-          ],
-          "correct": 3
-        },
+        "triage": "Capture symptoms and scope. What is the exact error? What is the file size? What does Windows show as free space?",
+        "diagnosis": "State your most likely root cause and the evidence you will use to confirm it.",
+        "fix": "Document the GUI steps you will take to resolve it (and what you will verify after).",
         "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "Confirm the file transfers successfully",
-        "Verify the solution matches user constraints (data retention, tool limitations)"
-      ]
+      "validations": ["Confirm the file transfers successfully", "Verify the solution matches user constraints (data retention, tool limitations)"]
     },
     {
       "id": "WS-002",
       "category": "Deployment",
       "title": "Windows Setup does not allow selecting the target disk",
-      "tags": [
-        "Windows Setup",
-        "Disk",
-        "Install"
-      ],
+      "tags": ["Windows Setup", "Disk", "Install"],
       "summary": "During Windows installation, the target disk is missing or cannot be selected for installation.",
       "env": {
         "Scenario": "OS reinstall / new install",
@@ -83,52 +38,18 @@
         "Impact": "Cannot proceed with installation"
       },
       "workflow": {
-        "triage": {
-          "q": "Capture exactly what the installer shows. Is the disk missing, offline, or blocked by a message?",
-          "options": [
-            "Apply a random fix based on guesswork with no validation.",
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Assume it is a user mistake and close the ticket.",
-            "Reboot immediately without collecting any details."
-          ],
-          "correct": 1
-        },
-        "diagnosis": {
-          "q": "State your likely root cause and the evidence you will use to confirm it (BIOS/UEFI checks, disk state, etc.).",
-          "options": [
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Rely only on user opinion rather than measurable evidence.",
-            "Blame the network without checking any logs or configuration.",
-            "Skip diagnosis and go straight to changes on production systems."
-          ],
-          "correct": 0
-        },
-        "fix": {
-          "q": "Document the GUI actions you will take to make the disk installable, keeping safety and approvals in mind.",
-          "options": [
-            "Declare success without testing or validation.",
-            "Apply the least-risk remediation, then verify the service is restored and document results.",
-            "Disable security controls to make the problem go away.",
-            "Make multiple changes at once so you cannot isolate what fixed it."
-          ],
-          "correct": 1
-        },
+        "triage": "Capture exactly what the installer shows. Is the disk missing, offline, or blocked by a message?",
+        "diagnosis": "State your likely root cause and the evidence you will use to confirm it (BIOS/UEFI checks, disk state, etc.).",
+        "fix": "Document the GUI actions you will take to make the disk installable, keeping safety and approvals in mind.",
         "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "Disk becomes selectable in Setup",
-        "Installation proceeds successfully"
-      ]
+      "validations": ["Disk becomes selectable in Setup", "Installation proceeds successfully"]
     },
     {
       "id": "WS-003",
       "category": "Storage",
       "title": "New disk attached but not visible in File Explorer",
-      "tags": [
-        "Disk Management",
-        "Volume",
-        "Drive letter"
-      ],
+      "tags": ["Disk Management", "Volume", "Drive letter"],
       "summary": "A user can see a new disk in Disk Management but cannot use it in File Explorer.",
       "env": {
         "Tool": "Disk Management",
@@ -136,306 +57,101 @@
         "Impact": "Cannot store files on the new disk"
       },
       "workflow": {
-        "triage": {
-          "q": "Capture the disk status shown in Disk Management.",
-          "options": [
-            "Assume it is a user mistake and close the ticket.",
-            "Reboot immediately without collecting any details.",
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Apply a random fix based on guesswork with no validation."
-          ],
-          "correct": 2
-        },
-        "diagnosis": {
-          "q": "State your likely root cause and the evidence you will use to confirm it.",
-          "options": [
-            "Rely only on user opinion rather than measurable evidence.",
-            "Skip diagnosis and go straight to changes on production systems.",
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Blame the network without checking any logs or configuration."
-          ],
-          "correct": 2
-        },
-        "fix": {
-          "q": "Document the GUI steps you will take to resolve it and what you will verify afterward.",
-          "options": [
-            "Apply the least-risk remediation, then verify the service is restored and document results.",
-            "Declare success without testing or validation.",
-            "Disable security controls to make the problem go away.",
-            "Make multiple changes at once so you cannot isolate what fixed it."
-          ],
-          "correct": 0
-        },
+        "triage": "Capture the disk status shown in Disk Management.",
+        "diagnosis": "State what is preventing the disk from being usable and what evidence confirms it.",
+        "fix": "Document the GUI steps required to make the disk usable in File Explorer.",
         "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "Disk is initialized, partitioned, and assigned a drive letter",
-        "Drive appears in File Explorer"
-      ]
+      "validations": ["Drive appears in File Explorer", "Read/write test succeeds"]
     },
     {
       "id": "WS-004",
-      "category": "Accounts",
-      "title": "User cannot sign in after password reset",
-      "tags": [
-        "Login",
-        "Password",
-        "Local account"
-      ],
-      "summary": "A user reports they still cannot sign in after a password reset.",
+      "category": "Storage",
+      "title": "A disk volume shows Offline and a drive is missing",
+      "tags": ["Offline disk", "Disk Management"],
+      "summary": "A volume that existed previously is now missing in File Explorer; Disk Management shows it as Offline.",
       "env": {
-        "Account Type": "Local / Microsoft account",
         "OS": "Windows 10/11",
-        "Impact": "User cannot access workstation"
+        "Impact": "Business files unavailable"
       },
       "workflow": {
-        "triage": {
-          "q": "Confirm the exact error shown at sign-in and whether it is a local account or Microsoft account.",
-          "options": [
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Reboot immediately without collecting any details.",
-            "Apply a random fix based on guesswork with no validation.",
-            "Assume it is a user mistake and close the ticket."
-          ],
-          "correct": 0
-        },
-        "diagnosis": {
-          "q": "Identify the most likely root cause and the evidence you will use to confirm it (account lockout, wrong account, keyboard layout, etc.).",
-          "options": [
-            "Blame the network without checking any logs or configuration.",
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Skip diagnosis and go straight to changes on production systems.",
-            "Rely only on user opinion rather than measurable evidence."
-          ],
-          "correct": 1
-        },
-        "fix": {
-          "q": "Document the least-risk remediation steps and how you will verify sign-in works.",
-          "options": [
-            "Make multiple changes at once so you cannot isolate what fixed it.",
-            "Apply the least-risk remediation, then verify the service is restored and document results.",
-            "Disable security controls to make the problem go away.",
-            "Declare success without testing or validation."
-          ],
-          "correct": 1
-        },
+        "triage": "Confirm the type of disk and any recent changes (updates, power, docking, cable, enclosure).",
+        "diagnosis": "State your likely cause and the evidence you will use to confirm it.",
+        "fix": "Document the GUI steps to restore access safely (no destructive actions without explicit approval).",
         "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "User can sign in successfully",
-        "Issue does not recur after a reboot"
-      ]
+      "validations": ["Disk is Online", "Volume accessible", "No new disk errors after fix"]
     },
     {
       "id": "WS-005",
-      "category": "File Sharing",
-      "title": "User cannot access a shared folder",
-      "tags": [
-        "Share",
-        "Permissions",
-        "SMB"
-      ],
-      "summary": "A user reports 'Access denied' when attempting to access a shared folder.",
+      "category": "Accounts",
+      "title": "New user can sign in but cannot complete an approved install",
+      "tags": ["Local users", "UAC", "Permissions"],
+      "summary": "A user account was created, but the user cannot complete an approved installation that requires elevation.",
       "env": {
-        "Protocol": "SMB",
-        "Scope": "Single user / multiple users",
-        "Impact": "User cannot access required files"
+        "Account Type": "Local user",
+        "Impact": "Required software cannot be installed"
       },
       "workflow": {
-        "triage": {
-          "q": "Confirm the share path, exact error message, and whether other users are affected.",
-          "options": [
-            "Assume it is a user mistake and close the ticket.",
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Apply a random fix based on guesswork with no validation.",
-            "Reboot immediately without collecting any details."
-          ],
-          "correct": 1
-        },
-        "diagnosis": {
-          "q": "Determine likely cause (share permissions vs NTFS vs network) and what evidence confirms it.",
-          "options": [
-            "Skip diagnosis and go straight to changes on production systems.",
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Rely only on user opinion rather than measurable evidence.",
-            "Blame the network without checking any logs or configuration."
-          ],
-          "correct": 1
-        },
-        "fix": {
-          "q": "Document remediation steps and verification (least privilege).",
-          "options": [
-            "Declare success without testing or validation.",
-            "Disable security controls to make the problem go away.",
-            "Apply the least-risk remediation, then verify the service is restored and document results.",
-            "Make multiple changes at once so you cannot isolate what fixed it."
-          ],
-          "correct": 2
-        },
+        "triage": "Capture the exact prompt/error and what action triggers it.",
+        "diagnosis": "Determine why this behavior is occurring and what evidence confirms it (user group membership, elevation requirements).",
+        "fix": "Document the least-privilege GUI path to complete the install (policy-compliant approach).",
         "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "User can access required folders/files",
-        "Permissions align with least privilege"
-      ]
+      "validations": ["User can complete approved install via correct method", "No unnecessary privileges remain"]
     },
     {
       "id": "WS-006",
-      "category": "Recovery/CLI",
-      "title": "System file check reports corruption",
-      "tags": [
-        "SFC",
-        "DISM",
-        "Repair"
-      ],
-      "summary": "A technician runs a system file check and it reports corruption.",
+      "category": "File Sharing",
+      "title": "User can see a share but gets Access Denied opening files",
+      "tags": ["Share permissions", "NTFS", "Effective access"],
+      "summary": "A user can browse to a shared folder but receives Access Denied when opening a file.",
       "env": {
-        "Tools": "SFC / DISM",
-        "OS": "Windows 10/11",
-        "Impact": "Potential OS instability"
+        "Share": "\\\\PC-LAB01\\ClassShare",
+        "Impact": "Cannot access required files"
       },
       "workflow": {
-        "triage": {
-          "q": "Capture the exact SFC/DISM output and any related symptoms (BSOD, app crashes, slow boot).",
-          "options": [
-            "Apply a random fix based on guesswork with no validation.",
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Reboot immediately without collecting any details.",
-            "Assume it is a user mistake and close the ticket."
-          ],
-          "correct": 1
-        },
-        "diagnosis": {
-          "q": "Identify likely root cause and evidence (log files, recent updates, disk health).",
-          "options": [
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Skip diagnosis and go straight to changes on production systems.",
-            "Rely only on user opinion rather than measurable evidence.",
-            "Blame the network without checking any logs or configuration."
-          ],
-          "correct": 0
-        },
-        "fix": {
-          "q": "Document least-risk remediation steps and verification.",
-          "options": [
-            "Make multiple changes at once so you cannot isolate what fixed it.",
-            "Apply the least-risk remediation, then verify the service is restored and document results.",
-            "Declare success without testing or validation.",
-            "Disable security controls to make the problem go away."
-          ],
-          "correct": 1
-        },
+        "triage": "Confirm whether the issue affects one user or many and what actions fail (browse, open, create, modify).",
+        "diagnosis": "State your likely cause and what evidence you will use to confirm it (share perms, NTFS perms, effective access).",
+        "fix": "Document the GUI steps to correct permissions with least privilege.",
         "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "SFC/DISM reports no remaining corruption",
-        "System behaves normally after reboot"
-      ]
+      "validations": ["User can access required files", "User cannot access outside scope", "Effective access matches intent"]
     },
     {
       "id": "WS-007",
-      "category": "Accounts",
-      "title": "User profile loads with a temporary profile",
-      "tags": [
-        "Profile",
-        "Temp profile",
-        "Registry"
-      ],
-      "summary": "User signs in but Windows loads a temporary profile and settings are missing.",
+      "category": "Recovery/CLI",
+      "title": "Technician must prepare a disk using DiskPart (recovery console)",
+      "tags": ["DiskPart", "CLI", "Recovery"],
+      "summary": "You are in a recovery/setup command prompt and need to prepare a disk before installation or use.",
       "env": {
-        "OS": "Windows 10/11",
-        "Scope": "Single user",
-        "Impact": "User data/settings appear missing"
+        "Console": "Windows Setup / Recovery Command Prompt",
+        "Impact": "Disk not ready for task"
       },
       "workflow": {
-        "triage": {
-          "q": "Confirm the exact message about a temporary profile and whether user data still exists on disk.",
-          "options": [
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Assume it is a user mistake and close the ticket.",
-            "Reboot immediately without collecting any details.",
-            "Apply a random fix based on guesswork with no validation."
-          ],
-          "correct": 0
-        },
-        "diagnosis": {
-          "q": "Identify likely cause and evidence (profile service, SID mapping, disk/permissions).",
-          "options": [
-            "Blame the network without checking any logs or configuration.",
-            "Rely only on user opinion rather than measurable evidence.",
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Skip diagnosis and go straight to changes on production systems."
-          ],
-          "correct": 2
-        },
-        "fix": {
-          "q": "Document the least-risk remediation steps and how you will validate the profile is restored.",
-          "options": [
-            "Declare success without testing or validation.",
-            "Apply the least-risk remediation, then verify the service is restored and document results.",
-            "Disable security controls to make the problem go away.",
-            "Make multiple changes at once so you cannot isolate what fixed it."
-          ],
-          "correct": 1
-        },
+        "triage": "Identify the correct disk safely (avoid destructive actions on the wrong disk).",
+        "diagnosis": "State what disk state prevents progress and what output would confirm it.",
+        "fix": "Document the commands you would run (non-destructive first), and note when explicit approval is required for destructive actions.",
         "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "User signs in and loads normal profile",
-        "User data/settings are intact"
-      ]
+      "validations": ["Disk state matches intended outcome", "Setup can proceed / volume mounts correctly"]
     },
     {
       "id": "WS-008",
       "category": "Deployment",
-      "title": "Windows Update fails repeatedly",
-      "tags": [
-        "Windows Update",
-        "Error",
-        "Servicing stack"
-      ],
-      "summary": "A workstation repeatedly fails to install updates and rolls back.",
+      "title": "Bootable USB preparation requested for Windows installation",
+      "tags": ["Bootable media", "UEFI/BIOS", "USB"],
+      "summary": "A user needs a bootable USB prepared correctly for Windows installation.",
       "env": {
-        "OS": "Windows 10/11",
-        "Impact": "Security patches not applied"
+        "Impact": "Cannot install Windows without boot media"
       },
       "workflow": {
-        "triage": {
-          "q": "Capture the update error code, update KB number, and relevant Windows Update logs.",
-          "options": [
-            "Reboot immediately without collecting any details.",
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Assume it is a user mistake and close the ticket.",
-            "Apply a random fix based on guesswork with no validation."
-          ],
-          "correct": 1
-        },
-        "diagnosis": {
-          "q": "Identify the most likely cause and the evidence required (storage, servicing corruption, policy, network).",
-          "options": [
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Skip diagnosis and go straight to changes on production systems.",
-            "Blame the network without checking any logs or configuration.",
-            "Rely only on user opinion rather than measurable evidence."
-          ],
-          "correct": 0
-        },
-        "fix": {
-          "q": "Document least-risk remediation steps and verification.",
-          "options": [
-            "Make multiple changes at once so you cannot isolate what fixed it.",
-            "Disable security controls to make the problem go away.",
-            "Apply the least-risk remediation, then verify the service is restored and document results.",
-            "Declare success without testing or validation."
-          ],
-          "correct": 2
-        },
+        "triage": "Confirm target device boot mode expectations (UEFI vs legacy) and what media/tools are available.",
+        "diagnosis": "State likely causes of a USB failing to boot in this environment and what checks confirm them.",
+        "fix": "Document the steps to create bootable media (GUI approach and an optional CLI approach).",
         "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "Updates install successfully",
-        "Device remains compliant with patching policy"
-      ]
+      "validations": ["USB appears as boot option", "Boot proceeds to Windows Setup", "Correct edition/architecture is used"]
     }
   ]
 }
