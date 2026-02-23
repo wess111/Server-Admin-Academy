@@ -1,1 +1,1526 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Server Admin Academy — Windows Support I (Incident Scenarios)</title>
 
+  <!-- v9.4-style CSS (embedded to keep this activity self-contained) -->
+  <style>
+    :root{
+      --bg:#070b12;
+      --text:#eef5ff;
+      --muted:rgba(238,245,255,.78);
+      --panel:rgba(18,26,42,.66);
+      --border:rgba(255,255,255,.12);
+      --brand:#8b5cf6;     /* purple accent to match your overall academy feel */
+      --ok:#22c55e;
+      --warn:#fbbf24;
+      --bad:#fb7185;
+      --shadow:0 22px 70px rgba(0,0,0,.55);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+    html, body{
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+
+    /* Solid background (no gradients) */
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background: var(--bg);
+      color:var(--text);
+    }
+
+    /* Top bar */
+    .appbar{
+      position:sticky; top:0; z-index:10;
+      display:flex; justify-content:space-between; align-items:center;
+      padding:14px 18px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      background: rgba(10,14,23,.92);
+      backdrop-filter: blur(10px);
+    }
+    .appbar-left{display:flex; gap:12px; align-items:center}
+    .mark{
+      width:34px;height:34px;border-radius:12px;
+      background: radial-gradient(circle at 30% 30%, rgba(139,92,246,.95), rgba(167,139,250,.50), rgba(15,23,42,.10));
+      border:1px solid rgba(255,255,255,.18);
+    }
+    .brand{font-weight:800; letter-spacing:.2px}
+    .subtitle{font-size:12.5px;color:var(--muted);font-weight:600}
+    .appbar-right{display:flex; gap:10px; align-items:center}
+
+    .pill{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.07);
+      padding:7px 12px;
+      border-radius:999px;
+      font-weight:700; font-size:13px;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .dot{width:8px;height:8px;border-radius:999px;background:var(--ok);display:inline-block}
+
+    .btn{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
+      color: rgba(238,245,255,.92);
+      padding:9px 12px;
+      border-radius:14px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .btn:hover{filter:brightness(1.05)}
+    .btn.ghost{
+      background: transparent;
+    }
+
+    .container{max-width:1280px;margin:0 auto;padding:18px 18px 30px}
+
+    /* Banner */
+    .banner{
+      margin-top:14px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:var(--radius);
+      background: rgba(18,26,42,.55);
+      box-shadow: var(--shadow);
+    }
+    .banner-inner{padding:18px}
+    .toprow{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap}
+    .role-pill{
+      display:inline-flex;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.07);
+      padding:7px 12px;
+      border-radius:999px;
+      font-weight:800;
+      font-size:13px;
+      color: rgba(238,245,255,.92);
+    }
+
+    .banner h1{
+      margin:8px 0 10px;
+      font-size:clamp(1.6rem, 3.5vw, 2.35rem);
+      letter-spacing:-.02em;
+      font-weight:900;
+    }
+    .banner .p{margin:0;color:var(--muted);line-height:1.75;max-width:100ch}
+
+    .student-grid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:repeat(4,minmax(160px,1fr));
+      gap:12px
+    }
+    .field{display:flex;flex-direction:column;gap:6px;font-weight:800;font-size:12px;color:rgba(238,245,255,.78)}
+    .input{
+      background: rgba(0,0,0,.16);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:14px;
+      padding:10px 12px;
+      color:var(--text);
+      outline:none;
+      font-weight:700;
+    }
+    .input:focus{
+      border-color: rgba(139,92,246,.75);
+      box-shadow: 0 0 0 3px rgba(139,92,246,.25);
+    }
+
+    .hint{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.12);
+      color: rgba(238,245,255,.86);
+      font-weight:700;
+    }
+
+    /* Workspace */
+    .workspace{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap:14px;
+      align-items:start;
+    }
+    .panel{
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:var(--radius);
+      background: rgba(18,26,42,.55);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panel-title{
+      padding:14px 14px 8px;
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    .panel-sub{
+      padding:0 14px 12px;
+      color:var(--muted);
+      font-weight:700;
+      font-size:13px;
+      line-height:1.5;
+    }
+    .list{padding:10px 10px 14px}
+
+    .item{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      margin-bottom:10px;
+      cursor:pointer;
+      text-align:left;
+    }
+    .item:hover{border-color: rgba(139,92,246,.35)}
+    .item.active{
+      border-color: rgba(139,92,246,.55);
+      background: rgba(139,92,246,.12);
+    }
+    .item-left{display:flex;flex-direction:column;gap:4px}
+    .item-title{font-weight:900}
+    .item-sub{color:var(--muted);font-size:12.5px;font-weight:700}
+    .badge{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.07);
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:900;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .badge.ok{border-color: rgba(34,197,94,.55); background: rgba(34,197,94,.10);}
+    .badge.soon{border-color: rgba(251,191,36,.55); background: rgba(251,191,36,.10);}
+
+    /* Right content */
+    .content-wrap{padding:14px}
+    .card{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      border-radius:16px;
+      padding:14px;
+      margin-bottom:12px;
+    }
+    .card h2{margin:0 0 8px;font-size:1.15rem;font-weight:950}
+    .card h3{margin:0 0 8px;font-size:1.02rem;font-weight:950}
+    .muted{color:var(--muted);line-height:1.7;font-weight:650}
+    .hr{height:1px;background:rgba(255,255,255,.10);margin:12px 0}
+
+    .stepHead{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:8px;
+    }
+    .stepMeta{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .stepTitle{font-weight:950}
+    .stepHelp{color:var(--muted);font-weight:700;font-size:13px;line-height:1.5}
+    .stepActions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+    .btnSmall{
+      padding:9px 11px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
+      color: rgba(238,245,255,.92);
+      font-weight:900;
+      cursor:pointer;
+    }
+    .btnSmall:hover{filter:brightness(1.05)}
+    .btnSmall.primary{
+      border-color: rgba(139,92,246,.55);
+      background: rgba(139,92,246,.18);
+    }
+    .btnSmall:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    pre{
+      margin:10px 0 0;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      overflow:auto;
+      line-height:1.6;
+      font-weight:750;
+      color: rgba(238,245,255,.92);
+    }
+    code{font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+
+    textarea{
+      width:100%;
+      min-height:130px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.16);
+      color: var(--text);
+      padding:12px;
+      font-weight:700;
+      outline:none;
+      line-height:1.6;
+    }
+    textarea:focus{
+      border-color: rgba(139,92,246,.75);
+      box-shadow: 0 0 0 3px rgba(139,92,246,.25);
+    }
+
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .check{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:900;
+      color: rgba(238,245,255,.90);
+    }
+    input[type="checkbox"]{
+      width:18px;height:18px;
+      accent-color: var(--brand);
+    }
+
+    .note{
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.12);
+      color: rgba(238,245,255,.88);
+      font-weight:750;
+      line-height:1.6;
+    }
+
+    @media (max-width: 980px){
+      .workspace{grid-template-columns: 1fr}
+      .student-grid{grid-template-columns:repeat(2,minmax(160px,1fr))}
+    }
+    @media (max-width: 520px){
+      .student-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+
+<body>
+  <header class="appbar" role="banner">
+    <div class="appbar-left" aria-label="Activity header">
+      <div class="mark" aria-hidden="true"></div>
+      <div>
+        <div class="brand">Server Admin Academy</div>
+        <div class="subtitle">Support Operations — Incident Scenarios — Windows Support I</div>
+      </div>
+    </div>
+    <div class="appbar-right">
+      <div class="pill" aria-live="polite">
+        <span class="dot" aria-hidden="true"></span>
+        <span id="progress">Progress: 0/8</span>
+      </div>
+      <button id="btn-reset" class="btn ghost" type="button">Reset</button>
+    </div>
+  </header>
+
+  <main class="container" role="main">
+    <section class="banner" aria-label="Activity overview">
+      <div class="banner-inner">
+        <div class="toprow">
+          <div class="role-pill" id="role-pill">Role: Support Technician (Tier 1 / Tier 2)</div>
+        </div>
+
+        <h1>Windows Support I — Incident Scenarios</h1>
+
+        <p class="p">
+          This activity simulates realistic workstation support tickets aligned with Windows installation, disk storage, local user accounts, and file sharing.
+          Each mission uses progressive reveal so you must form a hypothesis before you see deeper diagnostic evidence.
+        </p>
+
+        <div class="student-grid" aria-label="Student information">
+          <label class="field">
+            <span>Student name</span>
+            <input id="studentName" class="input" placeholder="e.g., Louis" autocomplete="name"/>
+          </label>
+          <label class="field">
+            <span>Section</span>
+            <input id="courseCode" class="input" value="PC Analysis / Server Admin"/>
+          </label>
+          <label class="field">
+            <span>Date</span>
+            <input id="activityDate" class="input" type="date"/>
+          </label>
+          <label class="field">
+            <span>Course</span>
+            <input id="courseTitle" class="input" value="Support Operations — Incident Scenarios"/>
+          </label>
+        </div>
+
+        <div class="hint" role="note">
+          Progressive reveal: complete each step in order (Brief → Triage → Diagnostics → Resolution → Change Note). Later steps unlock after you reveal earlier steps.
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace" aria-label="Activity workspace">
+      <div class="panel left" aria-label="Mission list panel">
+        <div class="panel-title">Missions</div>
+        <div class="panel-sub">Select a mission. Complete it step-by-step to unlock the next layers.</div>
+        <div id="missionList" class="list" role="list"></div>
+      </div>
+
+      <div class="panel right" aria-label="Mission detail panel">
+        <div class="content-wrap" id="content"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /*******************************
+     * Windows Support I — v9.4-style activity engine (standalone)
+     * Progressive reveal per mission + mission completion tracking
+     *******************************/
+
+    const STORAGE_KEY = "saa_windows_support_1_v94";
+
+    const missions = [
+      {
+        id: "m1",
+        title: "Field Media Transfer Failure",
+        sub: "USB drive shows free space, but a large file won’t copy.",
+        difficulty: "Intermediate",
+        steps: [
+          {
+            key: "brief",
+            title: "Mission Brief",
+            help: "Read the ticket and define your initial hypothesis before revealing deeper evidence.",
+            body: `
+              <div class="note">
+                <strong>Ticket:</strong> A field technician reports:<br><br>
+                “I’m trying to copy a 5.2GB Windows ISO file to my 16GB USB drive. It says there is not enough space, but the drive shows 14GB free.”<br><br>
+                <strong>Environment:</strong> Windows workstation, USB drive (16GB), ISO file (5.2GB).<br>
+                <strong>Tools allowed:</strong> File Explorer, Drive Properties, Command Prompt.<br><br>
+                <strong>Your task:</strong> Determine the cause and document a support-grade resolution.
+              </div>
+              <div class="hr"></div>
+              <div class="card">
+                <h3>Initial Hypothesis</h3>
+                <div class="muted">Before you reveal anything else, write what you think is happening and why.</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m1_hypothesis" placeholder="Write your hypothesis here..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "triage",
+            title: "Triage",
+            help: "Validate what works, what fails, and what you should check first.",
+            body: `
+              <div class="note">
+                <strong>Observed:</strong><br>
+                • USB shows ~14GB free.<br>
+                • Drive opens normally in File Explorer.<br>
+                • Smaller files copy successfully.<br><br>
+                <strong>Prompt:</strong> What is the first validation you should perform to explain why a 5.2GB file fails despite free space?
+              </div>
+              <div class="hr"></div>
+              <div class="card">
+                <h3>Triage Decision</h3>
+                <div class="muted">Write the first thing you would check (be specific: what are you checking and where?).</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m1_triage" placeholder="Example: Verify the file system type on the USB drive via Properties or command line..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "diagnostics",
+            title: "Diagnostics",
+            help: "Use evidence (command output / properties) to identify the technical constraint.",
+            body: `
+              <div class="note">
+                From Command Prompt, you run:<br>
+                <pre><code>fsutil fsinfo volumeinfo E:</code></pre>
+              </div>
+              <div class="card">
+                <h3>Diagnostic Evidence</h3>
+                <div class="muted">The output indicates the drive file system is:</div>
+                <pre><code>File System Name : FAT32</code></pre>
+                <div class="hr"></div>
+                <div class="muted">
+                  Explain how this evidence changes your hypothesis. What is the limitation you should suspect?
+                </div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m1_diag" placeholder="Explain the limitation and why it matters..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "resolution",
+            title: "Resolution",
+            help: "Choose corrective action(s) without losing data unnecessarily.",
+            body: `
+              <div class="note">
+                <strong>Goal:</strong> Enable reliable transfer of large files to removable media.<br>
+                <strong>Constraint:</strong> The user may have data on the USB drive.<br><br>
+                Identify the best corrective option(s), including any prerequisites.
+              </div>
+              <div class="card">
+                <h3>Fix (GUI / Practical Action)</h3>
+                <div class="muted">Describe the fix you would apply (and where). Include a brief “why”.</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m1_fix" placeholder="Example: Backup USB contents, then reformat to exFAT (or NTFS) via File Explorer > Right-click drive > Format..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "change",
+            title: "Change Note",
+            help: "Document root cause + actions taken + prevention. This is what you would enter into the ticket.",
+            body: `
+              <div class="card">
+                <h3>Change Note (Ticket Entry)</h3>
+                <div class="muted">Use this structure:</div>
+                <pre><code>Root Cause:
+Actions Taken:
+Risk / Considerations:
+Prevention / Recommendation:</code></pre>
+                <div style="margin-top:10px">
+                  <textarea data-note="m1_change" placeholder="Write the change note here..."></textarea>
+                </div>
+                <div class="hr"></div>
+                <div class="row">
+                  <label class="check"><input type="checkbox" data-complete="m1"> Mark Mission Complete</label>
+                </div>
+              </div>
+            `
+          }
+        ]
+      },
+
+      {
+        id: "m2",
+        title: "Installation Blocked at Disk Selection",
+        sub: "Windows setup refuses to install to the target disk.",
+        difficulty: "Intermediate",
+        steps: [
+          {
+            key: "brief",
+            title: "Mission Brief",
+            help: "Read the ticket and write your hypothesis.",
+            body: `
+              <div class="note">
+                <strong>Ticket:</strong> During Windows installation, the disk appears but is not selectable.<br>
+                Message: “Windows cannot be installed to this disk.”<br><br>
+                <strong>Environment:</strong> Fresh build, UEFI enabled, 512GB internal drive.<br>
+                <strong>Tools allowed:</strong> Windows Setup, DiskPart via Shift+F10.<br><br>
+                <strong>Your task:</strong> Determine why installation is blocked and perform the correct corrective action.
+              </div>
+              <div class="hr"></div>
+              <div class="card">
+                <h3>Initial Hypothesis</h3>
+                <div class="muted">Write what you think is wrong (partition style? boot mode? disk state?)</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m2_hypothesis" placeholder="Write your hypothesis here..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "triage",
+            title: "Triage",
+            help: "Use setup tools available at install time.",
+            body: `
+              <div class="note">
+                You press <strong>Shift + F10</strong> to open Command Prompt in Windows Setup.<br><br>
+                <strong>Prompt:</strong> What command-line tool is appropriate for inspecting/repairing disk partition style during installation?
+              </div>
+              <div class="card">
+                <h3>Triage Decision</h3>
+                <div class="muted">Write your first action and why it’s safe/appropriate in setup context.</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m2_triage" placeholder="Example: Use diskpart to inspect the disk and partition style before making changes..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "diagnostics",
+            title: "Diagnostics",
+            help: "Interpret DiskPart output and relate it to the firmware boot mode.",
+            body: `
+              <div class="note">
+                You run:<br>
+                <pre><code>diskpart
+list disk</code></pre>
+              </div>
+              <div class="card">
+                <h3>Diagnostic Evidence</h3>
+                <div class="muted">Disk 0 (512GB) shows partition style: <strong>MBR</strong>.<br>Firmware boot mode is <strong>UEFI</strong>.</div>
+                <div class="hr"></div>
+                <div class="muted">
+                  Explain why this combination can block installation. What disk style is expected when installing in UEFI mode?
+                </div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m2_diag" placeholder="Explain the mismatch and the expected disk style..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "resolution",
+            title: "Resolution",
+            help: "Apply a safe disk repair approach appropriate for setup time.",
+            body: `
+              <div class="note">
+                <strong>Constraint:</strong> This is a fresh build (no required data).<br>
+                <strong>Goal:</strong> Make the disk compatible with UEFI installation.
+              </div>
+              <div class="card">
+                <h3>Fix (DiskPart Action)</h3>
+                <div class="muted">Describe the exact commands you would run and why. Include the risk statement about disk selection.</div>
+                <pre><code>diskpart
+select disk 0
+clean
+convert gpt
+exit</code></pre>
+                <div style="margin-top:10px">
+                  <textarea data-note="m2_fix" placeholder="Explain what each command does and why it resolves the install block..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "change",
+            title: "Change Note",
+            help: "Document the root cause + commands + validation result.",
+            body: `
+              <div class="card">
+                <h3>Change Note (Ticket Entry)</h3>
+                <pre><code>Root Cause:
+Actions Taken:
+Risk / Considerations:
+Validation:</code></pre>
+                <div style="margin-top:10px">
+                  <textarea data-note="m2_change" placeholder="Write the change note here..."></textarea>
+                </div>
+                <div class="hr"></div>
+                <label class="check"><input type="checkbox" data-complete="m2"> Mark Mission Complete</label>
+              </div>
+            `
+          }
+        ]
+      },
+
+      {
+        id: "m3",
+        title: "Workstation Low Storage Alert",
+        sub: "C: drive is full but the user can’t find large files.",
+        difficulty: "Beginner → Intermediate",
+        steps: [
+          {
+            key: "brief",
+            title: "Mission Brief",
+            help: "Capture symptoms and propose an initial hypothesis.",
+            body: `
+              <div class="note">
+                <strong>Ticket:</strong> User reports system slowness and sees “Low Disk Space on Local Disk (C:)”.<br>
+                C: drive shows ~95% used. User claims they did not install large apps.<br><br>
+                <strong>Tools allowed:</strong> File Explorer, Disk Cleanup, Command Prompt.
+              </div>
+              <div class="hr"></div>
+              <div class="card">
+                <h3>Initial Hypothesis</h3>
+                <div class="muted">Write what you suspect is consuming space if it’s not obvious in normal folder views.</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m3_hypothesis" placeholder="Write your hypothesis here..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "triage",
+            title: "Triage",
+            help: "Validate whether space usage is hidden, system-managed, or user-managed.",
+            body: `
+              <div class="note">
+                <strong>Observed:</strong><br>
+                • Normal browsing does not show large folders.<br>
+                • User profile folders appear normal size.<br><br>
+                <strong>Prompt:</strong> What two safe checks would you perform first before deleting anything?
+              </div>
+              <div class="card">
+                <h3>Triage Decision</h3>
+                <div class="muted">Write two checks (examples: Storage settings, Disk Cleanup scan, hidden files visibility, etc.).</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m3_triage" placeholder="Write your two safe checks here..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "diagnostics",
+            title: "Diagnostics",
+            help: "Use evidence to confirm where storage is going.",
+            body: `
+              <div class="note">
+                You run:<br>
+                <pre><code>dir C:\\ /a</code></pre>
+              </div>
+              <div class="card">
+                <h3>Diagnostic Evidence</h3>
+                <div class="muted">Hidden/system-related storage consumers appear, including:</div>
+                <pre><code>Windows.old
+$Recycle.Bin
+Temp / temporary directories</code></pre>
+                <div class="hr"></div>
+                <div class="muted">Explain which item(s) are safe to remove using supported tools and why.</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m3_diag" placeholder="Explain safe cleanup approach..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "resolution",
+            title: "Resolution",
+            help: "Perform cleanup using supported methods (not risky manual deletion).",
+            body: `
+              <div class="note">
+                <strong>Goal:</strong> Reclaim disk space safely without destabilizing the system.<br>
+                Use supported tools (Disk Cleanup / Storage settings) rather than deleting system folders manually.
+              </div>
+              <div class="card">
+                <h3>Fix (GUI Action)</h3>
+                <div class="muted">Describe the exact cleanup workflow you would use (Disk Cleanup options, removing Windows.old if appropriate, etc.).</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m3_fix" placeholder="Describe the cleanup steps..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "change",
+            title: "Change Note",
+            help: "Document what consumed space + what you removed + prevention.",
+            body: `
+              <div class="card">
+                <h3>Change Note (Ticket Entry)</h3>
+                <pre><code>Root Cause:
+Actions Taken:
+Validation:
+Prevention / Recommendation:</code></pre>
+                <div style="margin-top:10px">
+                  <textarea data-note="m3_change" placeholder="Write the change note here..."></textarea>
+                </div>
+                <div class="hr"></div>
+                <label class="check"><input type="checkbox" data-complete="m3"> Mark Mission Complete</label>
+              </div>
+            `
+          }
+        ]
+      },
+
+      {
+        id: "m4",
+        title: "Partition Expansion Request",
+        sub: "Unallocated space exists, but Extend Volume is disabled.",
+        difficulty: "Intermediate",
+        steps: [
+          {
+            key: "brief",
+            title: "Mission Brief",
+            help: "Summarize the symptom and propose why Disk Management might block the action.",
+            body: `
+              <div class="note">
+                <strong>Ticket:</strong> After storage was added, the user requests C: drive expansion.<br>
+                Disk Management shows unallocated space, but “Extend Volume” is greyed out for C:.<br><br>
+                <strong>Tools allowed:</strong> Disk Management (GUI), observation + documentation.
+              </div>
+              <div class="hr"></div>
+              <div class="card">
+                <h3>Initial Hypothesis</h3>
+                <div class="muted">Why might Windows refuse to extend the partition even if unallocated space exists?</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m4_hypothesis" placeholder="Write your hypothesis here..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "triage",
+            title: "Triage",
+            help: "Check disk layout order and identify what sits between C: and free space.",
+            body: `
+              <div class="note">
+                <strong>Prompt:</strong> What layout detail matters most for “Extend Volume” to work in Disk Management?
+              </div>
+              <div class="card">
+                <h3>Triage Decision</h3>
+                <div class="muted">Write what you would verify in the disk layout view.</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m4_triage" placeholder="Example: Verify whether unallocated space is directly adjacent to the right side of C: ..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "diagnostics",
+            title: "Diagnostics",
+            help: "Interpret the disk layout and explain the limitation.",
+            body: `
+              <div class="card">
+                <h3>Diagnostic Evidence</h3>
+                <div class="muted">Disk layout shows:</div>
+                <pre><code>[ C: ] [ Recovery Partition ] [ Unallocated Space ]</code></pre>
+                <div class="hr"></div>
+                <div class="muted">Explain why this prevents extending C: using Disk Management.</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m4_diag" placeholder="Explain the adjacency requirement and why the recovery partition blocks the operation..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "resolution",
+            title: "Resolution",
+            help: "Provide a safe recommendation path (no destructive changes without planning).",
+            body: `
+              <div class="note">
+                <strong>Constraint:</strong> Do not perform destructive actions without approved backup/plan.<br>
+                <strong>Goal:</strong> Provide a professional recommendation to accomplish expansion safely.
+              </div>
+              <div class="card">
+                <h3>Fix (Recommended Action)</h3>
+                <div class="muted">Propose the safest next steps (examples: backup + partition tool planning, restructure during maintenance window, etc.).</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m4_fix" placeholder="Write your recommended path and why it’s safe..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "change",
+            title: "Change Note",
+            help: "Document why the request could not be completed immediately and what you recommended.",
+            body: `
+              <div class="card">
+                <h3>Change Note (Ticket Entry)</h3>
+                <pre><code>Root Cause:
+Actions Taken:
+Recommendation / Next Steps:
+Risk / Considerations:</code></pre>
+                <div style="margin-top:10px">
+                  <textarea data-note="m4_change" placeholder="Write the change note here..."></textarea>
+                </div>
+                <div class="hr"></div>
+                <label class="check"><input type="checkbox" data-complete="m4"> Mark Mission Complete</label>
+              </div>
+            `
+          }
+        ]
+      },
+
+      {
+        id: "m5",
+        title: "New Hire Access Denied",
+        sub: "A new local user can’t access a shared folder.",
+        difficulty: "Beginner → Intermediate",
+        steps: [
+          {
+            key: "brief",
+            title: "Mission Brief",
+            help: "Separate share permissions from NTFS permissions in your hypothesis.",
+            body: `
+              <div class="note">
+                <strong>Ticket:</strong> A new local user account was created. User can log in, but when accessing <code>\\\\PC01\\SharedDocs</code>, they receive “Access is denied.”<br><br>
+                <strong>Tools allowed:</strong> Local Users & Groups, Folder Properties, Advanced Security (NTFS), Share permissions.
+              </div>
+              <div class="hr"></div>
+              <div class="card">
+                <h3>Initial Hypothesis</h3>
+                <div class="muted">What are the two permission layers that could cause “Access is denied” on a share?</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m5_hypothesis" placeholder="Write your hypothesis here..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "triage",
+            title: "Triage",
+            help: "Validate access as admin and compare expected user rights.",
+            body: `
+              <div class="note">
+                <strong>Observed:</strong><br>
+                • Administrator can access the share normally.<br>
+                • New user receives access denied.<br><br>
+                <strong>Prompt:</strong> What should you check first: Share permissions or NTFS permissions? Explain why.
+              </div>
+              <div class="card">
+                <h3>Triage Decision</h3>
+                <div class="muted">Write the order you would check permissions and why that order makes sense.</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m5_triage" placeholder="Write your triage order here..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "diagnostics",
+            title: "Diagnostics",
+            help: "Use the evidence to identify which layer is blocking access.",
+            body: `
+              <div class="card">
+                <h3>Diagnostic Evidence</h3>
+                <div class="muted"><strong>Share Permissions:</strong> Everyone — Full Control</div>
+                <div class="muted" style="margin-top:8px"><strong>NTFS Permissions:</strong> Only Administrators — Full Control</div>
+                <div class="hr"></div>
+                <div class="muted">Explain why the user is denied even though the share is permissive.</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m5_diag" placeholder="Explain effective permissions and which layer wins..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "resolution",
+            title: "Resolution",
+            help: "Apply least-privilege access to enable the user to work without over-granting.",
+            body: `
+              <div class="note">
+                <strong>Goal:</strong> Allow the user to access <code>SharedDocs</code> appropriately (read/write if required).<br>
+                <strong>Requirement:</strong> Avoid granting Full Control if Modify is sufficient.
+              </div>
+              <div class="card">
+                <h3>Fix (GUI Action)</h3>
+                <div class="muted">Describe the NTFS permission change (where to click, what to add, what rights to assign).</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m5_fix" placeholder="Example: Folder Properties → Security → Edit → Add user/group → grant Modify..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "change",
+            title: "Change Note",
+            help: "Document cause + permission changes + principle of least privilege.",
+            body: `
+              <div class="card">
+                <h3>Change Note (Ticket Entry)</h3>
+                <pre><code>Root Cause:
+Actions Taken:
+Validation:
+Least-Privilege Justification:</code></pre>
+                <div style="margin-top:10px">
+                  <textarea data-note="m5_change" placeholder="Write the change note here..."></textarea>
+                </div>
+                <div class="hr"></div>
+                <label class="check"><input type="checkbox" data-complete="m5"> Mark Mission Complete</label>
+              </div>
+            `
+          }
+        ]
+      },
+
+      {
+        id: "m6",
+        title: "Shared Folder Write Failure",
+        sub: "User can open the share but cannot save files.",
+        difficulty: "Beginner → Intermediate",
+        steps: [
+          {
+            key: "brief",
+            title: "Mission Brief",
+            help: "Describe the symptom and what it implies about read vs write permission.",
+            body: `
+              <div class="note">
+                <strong>Ticket:</strong> User can open the shared folder and view files, but cannot save or create new files.<br>
+                Error: “You need permission to perform this action.”<br><br>
+                <strong>Tools allowed:</strong> Share permissions, NTFS permissions, Effective access reasoning.
+              </div>
+              <div class="hr"></div>
+              <div class="card">
+                <h3>Initial Hypothesis</h3>
+                <div class="muted">If read works but write fails, what permission level is likely missing?</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m6_hypothesis" placeholder="Write your hypothesis here..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "triage",
+            title: "Triage",
+            help: "Confirm what the user can do vs cannot do.",
+            body: `
+              <div class="note">
+                <strong>Observed:</strong><br>
+                • Browse/open files: works<br>
+                • Create file / Save changes: fails<br><br>
+                <strong>Prompt:</strong> What specific permission right should you check for at NTFS level?
+              </div>
+              <div class="card">
+                <h3>Triage Decision</h3>
+                <div class="muted">Write the permission right(s) you would verify for write capability (be specific).</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m6_triage" placeholder="Example: Verify Modify (or Write) permissions on NTFS for the user/group..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "diagnostics",
+            title: "Diagnostics",
+            help: "Use evidence to identify whether Share or NTFS is limiting write access.",
+            body: `
+              <div class="card">
+                <h3>Diagnostic Evidence</h3>
+                <div class="muted"><strong>Share Permission:</strong> Everyone — Full Control</div>
+                <div class="muted" style="margin-top:8px"><strong>NTFS Permission:</strong> User — Read</div>
+                <div class="hr"></div>
+                <div class="muted">Explain why write fails even though the share is permissive.</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m6_diag" placeholder="Explain why NTFS governs final access..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "resolution",
+            title: "Resolution",
+            help: "Grant the correct level without over-permissioning.",
+            body: `
+              <div class="note">
+                <strong>Goal:</strong> Allow user to create and modify files.<br>
+                <strong>Rule:</strong> Grant only what is required (Modify is typically sufficient).
+              </div>
+              <div class="card">
+                <h3>Fix (GUI Action)</h3>
+                <div class="muted">Describe your permission change and how you will validate it.</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m6_fix" placeholder="Describe changes in Folder Properties → Security and how you confirm write works..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "change",
+            title: "Change Note",
+            help: "Write a professional ticket entry with validation steps.",
+            body: `
+              <div class="card">
+                <h3>Change Note (Ticket Entry)</h3>
+                <pre><code>Root Cause:
+Actions Taken:
+Validation:
+Prevention / Recommendation:</code></pre>
+                <div style="margin-top:10px">
+                  <textarea data-note="m6_change" placeholder="Write the change note here..."></textarea>
+                </div>
+                <div class="hr"></div>
+                <label class="check"><input type="checkbox" data-complete="m6"> Mark Mission Complete</label>
+              </div>
+            `
+          }
+        ]
+      },
+
+      {
+        id: "m7",
+        title: "Folder Sharing Configuration Issue",
+        sub: "Other devices can’t see or access the shared folder.",
+        difficulty: "Beginner → Intermediate",
+        steps: [
+          {
+            key: "brief",
+            title: "Mission Brief",
+            help: "State what you suspect when sharing works locally but discovery/access fails remotely.",
+            body: `
+              <div class="note">
+                <strong>Ticket:</strong> User shares a folder. Local access works, but other devices cannot see/access it on the network.<br><br>
+                <strong>Tools allowed:</strong> Network settings, Advanced sharing settings, Firewall basics, Command Prompt.
+              </div>
+              <div class="hr"></div>
+              <div class="card">
+                <h3>Initial Hypothesis</h3>
+                <div class="muted">What system settings commonly block network discovery and file sharing?</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m7_hypothesis" placeholder="Write your hypothesis here..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "triage",
+            title: "Triage",
+            help: "Check network profile and file sharing features first.",
+            body: `
+              <div class="note">
+                <strong>Prompt:</strong> What two settings would you check first on the host PC before touching permissions?
+              </div>
+              <div class="card">
+                <h3>Triage Decision</h3>
+                <div class="muted">Write the two settings and where you would verify them.</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m7_triage" placeholder="Example: Network profile (Public/Private) and File & Printer Sharing / Network Discovery in Advanced sharing settings..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "diagnostics",
+            title: "Diagnostics",
+            help: "Use evidence to confirm what is misconfigured.",
+            body: `
+              <div class="card">
+                <h3>Diagnostic Evidence</h3>
+                <div class="muted">Host PC shows:</div>
+                <pre><code>Network Profile: Public
+Network Discovery: Disabled
+File & Printer Sharing: Disabled</code></pre>
+                <div class="hr"></div>
+                <div class="muted">
+                  Explain why a Public profile commonly blocks discovery/sharing and why Private is typically required in a lab/home network.
+                </div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m7_diag" placeholder="Explain the relationship between network profile and sharing/discovery..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "resolution",
+            title: "Resolution",
+            help: "Apply the correct network/sharing configuration in a secure way.",
+            body: `
+              <div class="note">
+                <strong>Goal:</strong> Make the share discoverable and accessible on the local network.<br>
+                <strong>Security consideration:</strong> Use Private profile only on trusted networks.
+              </div>
+              <div class="card">
+                <h3>Fix (GUI Action)</h3>
+                <div class="muted">Describe the changes (profile + discovery + file sharing) and how you validate remote visibility.</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m7_fix" placeholder="Describe settings changes and validation steps..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "change",
+            title: "Change Note",
+            help: "Document configuration changes + security rationale.",
+            body: `
+              <div class="card">
+                <h3>Change Note (Ticket Entry)</h3>
+                <pre><code>Root Cause:
+Actions Taken:
+Validation:
+Security Note:</code></pre>
+                <div style="margin-top:10px">
+                  <textarea data-note="m7_change" placeholder="Write the change note here..."></textarea>
+                </div>
+                <div class="hr"></div>
+                <label class="check"><input type="checkbox" data-complete="m7"> Mark Mission Complete</label>
+              </div>
+            `
+          }
+        ]
+      },
+
+      {
+        id: "m8",
+        title: "Remote Access to Shared Resource Failing",
+        sub: "Ping works, but the share cannot be accessed remotely.",
+        difficulty: "Intermediate",
+        steps: [
+          {
+            key: "brief",
+            title: "Mission Brief",
+            help: "Separate connectivity from service access in your hypothesis.",
+            body: `
+              <div class="note">
+                <strong>Ticket:</strong> A folder is shared and accessible locally, but another PC cannot access <code>\\\\PC01\\SharedDocs</code>.<br><br>
+                <strong>Tools allowed:</strong> Command Prompt (ping), share verification, firewall basics.
+              </div>
+              <div class="hr"></div>
+              <div class="card">
+                <h3>Initial Hypothesis</h3>
+                <div class="muted">If ping succeeds but share access fails, what layers could be blocking SMB access?</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m8_hypothesis" placeholder="Write your hypothesis here..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "triage",
+            title: "Triage",
+            help: "Confirm connectivity and verify the share exists on the host.",
+            body: `
+              <div class="note">
+                From the remote PC, you run:<br>
+                <pre><code>ping PC01</code></pre>
+                Ping succeeds.<br><br>
+                <strong>Prompt:</strong> What is your next verification step on the host to confirm the share is present and correctly named?
+              </div>
+              <div class="card">
+                <h3>Triage Decision</h3>
+                <div class="muted">Write the command or GUI path you would use to confirm the share exists.</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m8_triage" placeholder="Example: Run 'net share' on the host to confirm SharedDocs is published..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "diagnostics",
+            title: "Diagnostics",
+            help: "Use evidence to isolate firewall/service blocking from naming/permission issues.",
+            body: `
+              <div class="note">
+                On the host PC, you run:<br>
+                <pre><code>net share</code></pre>
+              </div>
+              <div class="card">
+                <h3>Diagnostic Evidence</h3>
+                <div class="muted">The share is present and correctly named.</div>
+                <div class="hr"></div>
+                <div class="muted">
+                  Firewall inspection shows SMB-related inbound rules are blocked/disabled for the active profile.
+                </div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m8_diag" placeholder="Explain why SMB can be blocked even when ping works..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "resolution",
+            title: "Resolution",
+            help: "Enable the correct firewall rules safely and validate remote access.",
+            body: `
+              <div class="note">
+                <strong>Goal:</strong> Allow SMB access to the shared folder on the local network.<br>
+                <strong>Approach:</strong> Enable File and Printer Sharing (SMB-In) rules for the appropriate profile.
+              </div>
+              <div class="card">
+                <h3>Fix (GUI Action)</h3>
+                <div class="muted">Describe exactly what you enable and for which profile. Include validation steps from the remote PC.</div>
+                <div style="margin-top:10px">
+                  <textarea data-note="m8_fix" placeholder="Describe firewall rule enabling + validation (open \\\\PC01\\SharedDocs)..."></textarea>
+                </div>
+              </div>
+            `
+          },
+          {
+            key: "change",
+            title: "Change Note",
+            help: "Document cause + firewall adjustment + validation.",
+            body: `
+              <div class="card">
+                <h3>Change Note (Ticket Entry)</h3>
+                <pre><code>Root Cause:
+Actions Taken:
+Validation:
+Security Note:</code></pre>
+                <div style="margin-top:10px">
+                  <textarea data-note="m8_change" placeholder="Write the change note here..."></textarea>
+                </div>
+                <div class="hr"></div>
+                <label class="check"><input type="checkbox" data-complete="m8"> Mark Mission Complete</label>
+              </div>
+            `
+          }
+        ]
+      }
+    ];
+
+    // --- State helpers ---
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return { active:"overview", revealed:{}, complete:{}, notes:{} };
+        return JSON.parse(raw);
+      }catch{
+        return { active:"overview", revealed:{}, complete:{}, notes:{} };
+      }
+    }
+    function saveState(st){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(st));
+    }
+
+    function setToday(){
+      const el = document.getElementById("activityDate");
+      if(el && !el.value){
+        const d = new Date();
+        const mm = String(d.getMonth()+1).padStart(2,"0");
+        const dd = String(d.getDate()).padStart(2,"0");
+        el.value = `${d.getFullYear()}-${mm}-${dd}`;
+      }
+    }
+
+    function calcProgress(st){
+      const done = Object.keys(st.complete || {}).filter(k => st.complete[k] === true).length;
+      document.getElementById("progress").textContent = `Progress: ${done}/8`;
+    }
+
+    function missionBadge(st, id){
+      return st.complete[id] ? `<span class="badge ok">Complete</span>` : `<span class="badge soon">In Progress</span>`;
+    }
+
+    // Overview content
+    function renderOverview(){
+      return `
+        <div class="card">
+          <h2>Overview</h2>
+          <div class="muted">
+            Complete each mission using progressive reveal. Avoid jumping to conclusions—use evidence.
+            Your final deliverable for each mission is a professional <strong>Change Note</strong>.
+          </div>
+          <div class="hr"></div>
+          <div class="note">
+            <strong>Workflow:</strong><br>
+            1) Mission Brief (hypothesis)<br>
+            2) Triage (what to check first)<br>
+            3) Diagnostics (evidence)<br>
+            4) Resolution (fix plan / GUI action)<br>
+            5) Change Note (ticket documentation)
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>How completion works</h3>
+          <div class="muted">
+            A mission counts as complete when you check <strong>Mark Mission Complete</strong> in its Change Note step.
+            Use the Reset button in the top-right if you want a fresh start.
+          </div>
+        </div>
+      `;
+    }
+
+    // Progressive reveal controller:
+    // We allow step N only after step N-1 has been revealed at least once.
+    function canRevealStep(st, mid, stepIndex){
+      if(stepIndex === 0) return true;
+      const key = `${mid}:${stepIndex-1}`;
+      return st.revealed && st.revealed[key] === true;
+    }
+
+    function markRevealed(st, mid, stepIndex){
+      st.revealed = st.revealed || {};
+      st.revealed[`${mid}:${stepIndex}`] = true;
+      saveState(st);
+    }
+
+    function renderMission(st, mission){
+      const header = `
+        <div class="card">
+          <h2>${mission.title}</h2>
+          <div class="muted">${mission.sub}</div>
+          <div style="margin-top:10px" class="row">
+            <span class="badge">${mission.difficulty}</span>
+            ${missionBadge(st, mission.id)}
+          </div>
+        </div>
+      `;
+
+      const stepsHtml = mission.steps.map((s, idx) => {
+        const allowed = canRevealStep(st, mission.id, idx);
+        const already = (st.revealed || {})[`${mission.id}:${idx}`] === true;
+        const btnLabel = already ? "Revealed" : "Reveal";
+        return `
+          <div class="card" data-step="${mission.id}:${idx}">
+            <div class="stepHead">
+              <div class="stepMeta">
+                <div class="stepTitle">${idx+1}. ${s.title}</div>
+                <div class="stepHelp">${s.help}</div>
+              </div>
+              <div class="stepActions">
+                <button class="btnSmall primary" type="button"
+                  data-reveal="${mission.id}:${idx}" ${allowed ? "" : "disabled"}>
+                  ${btnLabel}
+                </button>
+              </div>
+            </div>
+            <div class="stepBody" ${already ? "" : "hidden"}>
+              ${s.body}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      return header + stepsHtml;
+    }
+
+    function wireNotes(st, root){
+      // Restore and persist all textareas with data-note
+      root.querySelectorAll("textarea[data-note]").forEach(t => {
+        const key = t.getAttribute("data-note");
+        t.value = (st.notes && st.notes[key]) ? st.notes[key] : "";
+        t.addEventListener("input", () => {
+          st.notes = st.notes || {};
+          st.notes[key] = t.value;
+          saveState(st);
+        });
+      });
+
+      // Restore and persist completion checkboxes
+      root.querySelectorAll("input[type='checkbox'][data-complete]").forEach(cb => {
+        const mid = cb.getAttribute("data-complete");
+        cb.checked = !!(st.complete && st.complete[mid]);
+        cb.addEventListener("change", () => {
+          st.complete = st.complete || {};
+          st.complete[mid] = cb.checked;
+          saveState(st);
+          calcProgress(st);
+          renderMissionList(st);
+        });
+      });
+    }
+
+    function renderMissionList(st){
+      const list = document.getElementById("missionList");
+      const items = [];
+
+      // Overview
+      items.push(`
+        <button class="item ${st.active === "overview" ? "active" : ""}" data-open="overview" type="button">
+          <div class="item-left">
+            <div class="item-title">Overview</div>
+            <div class="item-sub">Instructions and completion rules</div>
+          </div>
+          <span class="badge">Start</span>
+        </button>
+      `);
+
+      missions.forEach((m, idx) => {
+        const active = st.active === m.id ? "active" : "";
+        items.push(`
+          <button class="item ${active}" data-open="${m.id}" type="button">
+            <div class="item-left">
+              <div class="item-title">Mission ${idx+1}: ${m.title}</div>
+              <div class="item-sub">${m.sub}</div>
+            </div>
+            ${missionBadge(st, m.id)}
+          </button>
+        `);
+      });
+
+      list.innerHTML = items.join("");
+
+      list.querySelectorAll("[data-open]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          st.active = btn.getAttribute("data-open");
+          saveState(st);
+          renderContent(st);
+          renderMissionList(st);
+        });
+      });
+    }
+
+    function renderContent(st){
+      const root = document.getElementById("content");
+      if(st.active === "overview"){
+        root.innerHTML = renderOverview();
+        wireNotes(st, root);
+        return;
+      }
+
+      const mission = missions.find(x => x.id === st.active) || missions[0];
+      root.innerHTML = renderMission(st, mission);
+
+      // Hook reveal buttons
+      root.querySelectorAll("button[data-reveal]").forEach(b => {
+        b.addEventListener("click", () => {
+          const token = b.getAttribute("data-reveal"); // mid:idx
+          const [mid, idxStr] = token.split(":");
+          const idx = parseInt(idxStr, 10);
+
+          // Mark step revealed
+          markRevealed(st, mid, idx);
+
+          // Show body
+          const card = root.querySelector(`[data-step="${mid}:${idx}"]`);
+          if(card){
+            const body = card.querySelector(".stepBody");
+            if(body) body.hidden = false;
+          }
+
+          // Update button label
+          b.textContent = "Revealed";
+
+          // Enable next step reveal button (if exists)
+          const nextBtn = root.querySelector(`button[data-reveal="${mid}:${idx+1}"]`);
+          if(nextBtn) nextBtn.disabled = false;
+
+          saveState(st);
+        });
+      });
+
+      wireNotes(st, root);
+
+      // After wiring notes, ensure reveal buttons are correctly enabled/disabled based on state
+      // (needed after refresh)
+      root.querySelectorAll("button[data-reveal]").forEach(b => {
+        const token = b.getAttribute("data-reveal");
+        const [mid, idxStr] = token.split(":");
+        const idx = parseInt(idxStr, 10);
+
+        const allowed = canRevealStep(st, mid, idx);
+        b.disabled = !allowed;
+
+        const already = (st.revealed || {})[`${mid}:${idx}`] === true;
+        if(already){
+          b.textContent = "Revealed";
+          const card = root.querySelector(`[data-step="${mid}:${idx}"]`);
+          if(card){
+            const body = card.querySelector(".stepBody");
+            if(body) body.hidden = false;
+          }
+        }
+      });
+    }
+
+    function wireReset(st){
+      document.getElementById("btn-reset").addEventListener("click", () => {
+        localStorage.removeItem(STORAGE_KEY);
+        const fresh = loadState();
+        fresh.active = "overview";
+        saveState(fresh);
+        calcProgress(fresh);
+        renderMissionList(fresh);
+        renderContent(fresh);
+      });
+    }
+
+    // Boot
+    (function init(){
+      const st = loadState();
+      if(!st.active) st.active = "overview";
+      saveState(st);
+
+      setToday();
+      calcProgress(st);
+      renderMissionList(st);
+      renderContent(st);
+      wireReset(st);
+    })();
+  </script>
+</body>
+</html>
