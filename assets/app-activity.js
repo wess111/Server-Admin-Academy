@@ -72,9 +72,7 @@
   }
 
   function clearTicketState(ticketId) {
-    try {
-      localStorage.removeItem(lsKey(ticketId));
-    } catch {}
+    try { localStorage.removeItem(lsKey(ticketId)); } catch {}
   }
 
   async function loadLabData(labId) {
@@ -147,16 +145,11 @@
   function ticketMatches(t, q) {
     if (!q) return true;
     const hay = [
-      t.id,
-      t.category,
-      t.title,
-      t.summary,
+      t.id, t.category, t.title, t.summary,
       (t.tags || []).join(" "),
       JSON.stringify(t.env || {}),
       (t.validations || []).join(" ")
-    ]
-      .join(" ")
-      .toLowerCase();
+    ].join(" ").toLowerCase();
     return hay.includes(q.toLowerCase());
   }
 
@@ -173,7 +166,8 @@
       $("#ticketDetail").innerHTML =
         `<div class="card"><div class="card-title">Select a ticket</div><div class="card-desc">Your previous selection is hidden by filters.</div></div>`;
     }
-    updateProgress();
+
+    updateProgressAndHealth();
   }
 
   function truncate(s, n) {
@@ -266,12 +260,11 @@
 
     const s = loadTicketState(ticketId);
 
-    // Prompts (NOT answers)
     const p = t.workflow || {};
-    const triageHint = p.triage || "Describe symptoms, scope, and impact. Include exact error text and who is affected.";
-    const diagHint = p.diagnosis || "State a likely root cause and what evidence you would collect to confirm it.";
-    const fixHint = p.fix || "Document the GUI steps you would take to remediate and what you will verify afterward.";
-    const noteHint = p.changeNote || "Record what you changed, why, impact, and validation performed.";
+    const triageHint = p.triage || "Capture symptoms, scope, urgency, and exact error text.";
+    const diagHint = p.diagnosis || "State a likely root cause and what evidence confirms it.";
+    const fixHint = p.fix || "Document the GUI steps you would take, plus verification.";
+    const noteHint = p.changeNote || "Write what changed, why, impact, and validation performed.";
 
     $("#ticketDetail").innerHTML = `
       <div class="detailCard">
@@ -290,7 +283,7 @@
           title: "Triage (Symptom)",
           hint: triageHint,
           fieldId: "triageNote",
-          placeholder: "Write the symptom in your own words. Who is impacted? What is failing? What is the urgency? Include exact error messages.",
+          placeholder: "What is failing? Who is impacted? How urgent is it? Include exact messages and scope.",
           checkedKey: "doneTriage",
           checked: s.doneTriage
         })}
@@ -300,7 +293,7 @@
           title: "Diagnosis (Root Cause)",
           hint: diagHint,
           fieldId: "diagnosisNote",
-          placeholder: "State the most likely root cause. List evidence you would collect (commands, logs, configuration checks).",
+          placeholder: "Likely root cause + what evidence you will collect (logs, checks, commands, config).",
           checkedKey: "doneDiagnosis",
           checked: s.doneDiagnosis
         })}
@@ -310,17 +303,17 @@
           title: "Fix (GUI Action)",
           hint: fixHint,
           fieldId: "fixNote",
-          placeholder: "Document the remediation steps using GUI tools. Include verification steps after the fix.",
+          placeholder: "GUI steps to remediate + what you will verify afterward.",
           checkedKey: "doneFix",
           checked: s.doneFix
         })}
 
         ${stepEditor({
           num: 4,
-          title: "Change Note (Text Entry)",
+          title: "Change Note",
           hint: noteHint,
           fieldId: "changeNote",
-          placeholder: "Change record: what you changed, why, risk/impact, rollback notes (if any), and how you validated.",
+          placeholder: "Change record: what changed, why, impact/risk, rollback notes (if any), validation performed.",
           checkedKey: "doneNote",
           checked: s.doneNote
         })}
@@ -336,24 +329,21 @@
       </div>
     `;
 
-    // Fill existing notes into textareas
     $("#triageNote").value = s.triageNote || "";
     $("#diagnosisNote").value = s.diagnosisNote || "";
     $("#fixNote").value = s.fixNote || "";
     $("#changeNote").value = s.changeNote || "";
 
-    // Checkbox state handlers
     $$("#ticketDetail input[type='checkbox'][data-step]").forEach((cb) => {
       cb.addEventListener("change", () => {
         const key = cb.getAttribute("data-step");
         const next = loadTicketState(ticketId);
         next[key] = cb.checked;
         saveTicketState(ticketId, next);
-        updateProgress();
+        updateProgressAndHealth();
       });
     });
 
-    // Save/Copy handlers for each editor
     $$("#ticketDetail [data-save]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const fieldId = btn.getAttribute("data-save");
@@ -361,7 +351,7 @@
         next[fieldId] = document.getElementById(fieldId).value;
         saveTicketState(ticketId, next);
         document.getElementById(fieldId + "Saved").textContent = "Saved locally.";
-        updateProgress();
+        updateProgressAndHealth();
       });
     });
 
@@ -380,21 +370,54 @@
       });
     });
 
-    updateProgress();
+    updateProgressAndHealth();
+  }
+
+  function computeTicketComplete(s) {
+    return !!(s.doneTriage && s.doneDiagnosis && s.doneFix && s.doneNote);
   }
 
   function computeProgress() {
     let done = 0;
     for (const t of tickets) {
       const s = loadTicketState(t.id);
-      if (s.doneTriage && s.doneDiagnosis && s.doneFix && s.doneNote) done++;
+      if (computeTicketComplete(s)) done++;
     }
     return { done, total: tickets.length };
   }
 
-  function updateProgress() {
+  function computeCategoryHealth() {
+    const cats = Array.from(new Set(tickets.map(t => t.category)));
+    const byCat = {};
+    for (const c of cats) {
+      const subset = tickets.filter(t => t.category === c);
+      const total = subset.length;
+      const done = subset.reduce((acc, t) => acc + (computeTicketComplete(loadTicketState(t.id)) ? 1 : 0), 0);
+      const pct = total ? Math.round((done / total) * 100) : 0;
+      byCat[c] = { done, total, pct };
+    }
+    return byCat;
+  }
+
+  function updateProgressAndHealth() {
     const p = computeProgress();
     $("#labProgress").textContent = `Progress: ${p.done}/${p.total}`;
+
+    const overallPct = p.total ? Math.round((p.done / p.total) * 100) : 0;
+    $("#healthOverall").textContent = `Overall Health: ${overallPct}%`;
+
+    const byCat = computeCategoryHealth();
+    const catNames = Object.keys(byCat);
+
+    // Show first two categories in the pills (DNS/DHCP or first two)
+    const a = catNames[0];
+    const b = catNames[1];
+
+    if (a) $("#healthA").textContent = `${a}: ${byCat[a].pct}%`;
+    else $("#healthA").textContent = "—";
+
+    if (b) $("#healthB").textContent = `${b}: ${byCat[b].pct}%`;
+    else $("#healthB").textContent = "—";
   }
 
   function resetLab() {
@@ -403,7 +426,7 @@
     applyFilters();
     $("#ticketDetail").innerHTML =
       `<div class="card"><div class="card-title">Select a ticket</div><div class="card-desc">Lab reset.</div></div>`;
-    updateProgress();
+    updateProgressAndHealth();
   }
 
   /* ---------------- Report Generator ---------------- */
@@ -430,6 +453,9 @@
 
   function buildTextReport() {
     const meta = getMeta();
+    const p = computeProgress();
+    const byCat = computeCategoryHealth();
+
     const lines = [];
     lines.push("Server Admin Academy");
     lines.push(`${lab.title} — Report`);
@@ -438,6 +464,9 @@
     if (meta.courseSection) lines.push(`Section: ${meta.courseSection}`);
     if (meta.courseTitle) lines.push(`Course: ${meta.courseTitle}`);
     if (meta.activityDate) lines.push(`Date: ${meta.activityDate}`);
+    lines.push("");
+    lines.push(`Progress: ${p.done}/${p.total} (${p.total ? Math.round((p.done/p.total)*100) : 0}%)`);
+    Object.entries(byCat).forEach(([k,v]) => lines.push(`${k}: ${v.done}/${v.total} (${v.pct}%)`));
     lines.push("");
     lines.push("Analyst Notes (Global):");
     lines.push(meta.globalNotes ? meta.globalNotes : "(none)");
@@ -449,7 +478,7 @@
       lines.push("");
       lines.push(`${t.id} — ${t.title}`);
       lines.push(`Category: ${t.category}`);
-      lines.push(`Status: ${(s.doneTriage && s.doneDiagnosis && s.doneFix && s.doneNote) ? "Complete" : "In Progress"}`);
+      lines.push(`Status: ${computeTicketComplete(s) ? "Complete" : "In Progress"}`);
       lines.push("");
       lines.push("Triage:");
       lines.push(s.triageNote?.trim() ? s.triageNote.trim() : "(blank)");
@@ -483,130 +512,122 @@
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: "pt", format: "letter" });
 
-    const W = doc.internal.pageSize.getWidth();
-    const H = doc.internal.pageSize.getHeight();
-    const margin = 44;
-    let y = 56;
-
-    const ensure = (need) => {
-      if (y + need > H - 52) {
-        doc.addPage();
-        y = 56;
-      }
-    };
-
-    const wrap = (text, size = 10.5, width = W - margin * 2, lineH = 15) => {
-      doc.setFontSize(size);
-      const split = doc.splitTextToSize(String(text || ""), width);
-      ensure(split.length * lineH);
-      doc.text(split, margin, y);
-      y += split.length * lineH;
-    };
+    const p = computeProgress();
+    const overallPct = p.total ? Math.round((p.done / p.total) * 100) : 0;
+    const byCat = computeCategoryHealth();
 
     // Header
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("Server Admin Academy", margin, y);
-    y += 18;
+    doc.text("Server Admin Academy", 44, 54);
 
     doc.setFontSize(13);
-    doc.text(`${lab.title} — Report`, margin, y);
-    y += 18;
+    doc.text(`${lab.title} — Report`, 44, 74);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
+    doc.setFontSize(10.5);
 
-    const metaLines = [
-      `Analyst: ${meta.analystName}`,
-      meta.courseSection ? `Section: ${meta.courseSection}` : null,
-      meta.courseTitle ? `Course: ${meta.courseTitle}` : null,
-      meta.activityDate ? `Date: ${meta.activityDate}` : null
-    ].filter(Boolean);
+    const metaRows = [
+      ["Analyst", meta.analystName],
+      ["Section", meta.courseSection || "—"],
+      ["Course", meta.courseTitle || lab.title],
+      ["Date", meta.activityDate || "—"],
+      ["Progress", `${p.done}/${p.total} (${overallPct}%)`]
+    ];
 
-    metaLines.forEach((line) => {
-      ensure(16);
-      doc.text(line, margin, y);
-      y += 16;
+    doc.autoTable({
+      startY: 92,
+      head: [["Field", "Value"]],
+      body: metaRows,
+      theme: "grid",
+      styles: { font: "helvetica", fontSize: 10, cellPadding: 6 },
+      headStyles: { fontStyle: "bold" }
     });
 
-    y += 10;
-    doc.setDrawColor(167, 139, 250);
-    doc.setLineWidth(2);
-    doc.line(margin, y, W - margin, y);
-    y += 18;
+    // Health table
+    const healthBody = Object.entries(byCat).map(([k, v]) => [
+      k,
+      `${v.done}/${v.total}`,
+      `${v.pct}%`
+    ]);
+
+    doc.autoTable({
+      startY: doc.lastAutoTable.finalY + 14,
+      head: [["Category", "Completed", "Health"]],
+      body: healthBody.length ? healthBody : [["—", "—", "—"]],
+      theme: "grid",
+      styles: { font: "helvetica", fontSize: 10, cellPadding: 6 },
+      headStyles: { fontStyle: "bold" }
+    });
 
     // Global notes
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("Analyst Notes (Global)", margin, y);
-    y += 14;
-
-    doc.setFont("helvetica", "normal");
-    wrap(meta.globalNotes ? meta.globalNotes : "(none)", 10.5, W - margin * 2, 15);
-    y += 10;
-
-    doc.setDrawColor(220);
-    doc.setLineWidth(1);
-    doc.line(margin, y, W - margin, y);
-    y += 16;
-
-    // Tickets
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("Tickets", margin, y);
-    y += 16;
-
-    tickets.forEach((t, idx) => {
-      ensure(140);
-
-      const s = loadTicketState(t.id);
-      const complete = s.doneTriage && s.doneDiagnosis && s.doneFix && s.doneNote;
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      doc.text(`${idx + 1}. ${t.id} — ${t.title}`, margin, y);
-      y += 14;
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
-      doc.text(`Category: ${t.category}`, margin, y);
-      y += 14;
-      doc.text(`Status: ${complete ? "Complete" : "In Progress"}`, margin, y);
-      y += 14;
-
-      doc.setFont("helvetica", "bold");
-      doc.text("Triage:", margin, y);
-      y += 12;
-      doc.setFont("helvetica", "normal");
-      wrap(s.triageNote?.trim() ? s.triageNote.trim() : "(blank)", 10, W - margin * 2, 14);
-      y += 8;
-
-      doc.setFont("helvetica", "bold");
-      doc.text("Diagnosis:", margin, y);
-      y += 12;
-      doc.setFont("helvetica", "normal");
-      wrap(s.diagnosisNote?.trim() ? s.diagnosisNote.trim() : "(blank)", 10, W - margin * 2, 14);
-      y += 8;
-
-      doc.setFont("helvetica", "bold");
-      doc.text("Fix:", margin, y);
-      y += 12;
-      doc.setFont("helvetica", "normal");
-      wrap(s.fixNote?.trim() ? s.fixNote.trim() : "(blank)", 10, W - margin * 2, 14);
-      y += 8;
-
-      doc.setFont("helvetica", "bold");
-      doc.text("Change Note:", margin, y);
-      y += 12;
-      doc.setFont("helvetica", "normal");
-      wrap(s.changeNote?.trim() ? s.changeNote.trim() : "(blank)", 10, W - margin * 2, 14);
-      y += 10;
-
-      doc.setDrawColor(235);
-      doc.setLineWidth(1);
-      doc.line(margin, y, W - margin, y);
-      y += 14;
+    const notes = (meta.globalNotes || "").trim() || "(none)";
+    doc.autoTable({
+      startY: doc.lastAutoTable.finalY + 14,
+      head: [["Analyst Notes (Global)"]],
+      body: [[notes]],
+      theme: "grid",
+      styles: { font: "helvetica", fontSize: 10, cellPadding: 8, overflow: "linebreak" },
+      headStyles: { fontStyle: "bold" },
+      columnStyles: { 0: { cellWidth: 524 } }
     });
+
+    // Ticket summary table
+    const ticketRows = tickets.map((t) => {
+      const s = loadTicketState(t.id);
+      const status = computeTicketComplete(s) ? "Complete" : "In Progress";
+      return [t.id, t.category, t.title, status];
+    });
+
+    doc.autoTable({
+      startY: doc.lastAutoTable.finalY + 14,
+      head: [["Ticket", "Category", "Title", "Status"]],
+      body: ticketRows,
+      theme: "grid",
+      styles: { font: "helvetica", fontSize: 9.5, cellPadding: 6, overflow: "linebreak" },
+      headStyles: { fontStyle: "bold" },
+      columnStyles: {
+        0: { cellWidth: 70 },
+        1: { cellWidth: 70 },
+        2: { cellWidth: 290 },
+        3: { cellWidth: 94 }
+      }
+    });
+
+    // Per-ticket response tables
+    for (const t of tickets) {
+      const s = loadTicketState(t.id);
+
+      doc.autoTable({
+        startY: doc.lastAutoTable.finalY + 14,
+        head: [[`${t.id} — ${t.title}`]],
+        body: [[t.summary || "—"]],
+        theme: "grid",
+        styles: { font: "helvetica", fontSize: 10, cellPadding: 8, overflow: "linebreak" },
+        headStyles: { fontStyle: "bold" },
+        columnStyles: { 0: { cellWidth: 524 } }
+      });
+
+      const responseRows = [
+        ["Triage", (s.triageNote || "").trim() || "(blank)"],
+        ["Diagnosis", (s.diagnosisNote || "").trim() || "(blank)"],
+        ["Fix", (s.fixNote || "").trim() || "(blank)"],
+        ["Change Note", (s.changeNote || "").trim() || "(blank)"]
+      ];
+
+      doc.autoTable({
+        startY: doc.lastAutoTable.finalY + 6,
+        head: [["Step", "Response"]],
+        body: responseRows,
+        theme: "grid",
+        styles: { font: "helvetica", fontSize: 9.5, cellPadding: 6, overflow: "linebreak" },
+        headStyles: { fontStyle: "bold" },
+        columnStyles: {
+          0: { cellWidth: 110 },
+          1: { cellWidth: 414 }
+        }
+      });
+    }
 
     doc.save(`${lab.id}-${meta.analystName.replace(/\s+/g, "-").toLowerCase()}.pdf`);
   }
@@ -662,7 +683,7 @@
     wireReport();
 
     applyFilters();
-    updateProgress();
+    updateProgressAndHealth();
 
     if (filteredTickets[0]) selectTicket(filteredTickets[0].id);
   }
