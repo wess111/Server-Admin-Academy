@@ -3,190 +3,155 @@
   "title": "Windows Support I",
   "track": "HelpDesk",
   "subject": "Windows Fundamentals",
-  "description": "Practice home-based support tickets using the 4-step workflow: Triage, Diagnosis, Fix (GUI), and Change Note. Focus: Windows setup, disk storage, local accounts, and file sharing.",
+  "description": "8 gamified support tickets focused on Windows installation, disk storage, local accounts, and file sharing. Use the 4-step workflow to document your findings and actions. Answers are not provided.",
   "rolePill": "Role: Support Technician (Tier 1)",
   "categories": ["Storage", "Accounts", "File Sharing", "Recovery/CLI", "Deployment"],
   "tickets": [
     {
       "id": "WS-001",
       "category": "Storage",
-      "title": "User cannot copy a large file to a 16GB USB drive",
-      "tags": ["USB", "File system", "File size", "Formatting"],
+      "title": "User cannot copy a large file to a USB drive",
+      "tags": ["USB", "Copy", "File size", "Storage"],
       "summary": "A user reports 'Not enough space' when copying a single large file to a USB drive that appears to have free space.",
       "env": {
         "Device": "USB Flash Drive (16GB)",
         "OS": "Windows 10/11",
-        "User Impact": "User cannot move a required file for submission"
+        "Impact": "User cannot transfer a required file"
       },
       "workflow": {
-        "triage": "Confirm the file size, available space shown, and whether other smaller files copy successfully. Ask if the drive is used across multiple devices.",
-        "diagnosis": "Determine whether the limitation is related to the USB file system and/or allocation constraints. Identify what evidence confirms the cause (Properties, file system type, error text).",
-        "fix": "Use GUI tools to implement the correct remediation once confirmed (e.g., reformat with appropriate file system, or alternative transfer method if formatting is not acceptable).",
-        "changeNote": ""
+        "triage": "Capture symptoms and scope. What is the exact error? What is the file size? What does Windows show as free space?",
+        "diagnosis": "State your most likely root cause and the evidence you will use to confirm it.",
+        "fix": "Document the GUI steps you will take to resolve it (and what you will verify after).",
+        "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "Check drive Properties (File system type)",
-        "Attempt copy of a smaller file",
-        "Validate file copies successfully after remediation"
-      ]
+      "validations": ["Confirm the file transfers successfully", "Verify the solution matches user constraints (data retention, tool limitations)"]
     },
     {
       "id": "WS-002",
       "category": "Deployment",
-      "title": "Windows Setup does not show the target disk as installable",
-      "tags": ["Windows Setup", "Disk", "Partition style", "Drivers"],
+      "title": "Windows Setup does not allow selecting the target disk",
+      "tags": ["Windows Setup", "Disk", "Install"],
       "summary": "During Windows installation, the target disk is missing or cannot be selected for installation.",
       "env": {
         "Scenario": "OS reinstall / new install",
         "Tool": "Windows installer",
-        "User Impact": "Cannot proceed with installation"
+        "Impact": "Cannot proceed with installation"
       },
       "workflow": {
-        "triage": "Confirm whether the disk is detected in BIOS/UEFI. Capture the exact behavior: missing disk vs. disk present but not selectable vs. partition errors.",
-        "diagnosis": "Determine the likely root cause based on evidence (disk state, partition style mismatch, offline disk, missing storage driver, or unsupported configuration).",
-        "fix": "Use Windows Setup GUI and/or built-in disk tools to make the disk usable (safe wipe only if authorized). Document precise steps taken.",
-        "changeNote": ""
+        "triage": "Capture exactly what the installer shows. Is the disk missing, offline, or blocked by a message?",
+        "diagnosis": "State your likely root cause and the evidence you will use to confirm it (BIOS/UEFI checks, disk state, etc.).",
+        "fix": "Document the GUI actions you will take to make the disk installable, keeping safety and approvals in mind.",
+        "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "Disk visible and selectable in Setup",
-        "Installation proceeds past disk selection",
-        "Post-install: disk/volume appears healthy in Disk Management"
-      ]
+      "validations": ["Disk becomes selectable in Setup", "Installation proceeds successfully"]
     },
     {
       "id": "WS-003",
       "category": "Storage",
-      "title": "New disk attached but shows as 'Not initialized' / 'Unallocated'",
-      "tags": ["Disk Management", "Initialize", "Partition"],
+      "title": "New disk attached but not visible in File Explorer",
+      "tags": ["Disk Management", "Volume", "Drive letter"],
       "summary": "A user can see a new disk in Disk Management but cannot use it in File Explorer.",
       "env": {
         "Tool": "Disk Management",
         "Disk State": "Not initialized / unallocated",
-        "User Impact": "Cannot store files on the new disk"
+        "Impact": "Cannot store files on the new disk"
       },
       "workflow": {
-        "triage": "Confirm the disk is the correct device and capture its current status in Disk Management.",
-        "diagnosis": "Determine what is missing for Windows to assign usable storage (initialization, partition, file system, drive letter). Identify evidence for each.",
-        "fix": "Perform the GUI steps to initialize, create volume, format appropriately, and assign a drive letter using Disk Management.",
-        "changeNote": ""
+        "triage": "Capture the disk status shown in Disk Management.",
+        "diagnosis": "State what is preventing the disk from being usable and what evidence confirms it.",
+        "fix": "Document the GUI steps required to make the disk usable in File Explorer.",
+        "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "Volume appears with a healthy status",
-        "Drive letter is present in File Explorer",
-        "Read/write test file succeeds"
-      ]
+      "validations": ["Drive appears in File Explorer", "Read/write test succeeds"]
     },
     {
       "id": "WS-004",
       "category": "Storage",
-      "title": "A disk volume is Offline and users report the drive is missing",
-      "tags": ["Offline disk", "Disk Management", "Access"],
-      "summary": "A volume that existed yesterday is now missing in File Explorer; Disk Management shows it as Offline.",
+      "title": "A disk volume shows Offline and a drive is missing",
+      "tags": ["Offline disk", "Disk Management"],
+      "summary": "A volume that existed previously is now missing in File Explorer; Disk Management shows it as Offline.",
       "env": {
         "OS": "Windows 10/11",
-        "Tool": "Disk Management",
-        "User Impact": "Business files unavailable"
+        "Impact": "Business files unavailable"
       },
       "workflow": {
-        "triage": "Confirm if this is an internal disk, external disk, or VHD. Identify any recent changes (updates, power, docking station, USB enclosure).",
-        "diagnosis": "Determine why the disk is Offline (policy, signature collision, connection issue, or protection state). Identify evidence that supports the cause.",
-        "fix": "Bring the disk Online safely using Disk Management and document any required corrective steps (only destructive actions with explicit approval).",
-        "changeNote": ""
+        "triage": "Confirm the type of disk and any recent changes (updates, power, docking, cable, enclosure).",
+        "diagnosis": "State your likely cause and the evidence you will use to confirm it.",
+        "fix": "Document the GUI steps to restore access safely (no destructive actions without explicit approval).",
+        "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "Disk shows Online",
-        "Volume accessible in File Explorer",
-        "No new errors in System log related to disk"
-      ]
+      "validations": ["Disk is Online", "Volume accessible", "No new disk errors after fix"]
     },
     {
       "id": "WS-005",
       "category": "Accounts",
-      "title": "New local user can sign in but cannot install approved software",
-      "tags": ["Local users", "UAC", "Admin group", "Least privilege"],
-      "summary": "A user account was created, but the user cannot complete an approved installation requiring elevation.",
+      "title": "New user can sign in but cannot complete an approved install",
+      "tags": ["Local users", "UAC", "Permissions"],
+      "summary": "A user account was created, but the user cannot complete an approved installation that requires elevation.",
       "env": {
         "Account Type": "Local user",
-        "User Impact": "Cannot complete required install"
+        "Impact": "Required software cannot be installed"
       },
       "workflow": {
-        "triage": "Confirm the exact failure message and whether elevation is being requested. Identify what actions require admin rights.",
-        "diagnosis": "Determine whether this is expected behavior based on user/group membership and UAC. Identify evidence from Local Users and Groups / Computer Management.",
-        "fix": "Apply the least-privilege fix (temporary elevation process, admin-assisted install, or proper group assignment if policy allows). Document the GUI steps taken.",
-        "changeNote": ""
+        "triage": "Capture the exact prompt/error and what action triggers it.",
+        "diagnosis": "Determine why this behavior is occurring and what evidence confirms it (user group membership, elevation requirements).",
+        "fix": "Document the least-privilege GUI path to complete the install (policy-compliant approach).",
+        "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "User can perform required task through approved method",
-        "Account membership matches policy",
-        "No unnecessary persistent admin privileges added"
-      ]
+      "validations": ["User can complete approved install via correct method", "No unnecessary privileges remain"]
     },
     {
       "id": "WS-006",
       "category": "File Sharing",
       "title": "User can see a share but gets Access Denied opening files",
-      "tags": ["Share permissions", "NTFS permissions", "Effective access"],
+      "tags": ["Share permissions", "NTFS", "Effective access"],
       "summary": "A user can browse to a shared folder but receives Access Denied when opening a file.",
       "env": {
         "Share": "\\\\PC-LAB01\\ClassShare",
-        "User Impact": "Cannot access course files"
+        "Impact": "Cannot access required files"
       },
       "workflow": {
-        "triage": "Confirm whether the user can open the share root, list files, create files, or only sees the folder. Identify whether the issue affects one user or many.",
-        "diagnosis": "Determine whether the issue is share-level permissions, NTFS permissions, or both. Identify what evidence confirms the mismatch (Security tab, Effective Access).",
-        "fix": "Use GUI tools to set correct permissions with least privilege (both share and NTFS as needed). Document exactly what you changed.",
-        "changeNote": ""
+        "triage": "Confirm whether the issue affects one user or many and what actions fail (browse, open, create, modify).",
+        "diagnosis": "State your likely cause and what evidence you will use to confirm it (share perms, NTFS perms, effective access).",
+        "fix": "Document the GUI steps to correct permissions with least privilege.",
+        "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "User can open required files",
-        "User cannot access folders outside scope",
-        "Effective Access confirms expected result"
-      ]
+      "validations": ["User can access required files", "User cannot access outside scope", "Effective access matches intent"]
     },
     {
       "id": "WS-007",
       "category": "Recovery/CLI",
       "title": "Technician must prepare a disk using DiskPart (recovery console)",
-      "tags": ["DiskPart", "CLI", "Recovery", "Partitions"],
-      "summary": "You are in a recovery/setup command prompt. The disk needs preparation before installation or use.",
+      "tags": ["DiskPart", "CLI", "Recovery"],
+      "summary": "You are in a recovery/setup command prompt and need to prepare a disk before installation or use.",
       "env": {
         "Console": "Windows Setup / Recovery Command Prompt",
-        "User Impact": "Disk not ready for required task"
+        "Impact": "Disk not ready for task"
       },
       "workflow": {
-        "triage": "Identify the correct disk and confirm it is the intended target (avoid destructive actions on the wrong disk).",
-        "diagnosis": "Determine what disk state prevents progress (partition table, existing partitions, read-only, offline). Decide what needs to be changed and why.",
-        "fix": "Document a safe DiskPart sequence (list disk/select disk/detail disk/list volume, then only authorized actions). If destructive steps are required, clearly note the pre-approval requirement.",
-        "changeNote": ""
+        "triage": "Identify the correct disk safely (avoid destructive actions on the wrong disk).",
+        "diagnosis": "State what disk state prevents progress and what output would confirm it.",
+        "fix": "Document the commands you would run (non-destructive first), and note when explicit approval is required for destructive actions.",
+        "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "Disk shows expected partitions/volume state",
-        "Setup can proceed / volume mounts as expected",
-        "No unintended data loss (unless explicitly authorized)"
-      ]
+      "validations": ["Disk state matches intended outcome", "Setup can proceed / volume mounts correctly"]
     },
     {
       "id": "WS-008",
       "category": "Deployment",
       "title": "Bootable USB preparation requested for Windows installation",
-      "tags": ["Bootable media", "UEFI/BIOS", "USB tools"],
+      "tags": ["Bootable media", "UEFI/BIOS", "USB"],
       "summary": "A user needs a bootable USB prepared correctly for Windows installation.",
       "env": {
-        "OS": "Windows 10/11",
-        "Media": "USB drive",
-        "User Impact": "Cannot install Windows without boot media"
+        "Impact": "Cannot install Windows without boot media"
       },
       "workflow": {
-        "triage": "Confirm target device type (UEFI vs legacy BIOS) and confirm user has the correct Windows ISO/Media Creation Tool access.",
-        "diagnosis": "Determine what would make a USB 'not bootable' in this environment (wrong format, wrong tool, wrong boot mode, secure boot expectations). Identify checks.",
-        "fix": "Provide a GUI-based approach and an alternative command-line approach (non-destructive until confirmed). Document steps clearly.",
-        "changeNote": ""
+        "triage": "Confirm target device boot mode expectations (UEFI vs legacy) and what media/tools are available.",
+        "diagnosis": "State likely causes of a USB failing to boot in this environment and what checks confirm them.",
+        "fix": "Document the steps to create bootable media (GUI approach and an optional CLI approach).",
+        "changeNote": "Write a change record: what changed, why, impact, and validation."
       },
-      "validations": [
-        "USB appears as boot option on target device",
-        "Boot proceeds to Windows Setup",
-        "Media matches correct edition/architecture"
-      ]
+      "validations": ["USB appears as boot option", "Boot proceeds to Windows Setup", "Correct edition/architecture is used"]
     }
   ]
 }
