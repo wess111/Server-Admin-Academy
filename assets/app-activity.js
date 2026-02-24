@@ -5,7 +5,6 @@
   - Ticket queue status (PENDING / IN PROGRESS / RESOLVED)
   - Evidence/Artifact block styled like the old version
   - PDF export uses a dedicated print window with a compact, portrait table that never overflows
-  - ✅ Debrief block appears after ticket is resolved (reinforcement)
 */
 
 (() => {
@@ -121,7 +120,7 @@
       if (!(k in s.correct)) s.correct[k] = false;
     });
 
-    if (!["triage", "diagnosis", "fix", "changeNote"].includes(s.uiStage)) s.uiStage = "triage";
+    if (!['triage','diagnosis','fix','changeNote'].includes(s.uiStage)) s.uiStage = 'triage';
     if (typeof s.changeNote !== "string") s.changeNote = "";
     if (typeof s.doneNote !== "boolean") s.doneNote = false;
     if (typeof s.resolved !== "boolean") s.resolved = false;
@@ -286,7 +285,9 @@
       (s.changeNote || "").trim().length > 0 ||
       !!s.doneNote;
 
+    // Selecting a ticket counts as “in progress” visually.
     if (ticketId === selectedId) return "inprogress";
+
     return touched ? "inprogress" : "pending";
   }
 
@@ -371,6 +372,7 @@
       }
     };
 
+    // Prefer explicit artifact/evidence blocks
     pushLines(t.artifact);
     pushLines(t.evidence);
 
@@ -378,20 +380,23 @@
   }
 
   function evidenceInstructions(t) {
+    // Ticket-level overrides (optional)
     if (typeof t.evidenceInstructions === "string" && t.evidenceInstructions.trim()) {
       return t.evidenceInstructions.trim();
     }
 
+    // Lab-level default (optional)
     if (typeof lab?.evidenceInstructions === "string" && lab.evidenceInstructions.trim()) {
       return lab.evidenceInstructions.trim();
     }
 
+    // Generic, always-present guidance (what you asked for)
     return (
       "Instructions:\n" +
       "1) Read the observed problem and identify what you would verify first.\n" +
       "2) Use the evidence/artifact (logs, screenshot, command output) to confirm or rule out likely causes.\n" +
       "3) Select the best answer in each stage (Triage → Diagnosis → Fix).\n" +
-      "4) Write a short change note describing what changed and how you validated it."
+      "4) Write a short change note describing what changed and how you validated it." 
     );
   }
 
@@ -467,8 +472,8 @@
       selectedIdx == null
         ? `<span class="mini-muted">Select an option</span>`
         : isCorrect
-          ? `<span class="mini-good">Complete ✓</span>`
-          : `<span class="mini-bad">Not complete ✕</span>`;
+          ? `<span class="mini-good">Correct ✓</span>`
+          : `<span class="mini-bad">Incorrect ✕</span>`;
 
     const optionsHtml = stageObj.options
       .map((label, idx) => {
@@ -555,61 +560,6 @@
     `;
   }
 
-  /* ---------------------------- ✅ Debrief (NEW) ---------------------------- */
-
-  function getSelectedOptionLabel(t, stageKey, s) {
-    const stageObj = t.workflow?.[stageKey];
-    if (!isStageObject(stageObj)) return "—";
-    const idx = s.answers?.[stageKey];
-    if (!Number.isInteger(idx)) return "—";
-    return stageObj.options?.[idx] ?? "—";
-  }
-
-  function normalizeDebriefText(v) {
-    if (!v) return "";
-    if (typeof v === "string") return v.trim();
-    if (typeof v === "object") {
-      // Allow future formats like { summary, bullets } without breaking.
-      const parts = [];
-      if (typeof v.summary === "string" && v.summary.trim()) parts.push(v.summary.trim());
-      if (Array.isArray(v.bullets) && v.bullets.length) parts.push(v.bullets.map((x) => `• ${String(x)}`).join("\n"));
-      return parts.join("\n\n").trim();
-    }
-    return "";
-  }
-
-  function renderDebrief(t, s) {
-    if (!computeResolved(s)) return "";
-
-    const triagePick = getSelectedOptionLabel(t, "triage", s);
-    const diagnosisPick = getSelectedOptionLabel(t, "diagnosis", s);
-    const fixPick = getSelectedOptionLabel(t, "fix", s);
-
-    const custom = normalizeDebriefText(t.debrief) || normalizeDebriefText(lab?.debriefDefault);
-    const fallback =
-      "Debrief:\n" +
-      "This ticket is designed to reinforce evidence-first troubleshooting: verify what the client received/configured, correlate that with the symptom, then apply the least disruptive corrective change.";
-
-    const body = custom || fallback;
-
-    return `
-      <div class="miniCard" style="margin-top:12px;">
-        <div class="miniTitle">Debrief</div>
-        <div class="miniDesc">
-          <div style="font-weight:900; margin-bottom:6px;">You successfully completed this ticket.</div>
-          <ul class="bullets">
-            <li><strong>Triage:</strong> ${escapeHtml(triagePick)}</li>
-            <li><strong>Diagnosis:</strong> ${escapeHtml(diagnosisPick)}</li>
-            <li><strong>Fix:</strong> ${escapeHtml(fixPick)}</li>
-          </ul>
-          <pre class="evidencePre" style="margin-top:10px;">${escapeHtml(body)}</pre>
-        </div>
-      </div>
-    `;
-  }
-
-  /* ---------------------------- ticket detail render ---------------------------- */
-
   function renderTicketDetail(ticketId) {
     const t = tickets.find((x) => x.id === ticketId);
     if (!t) return;
@@ -653,7 +603,6 @@
         ${statusLine}
         ${stageHtml}
         ${renderValidations(t)}
-        ${renderDebrief(t, s)}
       </div>
     `;
 
@@ -708,7 +657,7 @@
           <div class="evidenceTitle">How to work a ticket</div>
           <pre class="evidencePre">1) Open a ticket from the left queue.
 2) Complete Triage, then Diagnosis, then Fix.
-3) After all three are complete, write a Change Note (min ${CHANGE_NOTE_MIN} chars).
+3) After all three are correct, write a Change Note (min ${CHANGE_NOTE_MIN} chars).
 4) Generate your PDF report when finished.</pre>
         </div>
       </div>
@@ -718,6 +667,7 @@
   function selectTicket(ticketId) {
     selectedId = ticketId;
 
+    // Mark selected ticket as “touched” so it shows IN PROGRESS immediately.
     const s = ensureStateShape(ticketId, loadTicketState(ticketId));
     saveTicketState(ticketId, s);
 
@@ -747,6 +697,7 @@
     s.correct[stageKey] = correctNow;
     if (!correctNow) s.attempts.wrong += 1;
 
+    // Unlock next stage only when correct.
     if (correctNow) {
       if (stageKey === "triage") s.uiStage = "diagnosis";
       else if (stageKey === "diagnosis") s.uiStage = "fix";
@@ -797,6 +748,7 @@
   function insertTemplate(ticketId, ticketTitle) {
     const s = ensureStateShape(ticketId, loadTicketState(ticketId));
 
+    // Keep it simple + neat like the old one.
     const template =
 `Ticket: ${ticketTitle}
 
@@ -936,6 +888,7 @@ Impact / downtime:`;
     a.remove();
   }
 
+  // Compact portrait PDF with an old-style table (no overflow)
   function buildPrintableHtml() {
     const meta = getMeta();
     const generated = new Date().toLocaleString();
@@ -991,6 +944,7 @@ Impact / downtime:`;
 
     const overviewText = (lab.reportOverview || lab.description || "").trim() || "—";
 
+    // ✅ Portrait + fixed table layout + wrapping = never overflow.
     const css = `
       @page { size: letter portrait; margin: 14mm; }
       * { box-sizing: border-box; }
@@ -1040,6 +994,7 @@ Impact / downtime:`;
       @media print { .hint { display:none; } }
     `;
 
+    // ✅ Column widths that fit portrait.
     const colgroup = `
       <colgroup>
         <col style="width: 12%;" />
@@ -1169,7 +1124,7 @@ Impact / downtime:`;
     const labId = getLabId();
     if (!labId) {
       $("#labTitle").textContent = "Missing lab id";
-      $("#labDesc").textContent = "Open from the academy site or add ?lab=dns to the URL.";
+      $("#labDesc").textContent = "Open from the academy site or add ?lab=dns-dhcp to the URL.";
       return;
     }
 
@@ -1205,6 +1160,7 @@ Impact / downtime:`;
     wireMeta();
     wireReport();
 
+    // Delegate clicks
     document.addEventListener("click", (e) => {
       const btn = e.target && e.target.closest ? e.target.closest("button") : null;
       if (!btn) return;
@@ -1269,6 +1225,7 @@ Impact / downtime:`;
     applyFilters();
     updateProgressAndHealth();
 
+    // ✅ Do NOT auto-open a ticket. Show dashboard instead.
     renderDashboard();
   }
 
