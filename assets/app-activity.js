@@ -447,12 +447,16 @@
         : "Not started";
 
     return `
-      <div class="statusLine">
-        <strong>Status:</strong> ${escapeHtml(status)}
-        <span class="sep">•</span>
-        <strong>Attempts:</strong> ${s.attempts?.total || 0} (wrong: ${s.attempts?.wrong || 0})
-        <div class="statusHint">Resolve by answering all three stages correctly + change note (min ${CHANGE_NOTE_MIN} chars).</div>
-      </div>
+      <div style="margin:18px 0 22px 0; line-height:1.6;">
+  <div style="font-size:13px;">
+    <strong>Status:</strong> ${computeResolved(s) ? "Resolved" : "In Progress"} •
+    <strong>Attempts:</strong> ${s.attempts} (wrong: ${s.wrongAttempts || 0})
+  </div>
+
+  <div class="mini-muted" style="margin-top:6px;">
+    Resolve by answering all three stages correctly + change note (min ${CHANGE_NOTE_MIN} chars).
+  </div>
+</div>
     `;
   }
 
@@ -1302,3 +1306,4 @@ Impact / downtime:`;
     $("#labDesc").textContent = "Confirm ./data/labs/<lab>.json exists and matches the ?lab= value.";
   });
 })();
+
