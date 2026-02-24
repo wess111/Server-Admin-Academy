@@ -541,7 +541,6 @@
             <button class="btn ghost" type="button" data-back-fix="true" data-ticket="${escapeHtml(ticketId)}">Back to Fix</button>
           </div>
 
-          <label class="smallLabel" for="changeNoteBox">Change note</label>
           <textarea id="changeNoteBox" class="stepText" rows="8" placeholder="Write your change note here...">${escapeHtml(s.changeNote || "")}</textarea>
           <div class="mini-muted" id="changeNoteCount">Characters: ${chars}</div>
         </div>
@@ -1306,4 +1305,5 @@ Impact / downtime:`;
     $("#labDesc").textContent = "Confirm ./data/labs/<lab>.json exists and matches the ?lab= value.";
   });
 })();
+
 
