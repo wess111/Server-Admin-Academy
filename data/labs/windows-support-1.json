@@ -1,469 +1,450 @@
 {
-  "id": "windows-support-1",
-  "title": "Windows Support I",
-  "track": "HelpDesk",
-  "subject": "Windows Fundamentals",
-  "description": "8 gamified support tickets focused on Windows installation, disk storage, local accounts, and file sharing. Use the 4-step workflow to document your findings and actions.",
-  "rolePill": "Role: Support Technician (Tier 1)",
-  "categories": [
-    "Storage",
-    "Accounts",
-    "File Sharing",
-    "Recovery/CLI",
-    "Deployment"
-  ],
+  "id": "win-support-1-helpdesk",
+  "title": "Windows Support 1: Desktop & Access Essentials",
+  "track": "Windows Support",
+  "subject": "File Permissions & Client Management",
+  "rolePill": "Help Desk Technician",
+  "description": "Step into the shoes of a Tier 1 Support Tech. You'll solve everyday tickets involving NTFS permissions, Group Policy, file system limitations, and domain connectivity using an evidence-first workflow.",
+  "reportOverview": "This report evaluates your ability to troubleshoot user-facing issues. Key skills tested: NTFS vs Share permissions, Active Directory group membership, and file system architecture.",
+  "categories": ["Permissions", "File Systems", "Domain Support"],
+  "evidenceInstructions": "Instructions:\n1) Read the user's complaint.\n2) Use the initial step to gather evidence (Effective Access, ipconfig, or Disk Management).\n3) Diagnose the logic error (Deny vs Allow, FAT32 vs NTFS).\n4) Apply the Fix and document the change.",
   "tickets": [
     {
-      "id": "WS-001",
-      "category": "Storage",
-      "title": "User cannot copy a large file to a USB drive",
-      "tags": [
-        "USB",
-        "Copy",
-        "File size",
-        "Storage"
+      "id": "SUPP-01",
+      "category": "Permissions",
+      "title": "HR New Hire Access Request",
+      "summary": "A new employee in HR, Sarah Jenkins, reports she cannot open the 'HR_Private' folder on the shared drive. Other HR staff have no issues.",
+      "tags": ["ntfs", "groups", "onboarding"],
+      "artifact": [
+        "User: sjenkins",
+        "Error: 'Windows cannot access \\\\FileServer\\HR_Private - Access is Denied'",
+        "AD Check: User is a member of 'Domain Users' and 'HR_Department' groups.",
+        "Folder Security: 'HR_Staff' group has Modify permissions; 'HR_Department' is not listed."
       ],
-      "summary": "A user reports 'Not enough space' when copying a single large file to a USB drive that appears to have free space.",
-      "env": {
-        "Device": "USB Flash Drive (16GB)",
-        "OS": "Windows 10/11",
-        "Impact": "User cannot transfer a required file"
-      },
       "workflow": {
         "triage": {
-          "q": "Capture symptoms and scope. What is the exact error? What is the file size? What does Windows show as free space?",
+          "q": "What is the most efficient way to see exactly why Sarah is being blocked?",
           "options": [
-            "Apply a random fix based on guesswork with no validation.",
-            "Assume it is a user mistake and close the ticket.",
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Reboot immediately without collecting any details."
-          ],
-          "correct": 2
-        },
-        "diagnosis": {
-          "q": "State your most likely root cause and the evidence you will use to confirm it.",
-          "options": [
-            "Rely only on user opinion rather than measurable evidence.",
-            "Skip diagnosis and go straight to changes on production systems.",
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Blame the network without checking any logs or configuration."
-          ],
-          "correct": 2
-        },
-        "fix": {
-          "q": "Document the GUI steps you will take to resolve it (and what you will verify after).",
-          "options": [
-            "Apply the least-risk remediation, then verify the service is restored and document results.",
-            "Make multiple changes at once so you cannot isolate what fixed it.",
-            "Disable security controls to make the problem go away.",
-            "Declare success without testing or validation."
-          ],
-          "correct": 0
-        },
-        "changeNote": "Write a change record: what changed, why, impact, and validation."
-      },
-      "validations": [
-        "Confirm the file transfers successfully",
-        "Verify the solution matches user constraints (data retention, tool limitations)"
-      ],
-      "debrief": {
-        "summary": "You recognized that large-file copy failures to USB often trace back to filesystem limitations (e.g., FAT32 max file size) rather than Windows permissions or \"broken\" USB media.",
-        "takeaway": "Match the storage format to the workload\u2014use exFAT/NTFS when file sizes exceed FAT32 limits."
-      }
-    },
-    {
-      "id": "WS-002",
-      "category": "Deployment",
-      "title": "Windows Setup does not allow selecting the target disk",
-      "tags": [
-        "Windows Setup",
-        "Disk",
-        "Install"
-      ],
-      "summary": "During Windows installation, the target disk is missing or cannot be selected for installation.",
-      "env": {
-        "Scenario": "OS reinstall / new install",
-        "Tool": "Windows installer",
-        "Impact": "Cannot proceed with installation"
-      },
-      "workflow": {
-        "triage": {
-          "q": "Capture exactly what the installer shows. Is the disk missing, offline, or blocked by a message?",
-          "options": [
-            "Assume it is a user mistake and close the ticket.",
-            "Apply a random fix based on guesswork with no validation.",
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Reboot immediately without collecting any details."
-          ],
-          "correct": 2
-        },
-        "diagnosis": {
-          "q": "State your likely root cause and the evidence you will use to confirm it (BIOS/UEFI checks, disk state, etc.).",
-          "options": [
-            "Skip diagnosis and go straight to changes on production systems.",
-            "Blame the network without checking any logs or configuration.",
-            "Rely only on user opinion rather than measurable evidence.",
-            "Form a likely root cause and identify specific evidence to confirm or rule it out."
-          ],
-          "correct": 3
-        },
-        "fix": {
-          "q": "Document the GUI actions you will take to make the disk installable, keeping safety and approvals in mind.",
-          "options": [
-            "Disable security controls to make the problem go away.",
-            "Declare success without testing or validation.",
-            "Apply the least-risk remediation, then verify the service is restored and document results.",
-            "Make multiple changes at once so you cannot isolate what fixed it."
-          ],
-          "correct": 2
-        },
-        "changeNote": "Write a change record: what changed, why, impact, and validation."
-      },
-      "validations": [
-        "Disk becomes selectable in Setup",
-        "Installation proceeds successfully"
-      ],
-      "debrief": {
-        "summary": "You tied Windows Setup disk selection failures to storage configuration (wrong partition style, missing storage driver, or disk offline/uninitialized) instead of assuming the installer is corrupt.",
-        "takeaway": "When Setup can\u2019t see a disk, validate BIOS/UEFI mode, disk partition style (GPT/MBR), and storage drivers first."
-      }
-    },
-    {
-      "id": "WS-003",
-      "category": "Storage",
-      "title": "New disk attached but not visible in File Explorer",
-      "tags": [
-        "Disk Management",
-        "Volume",
-        "Drive letter"
-      ],
-      "summary": "A user can see a new disk in Disk Management but cannot use it in File Explorer.",
-      "env": {
-        "Tool": "Disk Management",
-        "Disk State": "Not initialized / unallocated",
-        "Impact": "Cannot store files on the new disk"
-      },
-      "workflow": {
-        "triage": {
-          "q": "Capture the disk status shown in Disk Management.",
-          "options": [
-            "Reboot immediately without collecting any details.",
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Apply a random fix based on guesswork with no validation.",
-            "Assume it is a user mistake and close the ticket."
+            "Ask Sarah to restart her computer three times",
+            "Check the 'Effective Access' tab in the folder's Advanced Security settings for sjenkins",
+            "Delete the HR folder and recreate it",
+            "Give Sarah the Domain Admin password temporarily"
           ],
           "correct": 1
         },
         "diagnosis": {
-          "q": "State what is preventing the disk from being usable and what evidence confirms it.",
+          "q": "Sarah is in 'HR_Department' but the folder gives access to 'HR_Staff'. What is the issue?",
           "options": [
-            "Skip diagnosis and go straight to changes on production systems.",
-            "Rely only on user opinion rather than measurable evidence.",
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Blame the network without checking any logs or configuration."
-          ],
-          "correct": 2
-        },
-        "fix": {
-          "q": "Document the GUI steps required to make the disk usable in File Explorer.",
-          "options": [
-            "Disable security controls to make the problem go away.",
-            "Declare success without testing or validation.",
-            "Make multiple changes at once so you cannot isolate what fixed it.",
-            "Apply the least-risk remediation, then verify the service is restored and document results."
-          ],
-          "correct": 3
-        },
-        "changeNote": "Write a change record: what changed, why, impact, and validation."
-      },
-      "validations": [
-        "Drive appears in File Explorer",
-        "Read/write test succeeds"
-      ],
-      "debrief": {
-        "summary": "You identified that a newly attached disk won\u2019t appear in File Explorer until it\u2019s initialized, partitioned, and formatted. Disk Management is the first stop for visibility issues.",
-        "takeaway": "Windows requires a volume (partition + filesystem + drive letter) before a disk shows up to users."
-      }
-    },
-    {
-      "id": "WS-004",
-      "category": "Storage",
-      "title": "A disk volume shows Offline and a drive is missing",
-      "tags": [
-        "Offline disk",
-        "Disk Management"
-      ],
-      "summary": "A volume that existed previously is now missing in File Explorer; Disk Management shows it as Offline.",
-      "env": {
-        "OS": "Windows 10/11",
-        "Impact": "Business files unavailable"
-      },
-      "workflow": {
-        "triage": {
-          "q": "Confirm the type of disk and any recent changes (updates, power, docking, cable, enclosure).",
-          "options": [
-            "Assume it is a user mistake and close the ticket.",
-            "Reboot immediately without collecting any details.",
-            "Apply a random fix based on guesswork with no validation.",
-            "Confirm scope and capture exact symptoms/error text before acting."
-          ],
-          "correct": 3
-        },
-        "diagnosis": {
-          "q": "State your likely cause and the evidence you will use to confirm it.",
-          "options": [
-            "Skip diagnosis and go straight to changes on production systems.",
-            "Blame the network without checking any logs or configuration.",
-            "Rely only on user opinion rather than measurable evidence.",
-            "Form a likely root cause and identify specific evidence to confirm or rule it out."
-          ],
-          "correct": 3
-        },
-        "fix": {
-          "q": "Document the GUI steps to restore access safely (no destructive actions without explicit approval).",
-          "options": [
-            "Declare success without testing or validation.",
-            "Apply the least-risk remediation, then verify the service is restored and document results.",
-            "Disable security controls to make the problem go away.",
-            "Make multiple changes at once so you cannot isolate what fixed it."
-          ],
-          "correct": 1
-        },
-        "changeNote": "Write a change record: what changed, why, impact, and validation."
-      },
-      "validations": [
-        "Disk is Online",
-        "Volume accessible",
-        "No new disk errors after fix"
-      ],
-      "debrief": {
-        "summary": "You mapped slow logons to profile processing and dependency checks (domain connectivity, DNS, GPO processing, script drives) rather than treating it as a generic \"slow PC\" problem.",
-        "takeaway": "For domain logon delays, validate DNS and GPO processing (gpresult/Event Viewer) before changing hardware."
-      }
-    },
-    {
-      "id": "WS-005",
-      "category": "Accounts",
-      "title": "New user can sign in but cannot complete an approved install",
-      "tags": [
-        "Local users",
-        "UAC",
-        "Permissions"
-      ],
-      "summary": "A user account was created, but the user cannot complete an approved installation that requires elevation.",
-      "env": {
-        "Account Type": "Local user",
-        "Impact": "Required software cannot be installed"
-      },
-      "workflow": {
-        "triage": {
-          "q": "Capture the exact prompt/error and what action triggers it.",
-          "options": [
-            "Apply a random fix based on guesswork with no validation.",
-            "Assume it is a user mistake and close the ticket.",
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Reboot immediately without collecting any details."
-          ],
-          "correct": 2
-        },
-        "diagnosis": {
-          "q": "Determine why this behavior is occurring and what evidence confirms it (user group membership, elevation requirements).",
-          "options": [
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Skip diagnosis and go straight to changes on production systems.",
-            "Rely only on user opinion rather than measurable evidence.",
-            "Blame the network without checking any logs or configuration."
-          ],
-          "correct": 0
-        },
-        "fix": {
-          "q": "Document the least-privilege GUI path to complete the install (policy-compliant approach).",
-          "options": [
-            "Make multiple changes at once so you cannot isolate what fixed it.",
-            "Apply the least-risk remediation, then verify the service is restored and document results.",
-            "Disable security controls to make the problem go away.",
-            "Declare success without testing or validation."
-          ],
-          "correct": 1
-        },
-        "changeNote": "Write a change record: what changed, why, impact, and validation."
-      },
-      "validations": [
-        "User can complete approved install via correct method",
-        "No unnecessary privileges remain"
-      ],
-      "debrief": {
-        "summary": "You treated frequent password prompts as an authentication/session issue (cached creds, account lockouts, time skew, or credential manager) rather than a random application glitch.",
-        "takeaway": "Authentication problems are often systemic\u2014check account status and time sync before reinstalling apps."
-      }
-    },
-    {
-      "id": "WS-006",
-      "category": "File Sharing",
-      "title": "User can see a share but gets Access Denied opening files",
-      "tags": [
-        "Share permissions",
-        "NTFS",
-        "Effective access"
-      ],
-      "summary": "A user can browse to a shared folder but receives Access Denied when opening a file.",
-      "env": {
-        "Share": "\\\\PC-LAB01\\ClassShare",
-        "Impact": "Cannot access required files"
-      },
-      "workflow": {
-        "triage": {
-          "q": "Confirm whether the issue affects one user or many and what actions fail (browse, open, create, modify).",
-          "options": [
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Assume it is a user mistake and close the ticket.",
-            "Apply a random fix based on guesswork with no validation.",
-            "Reboot immediately without collecting any details."
-          ],
-          "correct": 0
-        },
-        "diagnosis": {
-          "q": "State your likely cause and what evidence you will use to confirm it (share perms, NTFS perms, effective access).",
-          "options": [
-            "Skip diagnosis and go straight to changes on production systems.",
-            "Rely only on user opinion rather than measurable evidence.",
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Blame the network without checking any logs or configuration."
-          ],
-          "correct": 2
-        },
-        "fix": {
-          "q": "Document the GUI steps to correct permissions with least privilege.",
-          "options": [
-            "Declare success without testing or validation.",
-            "Disable security controls to make the problem go away.",
-            "Make multiple changes at once so you cannot isolate what fixed it.",
-            "Apply the least-risk remediation, then verify the service is restored and document results."
-          ],
-          "correct": 3
-        },
-        "changeNote": "Write a change record: what changed, why, impact, and validation."
-      },
-      "validations": [
-        "User can access required files",
-        "User cannot access outside scope",
-        "Effective access matches intent"
-      ],
-      "debrief": {
-        "summary": "You connected update failures to servicing prerequisites (storage, Windows Update components, policy/WSUS settings) instead of repeatedly retrying updates with no change.",
-        "takeaway": "Reset update components and verify policy/WSUS configuration when updates fail consistently."
-      }
-    },
-    {
-      "id": "WS-007",
-      "category": "Recovery/CLI",
-      "title": "Technician must prepare a disk using DiskPart (recovery console)",
-      "tags": [
-        "DiskPart",
-        "CLI",
-        "Recovery"
-      ],
-      "summary": "You are in a recovery/setup command prompt and need to prepare a disk before installation or use.",
-      "env": {
-        "Console": "Windows Setup / Recovery Command Prompt",
-        "Impact": "Disk not ready for task"
-      },
-      "workflow": {
-        "triage": {
-          "q": "Identify the correct disk safely (avoid destructive actions on the wrong disk).",
-          "options": [
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Assume it is a user mistake and close the ticket.",
-            "Reboot immediately without collecting any details.",
-            "Apply a random fix based on guesswork with no validation."
-          ],
-          "correct": 0
-        },
-        "diagnosis": {
-          "q": "State what disk state prevents progress and what output would confirm it.",
-          "options": [
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Blame the network without checking any logs or configuration.",
-            "Skip diagnosis and go straight to changes on production systems.",
-            "Rely only on user opinion rather than measurable evidence."
-          ],
-          "correct": 0
-        },
-        "fix": {
-          "q": "Document the commands you would run (non-destructive first), and note when explicit approval is required for destructive actions.",
-          "options": [
-            "Make multiple changes at once so you cannot isolate what fixed it.",
-            "Apply the least-risk remediation, then verify the service is restored and document results.",
-            "Disable security controls to make the problem go away.",
-            "Declare success without testing or validation."
-          ],
-          "correct": 1
-        },
-        "changeNote": "Write a change record: what changed, why, impact, and validation."
-      },
-      "validations": [
-        "Disk state matches intended outcome",
-        "Setup can proceed / volume mounts correctly"
-      ],
-      "debrief": {
-        "summary": "You used evidence-first troubleshooting for network issues (IP config, gateway/DNS reachability, adapter state) rather than immediately replacing hardware.",
-        "takeaway": "Start with ipconfig/ping path testing\u2014local IP \u2192 gateway \u2192 DNS \u2192 internet\u2014to isolate where the break occurs."
-      }
-    },
-    {
-      "id": "WS-008",
-      "category": "Deployment",
-      "title": "Bootable USB preparation requested for Windows installation",
-      "tags": [
-        "Bootable media",
-        "UEFI/BIOS",
-        "USB"
-      ],
-      "summary": "A user needs a bootable USB prepared correctly for Windows installation.",
-      "env": {
-        "Impact": "Cannot install Windows without boot media"
-      },
-      "workflow": {
-        "triage": {
-          "q": "Confirm target device boot mode expectations (UEFI vs legacy) and what media/tools are available.",
-          "options": [
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Apply a random fix based on guesswork with no validation.",
-            "Reboot immediately without collecting any details.",
-            "Assume it is a user mistake and close the ticket."
-          ],
-          "correct": 0
-        },
-        "diagnosis": {
-          "q": "State likely causes of a USB failing to boot in this environment and what checks confirm them.",
-          "options": [
-            "Blame the network without checking any logs or configuration.",
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Rely only on user opinion rather than measurable evidence.",
-            "Skip diagnosis and go straight to changes on production systems."
+            "The user's password has expired",
+            "The user is not a member of the specific security group that has NTFS permissions for that folder",
+            "The folder is encrypted with BitLocker",
+            "The server is out of licenses"
           ],
           "correct": 1
         },
         "fix": {
-          "q": "Document the steps to create bootable media (GUI approach and an optional CLI approach).",
+          "q": "How do you resolve this according to standard onboarding procedures?",
           "options": [
-            "Disable security controls to make the problem go away.",
-            "Make multiple changes at once so you cannot isolate what fixed it.",
-            "Apply the least-risk remediation, then verify the service is restored and document results.",
-            "Declare success without testing or validation."
+            "Add Sarah's individual user account directly to the folder's security tab",
+            "Add Sarah to the 'HR_Staff' security group in Active Directory",
+            "Share the folder with 'Everyone'",
+            "Disable NTFS permissions on the File Server"
+          ],
+          "correct": 1
+        }
+      }
+    },
+    {
+      "id": "SUPP-02",
+      "category": "File Systems",
+      "title": "USB Storage Capacity Error",
+      "summary": "A user is trying to copy a 5GB database export to a 16GB USB drive. The drive is empty, but Windows returns an error saying 'The file is too large for the destination file system.'",
+      "tags": ["fat32", "ntfs", "file limits"],
+      "artifact": [
+        "File Size: 5.1 GB",
+        "USB Capacity: 16 GB (14.9 GB free)",
+        "USB File System: FAT32"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "The drive has enough space, but the file won't copy. What property should you look at first in Disk Management?",
+          "options": [
+            "The drive letter assigned to the USB",
+            "The File System type (FAT32, NTFS, or exFAT)",
+            "The brand of the USB drive",
+            "The color of the USB port (2.0 vs 3.0)"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Why does a 5GB file fail to copy to a 16GB FAT32 volume?",
+          "options": [
+            "The USB is corrupted",
+            "FAT32 has a maximum individual file size limit of 4GB",
+            "Windows 10 does not support USB drives larger than 4GB",
+            "The file is infected with a virus"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "How do you enable the user to carry this 5GB file?",
+          "options": [
+            "Compress the file into five 1GB parts",
+            "Reformat the USB drive as NTFS or exFAT",
+            "Buy a 32GB USB drive",
+            "Update the USB drivers in Device Manager"
+          ],
+          "correct": 1
+        }
+      }
+    },
+    {
+      "id": "SUPP-03",
+      "category": "Domain Support",
+      "title": "Workstation Trust Relationship Failure",
+      "summary": "A user returning from a 3-month leave tries to log in to their desktop. They receive the error: 'The trust relationship between this workstation and the primary domain failed.'",
+      "tags": ["active directory", "secure channel", "computer account"],
+      "artifact": [
+        "Error: Trust Relationship Failure",
+        "Last Login: 92 days ago",
+        "Network: Cable is plugged in; pings to the DC work"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What tool can you use to verify the status of the computer's secure channel with the domain?",
+          "options": [
+            "Test-ComputerSecureChannel in PowerShell",
+            "Disk Cleanup",
+            "Device Manager",
+            "Task Manager"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What happened to this computer's account while the user was away?",
+          "options": [
+            "The user forgot their password",
+            "The computer password (machine account) in AD is out of sync with the local machine",
+            "The computer's hard drive is failing",
+            "The monitor resolution is unsupported"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "How do you most effectively fix the trust relationship?",
+          "options": [
+            "Reinstall Windows",
+            "Unjoin the computer from the domain and rejoin it",
+            "Reset the user's password in AD",
+            "Tell the user to log in with a local guest account"
+          ],
+          "correct": 1
+        }
+      }
+    },
+    {
+      "id": "SUPP-04",
+      "category": "Permissions",
+      "title": "Folder Inheritance Discrepancy",
+      "summary": "The Marketing Manager created a sub-folder called 'Campaign_2024'. Even though the department has access to the parent 'Marketing' folder, no one can see the new sub-folder.",
+      "tags": ["ntfs", "inheritance", "permissions"],
+      "artifact": [
+        "Parent Folder: 'Marketing' (Inheritance Enabled)",
+        "Sub-folder: 'Campaign_2024' (Inheritance Disabled/Explicit permissions only)",
+        "User View: Folder does not appear in the directory listing"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "When looking at the 'Security' tab of the 'Campaign_2024' folder, you notice the checkmarks are solid black (explicit) rather than grey (inherited). What does this mean?",
+          "options": [
+            "The folder is a shortcut",
+            "Permission inheritance has been disabled for this folder",
+            "The folder is read-only",
+            "The folder is owned by the SYSTEM account"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Why did the department lose access when the sub-folder was created?",
+          "options": [
+            "The server rebooted",
+            "By disabling inheritance, the folder stopped receiving the 'Allow' permissions from the Marketing parent folder",
+            "Marketing users are not allowed to see folders with '2024' in the name",
+            "The folder was moved to a different drive"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "How do you restore access to the department correctly?",
+          "options": [
+            "Re-enable inheritance on the 'Campaign_2024' folder to pull permissions from the parent",
+            "Give the 'Everyone' group Full Control",
+            "Delete the folder and ask the manager to try again",
+            "Move the folder to the user's Desktop"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "SUPP-05",
+      "category": "Domain Support",
+      "title": "Duplicate Computer Object in Active Directory",
+      "summary": "You are trying to join a new laptop to the domain with the name 'LAPTOP-05', but you get an error saying 'The account already exists' or 'Access is Denied'.",
+      "tags": ["active directory", "domain join", "naming"],
+      "artifact": [
+        "Target Name: LAPTOP-05",
+        "AD Search: A computer object named 'LAPTOP-05' already exists in the 'Computers' OU",
+        "Status: The existing object was last active 2 years ago"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What is the first thing to check in Active Directory Users and Computers (ADUC)?",
+          "options": [
+            "Check for an existing computer object with the same name",
+            "Check if the user has a valid email address",
+            "Check the DHCP lease for the laptop",
+            "Check the laptop's serial number"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "Why is AD blocking the domain join?",
+          "options": [
+            "The laptop is too new for the domain",
+            "A stale computer object with the same name exists, and the current machine cannot overwrite the existing secure SID",
+            "The domain is full",
+            "The laptop is running Windows Home edition"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "What is the safest resolution?",
+          "options": [
+            "Rename the laptop to something unique (e.g., LAPTOP-05B) or delete/reset the old AD object before joining",
+            "Disable the antivirus on the laptop",
+            "Reboot the Domain Controller",
+            "Format the hard drive of the new laptop"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "SUPP-06",
+      "category": "Permissions",
+      "title": "Group Conflict: The Deny Rule",
+      "summary": "A user, James, is in the 'Contractors' group (Deny Access to Finance) and the 'Project-A' group (Allow Access to Finance). He cannot access the Finance folder.",
+      "tags": ["ntfs", "deny", "logic"],
+      "artifact": [
+        "User: James",
+        "Group 1: Contractors (Permissions: Deny Read/Write on Finance)",
+        "Group 2: Project-A (Permissions: Allow Read on Finance)"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "When assessing multiple groups, how does Windows handle a 'Deny' vs an 'Allow'?",
+          "options": [
+            "Allow always wins",
+            "Deny always takes precedence over Allow in NTFS logic",
+            "They cancel each other out",
+            "The most recent group added wins"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Why is James blocked even though he is in a group that is 'Allowed'?",
+          "options": [
+            "Because he is a Contractor",
+            "The explicit 'Deny' on the Contractors group overrides any 'Allow' from other groups",
+            "His account is locked",
+            "The Finance folder is hidden"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "How do you give James access while keeping him in both groups?",
+          "options": [
+            "Remove the 'Deny' entry and simply leave the 'Allow' box unchecked for the Contractors group",
+            "Delete the Project-A group",
+            "Make James a Domain Admin",
+            "Share the folder with James's personal Gmail account"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "SUPP-07",
+      "category": "File Systems",
+      "title": "Partition Management for Developers",
+      "summary": "A developer wants a separate D: drive for their code, but the PC only has one large C: drive with 500GB of free space.",
+      "tags": ["disk management", "partitions", "volumes"],
+      "artifact": [
+        "Disk 0: One partition (C:), 900GB total, 500GB free",
+        "Goal: Create a 100GB D: drive"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "Which Windows tool allows you to resize partitions without losing data?",
+          "options": [
+            "Disk Management (diskmgmt.msc)",
+            "Device Manager",
+            "System Information",
+            "File Explorer"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What action must be taken on the C: drive before a D: drive can be created?",
+          "options": [
+            "Delete the C: drive",
+            "Shrink the C: volume to create 'Unallocated Space'",
+            "Format the whole disk",
+            "Change the drive letter of C: to D:"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "What are the steps to fulfill the request?",
+          "options": [
+            "Right-click C: -> Shrink Volume -> Enter 102400MB -> Right-click Unallocated Space -> New Simple Volume",
+            "Plug in an external drive",
+            "Copy all files to a cloud drive and delete the OS",
+            "Reinstall Windows and choose two partitions"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "SUPP-08",
+      "category": "Permissions",
+      "title": "Network Share vs File System Permissions",
+      "summary": "A user has 'Full Control' on the Share permissions of a folder, but they get 'Access Denied' when trying to save a file. The NTFS permissions are set to 'Read Only'.",
+      "tags": ["share permissions", "ntfs", "effective permissions"],
+      "artifact": [
+        "Share Permissions: Everyone - Full Control",
+        "NTFS Permissions: User - Read"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "When accessing a file over the network, which permission set does Windows apply?",
+          "options": [
+            "Only Share permissions",
+            "Only NTFS permissions",
+            "The most restrictive combination of both",
+            "The least restrictive combination of both"
           ],
           "correct": 2
         },
-        "changeNote": "Write a change record: what changed, why, impact, and validation."
-      },
-      "validations": [
-        "USB appears as boot option",
-        "Boot proceeds to Windows Setup",
-        "Correct edition/architecture is used"
+        "diagnosis": {
+          "q": "Why is the user unable to save files?",
+          "options": [
+            "The share is broken",
+            "The NTFS 'Read' permission is more restrictive than the Share 'Full Control' and becomes the effective permission",
+            "The user is not logged in",
+            "The file is too large"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "How do you fix this so the user can save files over the network?",
+          "options": [
+            "Update the NTFS permissions to 'Modify' or 'Full Control'",
+            "Remove the Share permissions",
+            "Map the drive using a different letter",
+            "Disable the firewall"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "SUPP-09",
+      "category": "File Systems",
+      "title": "New Hardware: The Uninitialized Disk",
+      "summary": "A user plugged in a secondary internal SSD, but it doesn't show up in File Explorer (This PC).",
+      "tags": ["initialization", "disk management", "online"],
+      "artifact": [
+        "Disk Management: Disk 1 is 'Unknown, Not Initialized, Unallocated'",
+        "File Explorer: Only C: drive is visible"
       ],
-      "debrief": {
-        "summary": "You framed bootable USB creation as a standards-based process (correct ISO, partition scheme, UEFI vs legacy compatibility) rather than trial-and-error formatting.",
-        "takeaway": "Boot media must match the target firmware mode\u2014ensure the USB is created for UEFI/GPT when needed."
+      "workflow": {
+        "triage": {
+          "q": "If a disk is physically connected but not appearing in File Explorer, what status would you expect in Disk Management?",
+          "options": [
+            "The disk marked as 'Offline' or 'Not Initialized'",
+            "The disk marked as 'Healthy (Primary Partition)'",
+            "The disk missing entirely",
+            "A 'No Disk' error"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "Why is the drive invisible to the user?",
+          "options": [
+            "It is a fake drive",
+            "A new drive must be 'Initialized' and have a volume created before Windows can assign a drive letter",
+            "The SATA cable is upside down",
+            "The user doesn't have a license for a second drive"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "What is the professional fix?",
+          "options": [
+            "Initialize the disk (GPT), create a New Simple Volume, and format it as NTFS",
+            "Reinstall the SSD",
+            "Return the SSD to the manufacturer",
+            "Update the BIOS"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "SUPP-10",
+      "category": "Domain Support",
+      "title": "Authentication Block: Kerberos Time Skew",
+      "summary": "A user cannot log in to the domain. The error says 'There is a time and/or date difference between the client and the server.'",
+      "tags": ["kerberos", "time sync", "w32time"],
+      "artifact": [
+        "Workstation Time: 10:15 AM",
+        "Domain Controller Time: 10:45 AM",
+        "Error: Kerberos Authentication Failure"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What is the maximum allowed time skew for Kerberos authentication in a Windows Domain?",
+          "options": [
+            "1 minute",
+            "5 minutes",
+            "30 minutes",
+            "1 hour"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Why does the time difference block the user from logging in?",
+          "options": [
+            "Windows doesn't like tardiness",
+            "Kerberos uses timestamps to prevent replay attacks; a skew larger than 5 minutes causes security rejection",
+            "The CMOS battery is dead",
+            "The user is in the wrong time zone"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "How do you fix this at the command line?",
+          "options": [
+            "Run 'w32tm /resync' or 'net time \\\\DCName /set /y' to align the clock",
+            "Manually type the time in the system tray",
+            "Buy a new clock for the office",
+            "Disable Kerberos on the Domain Controller"
+          ],
+          "correct": 0
+        }
       }
     }
   ]
