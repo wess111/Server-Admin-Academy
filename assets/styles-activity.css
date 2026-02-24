@@ -10,6 +10,13 @@
   --accent:rgba(167,139,250,.95);
   --shadow:0 18px 55px rgba(0,0,0,.52);
   --radius:18px;
+
+  /* Interaction colors (bluish hover / selected like your earlier version) */
+  --optBg: rgba(255,255,255,.06);
+  --optHover: rgba(96,165,250,.18);
+  --optHoverBorder: rgba(96,165,250,.40);
+  --optSelected: rgba(96,165,250,.26);
+  --optSelectedBorder: rgba(96,165,250,.62);
 }
 
 *{box-sizing:border-box}
@@ -19,18 +26,13 @@ body{
   background:var(--bg);
   color:var(--text);
   font-weight:400;
-  letter-spacing:0;
 }
 a{color:inherit;text-decoration:none}
 
 /* Appbar */
 .appbar{
-  position:sticky;
-  top:0;
-  z-index:10;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+  position:sticky;top:0;z-index:10;
+  display:flex;justify-content:space-between;align-items:center;
   padding:14px 18px;
   border-bottom:1px solid var(--line);
   background:rgba(10,14,23,.96);
@@ -38,12 +40,10 @@ a{color:inherit;text-decoration:none}
 }
 .appbar-left{display:flex;gap:14px;align-items:center}
 .home-link{
-  padding:9px 12px;
-  border-radius:14px;
+  padding:9px 12px;border-radius:14px;
   border:1px solid var(--line2);
   background:rgba(255,255,255,.06);
-  font-weight:600;
-  color:rgba(238,245,255,.9);
+  font-weight:600;color:rgba(238,245,255,.9);
 }
 .brand{display:flex;gap:12px;align-items:center}
 .mark{
@@ -53,7 +53,6 @@ a{color:inherit;text-decoration:none}
 }
 .brand-title{font-weight:650}
 .brand-sub{font-size:12.5px;color:var(--muted);font-weight:450}
-
 .appbar-right{display:flex;gap:10px;align-items:center}
 
 /* Pills + Buttons */
@@ -61,8 +60,7 @@ a{color:inherit;text-decoration:none}
   border:1px solid var(--line2);
   background:rgba(255,255,255,.07);
   padding:7px 12px;border-radius:999px;
-  font-weight:550;
-  font-size:13px;
+  font-weight:550;font-size:13px;
   display:inline-flex;align-items:center;gap:8px
 }
 .dot{width:8px;height:8px;border-radius:999px;background:rgba(34,197,94,.95);display:inline-block}
@@ -71,8 +69,7 @@ a{color:inherit;text-decoration:none}
   background:rgba(255,255,255,.08);
   border:1px solid var(--line2);
   color:rgba(238,245,255,.92);
-  padding:10px 12px;
-  border-radius:14px;
+  padding:10px 12px;border-radius:14px;
   font-weight:600;
   cursor:pointer
 }
@@ -81,6 +78,22 @@ a{color:inherit;text-decoration:none}
   background:transparent;
   border-style:dashed;
   color:rgba(238,245,255,.80)
+}
+
+/* Inputs */
+.input{
+  flex:1;
+  background:rgba(0,0,0,.16);
+  border:1px solid var(--line2);
+  border-radius:14px;
+  padding:10px 12px;
+  color:var(--text);
+  outline:none;
+  font-weight:450
+}
+.input:focus{
+  border-color:rgba(167,139,250,.45);
+  box-shadow:0 0 0 4px rgba(167,139,250,.12)
 }
 
 /* Layout */
@@ -95,8 +108,7 @@ a{color:inherit;text-decoration:none}
 .banner-inner{padding:18px}
 .toprow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .role-pill{
-  display:inline-flex;
-  border:1px solid var(--line2);
+  display:inline-flex;border:1px solid var(--line2);
   background:rgba(255,255,255,.07);
   padding:7px 12px;border-radius:999px;
   font-weight:550;font-size:13px
@@ -110,20 +122,14 @@ a{color:inherit;text-decoration:none}
   font-weight:650
 }
 .banner .p{
-  margin:0;
-  color:var(--muted);
-  line-height:1.7;
-  max-width:95ch;
-  font-weight:400
+  margin:0;color:var(--muted);
+  line-height:1.7;max-width:95ch;
 }
 .hint{
-  margin-top:12px;
-  padding:10px 12px;
-  border-radius:14px;
-  border:1px solid var(--line);
+  margin-top:12px;padding:10px 12px;
+  border-radius:14px;border:1px solid var(--line);
   background:rgba(0,0,0,.12);
   color:rgba(238,245,255,.82);
-  font-weight:400
 }
 
 /* Tabs */
@@ -131,14 +137,18 @@ a{color:inherit;text-decoration:none}
 .tab{
   background:rgba(255,255,255,.06);
   border:1px solid var(--line);
-  padding:10px 12px;
-  border-radius:14px;
-  font-weight:600;
-  cursor:pointer
+  padding:10px 12px;border-radius:14px;
+  font-weight:600;cursor:pointer;
+  color:rgba(238,245,255,.90);
 }
 .tab.active{
   border-color:rgba(167,139,250,.55);
-  background:rgba(167,139,250,.12)
+  background:rgba(167,139,250,.12);
+  color:rgba(238,245,255,.95);
+}
+.tab:focus-visible{
+  outline:3px solid rgba(167,139,250,.45);
+  outline-offset:2px;
 }
 
 /* Workspace */
@@ -156,26 +166,11 @@ a{color:inherit;text-decoration:none}
   box-shadow:var(--shadow);
   overflow:hidden
 }
-
-/* Make the main work surface stand out a bit more (matches the clearer workspace look) */
-.panel.right{
-  background:var(--panel2);
-}
+.panel.right{background:var(--panel2)}
 .panel-title{padding:14px 14px 6px;font-weight:650}
-.panel-sub{padding:0 14px 12px;color:var(--muted);font-weight:400;font-size:13px}
+.panel-sub{padding:0 14px 12px;color:var(--muted);font-size:13px}
 
 .toolbar-row{padding:0 14px 12px;display:flex;gap:10px;align-items:center}
-.input{
-  flex:1;
-  background:rgba(0,0,0,.16);
-  border:1px solid var(--line2);
-  border-radius:14px;
-  padding:10px 12px;
-  color:var(--text);
-  outline:none;
-  font-weight:450
-}
-.input:focus{border-color:rgba(167,139,250,.45);box-shadow:0 0 0 4px rgba(167,139,250,.12)}
 
 .list{padding:10px 10px 14px;display:flex;flex-direction:column;gap:10px;max-height:560px;overflow:auto}
 .card{
@@ -185,9 +180,12 @@ a{color:inherit;text-decoration:none}
   padding:12px
 }
 .card:hover{border-color:rgba(167,139,250,.35)}
-.card.selected{border-color:rgba(167,139,250,.65);background:rgba(167,139,250,.10)}
+.card.selected{
+  border-color:rgba(167,139,250,.65);
+  background:rgba(167,139,250,.10)
+}
 .card-title{font-weight:650}
-.card-desc{margin-top:8px;color:var(--muted);line-height:1.55;font-weight:400;font-size:13px}
+.card-desc{margin-top:8px;color:var(--muted);line-height:1.55;font-size:13px}
 
 .badge{
   border:1px solid var(--line2);
@@ -196,6 +194,7 @@ a{color:inherit;text-decoration:none}
   font-weight:550;font-size:12px;
   display:inline-flex;justify-content:center
 }
+.badgeStatus{background:rgba(255,255,255,.06)}
 .tags{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px}
 .tag{
   border:1px solid var(--line2);
@@ -221,25 +220,75 @@ a{color:inherit;text-decoration:none}
 }
 .detailKicker{color:rgba(238,245,255,.74);font-size:12px;font-weight:550}
 .detailTitle{margin-top:8px;font-size:18px;font-weight:650}
-.detailSummary{margin-top:8px;color:var(--muted);line-height:1.65;font-weight:400}
+.detailSummary{margin-top:8px;color:var(--muted);line-height:1.65}
 
-.envGrid{
+/* Evidence / Artifact (NEW) */
+.artifactCard{
   margin-top:12px;
-  display:grid;
-  grid-template-columns:repeat(2, minmax(0, 1fr));
-  gap:10px
-}
-.miniCard{
   border:1px solid var(--line);
-  background:rgba(255,255,255,.04);
-  border-radius:14px;
-  padding:12px
+  background:rgba(0,0,0,.14);
+  border-radius:16px;
+  padding:12px;
 }
-.miniTitle{font-weight:600}
-.miniDesc{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.55;font-weight:400}
-
+.artifactTitle{
+  font-weight:650;
+  margin-bottom:8px;
+}
+.artifactBody{
+  color:rgba(238,245,255,.86);
+  font-size:13px;
+  line-height:1.6;
+}
 .bullets{margin:0;padding-left:18px}
-.bullets li{margin:4px 0;color:rgba(238,245,255,.86)}
+.bullets li{margin:4px 0;color:rgba(238,245,255,.88)}
+
+/* Stage tabs (Triage/Diagnosis/Fix/Change Note) */
+.stageTabs{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:12px;
+  margin-bottom:8px;
+}
+.stageTab{
+  border:1px solid var(--line2);
+  background:rgba(255,255,255,.06);
+  color:rgba(238,245,255,.88);
+  padding:9px 12px;
+  border-radius:999px;
+  font-weight:650;
+  cursor:pointer;
+}
+.stageTab:hover{
+  border-color: rgba(96,165,250,.45);
+  background: rgba(96,165,250,.14);
+}
+.stageTab.active{
+  border-color: rgba(96,165,250,.60);
+  background: rgba(96,165,250,.22);
+  color: rgba(238,245,255,.95);
+}
+.stageTab.disabled{
+  opacity:.45;
+  cursor:not-allowed;
+  filter:saturate(.6);
+}
+
+/* Status line */
+.statusLine{
+  margin-top:8px;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.10);
+  border-radius:14px;
+  color:rgba(238,245,255,.86);
+}
+.statusLine .sep{margin:0 8px;color:rgba(238,245,255,.40)}
+.statusHint{
+  margin-top:6px;
+  color:rgba(238,245,255,.72);
+  font-size:12.5px;
+}
 
 /* Steps */
 .step{
@@ -266,11 +315,37 @@ a{color:inherit;text-decoration:none}
   background:rgba(255,255,255,.06)
 }
 .step-title{font-weight:650}
-.step-hint{margin-top:4px;color:var(--muted2);font-weight:400;font-size:12.5px;line-height:1.45}
+.step-hint{margin-top:4px;color:var(--muted2);font-size:12.5px;line-height:1.45}
 .step-body{padding:12px}
 
-.toggle{display:inline-flex;gap:8px;align-items:center;font-weight:500;font-size:12px;color:rgba(238,245,255,.82)}
+.note-actions{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.mini-muted{color:rgba(238,245,255,.70);font-size:12px}
+.mini-good{color:rgba(34,197,94,.95);font-size:12px;font-weight:650}
+.mini-bad{color:rgba(248,113,113,.95);font-size:12px;font-weight:650}
 
+/* Options: make them ALL look like filled buttons + bluish hover + clear selected */
+.optionsGrid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap:10px;
+}
+.btn.option{
+  width:100%;
+  text-align:left;
+  background: var(--optBg);
+  border-style: solid;
+}
+.btn.option:hover{
+  background: var(--optHover);
+  border-color: var(--optHoverBorder);
+}
+.btn.option.selected{
+  background: var(--optSelected);
+  border-color: var(--optSelectedBorder);
+  box-shadow: 0 0 0 4px rgba(96,165,250,.12);
+}
+
+/* Textareas */
 .stepText{
   width:100%;
   background:rgba(0,0,0,.16);
@@ -279,52 +354,56 @@ a{color:inherit;text-decoration:none}
   color:var(--text);
   padding:10px 12px;
   outline:none;
-  font-weight:400;
   line-height:1.65;
   resize:vertical
 }
-.stepText:focus{border-color:rgba(167,139,250,.45);box-shadow:0 0 0 4px rgba(167,139,250,.12)}
+.stepText:focus{
+  border-color:rgba(96,165,250,.55);
+  box-shadow:0 0 0 4px rgba(96,165,250,.12)
+}
 
-.note-actions{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
-.mini-muted{color:rgba(238,245,255,.70);font-size:12px;font-weight:400}
+.smallLabel{
+  display:block;
+  margin-top:10px;
+  margin-bottom:6px;
+  color:rgba(238,245,255,.78);
+  font-weight:650;
+  font-size:12px;
+}
 
 /* Footer */
 .footer{margin-top:14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 2px}
-.muted{color:rgba(238,245,255,.70);font-weight:400}
+.muted{color:rgba(238,245,255,.70)}
 
-/* Meta grid (Analyst info) */
+/* Meta grid (top analyst fields) */
 .metaGrid{
   margin-top:14px;
   display:grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap:10px;
 }
+.field{min-width:0}
 .field label{
   display:block;
-  margin-bottom:5px;
+  margin-bottom:6px;
+  min-height: 16px; /* keeps label baseline consistent */
   color:rgba(238,245,255,.75);
-  font-weight:550;
+  font-weight:650;
   font-size:12px;
 }
-
-/* Align labels + controls cleanly in the banner grid */
 .metaGrid .field{display:flex;flex-direction:column}
 .metaGrid input.input{
   width:100%;
   height:42px;
   flex:unset;
 }
-.metaGrid textarea.input{
-  width:100%;
-  flex:unset;
-  min-height:84px;
-  resize:vertical
+.metaGrid input[type="date"].input{
+  padding-right: 40px; /* keeps date control aligned */
 }
-
 @media (max-width: 980px){
   .workspace{grid-template-columns:1fr}
-  .envGrid{grid-template-columns:1fr}
   .metaGrid{grid-template-columns:1fr 1fr}
+  .optionsGrid{grid-template-columns:1fr}
 }
 @media (max-width: 620px){
   .metaGrid{grid-template-columns:1fr}
@@ -345,21 +424,7 @@ a{color:inherit;text-decoration:none}
   padding:16px;
 }
 .modalHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
-.modalKicker{color:rgba(238,245,255,.70);font-weight:550;font-size:12px}
+.modalKicker{color:rgba(238,245,255,.70);font-weight:650;font-size:12px}
 .modalTitle{font-weight:650;font-size:16px;margin-top:2px}
-.modalDesc{color:rgba(238,245,255,.75);font-weight:400;font-size:13px;margin-top:6px;line-height:1.55}
+.modalDesc{color:rgba(238,245,255,.75);font-size:13px;margin-top:6px;line-height:1.55}
 .modalActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-/* --- FIX: Tabs text appears black in some browsers --- */
-.tab{
-  color: rgba(238,245,255,.90);
-}
-
-.tab.active{
-  color: rgba(238,245,255,.95);
-}
-
-/* Better keyboard focus */
-.tab:focus-visible{
-  outline: 3px solid rgba(167,139,250,.45);
-  outline-offset: 2px;
-}
