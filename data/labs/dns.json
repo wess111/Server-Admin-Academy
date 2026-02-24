@@ -1,1 +1,541 @@
-
+{
+  "id": "dns",
+  "title": "DNS Concepts Practice",
+  "track": "System Engineering",
+  "subject": "DNS",
+  "rolePill": "Systems Administrator",
+  "description": "Practice resolving common DNS problems using evidence-first triage, diagnosis, and fix decisions. Titles and summaries are symptom-based to keep the root cause discoverable during the workflow.",
+  "reportOverview": "This report summarizes your ticket outcomes and change notes for DNS concepts practice. Use it to reflect on your decision path and evidence interpretation.",
+  "categories": ["DNS"],
+  "evidenceInstructions": "Instructions:\n1) Read the observed symptom and scan the evidence.\n2) Decide what you should verify first (Triage).\n3) Choose the most likely cause based on the evidence (Diagnosis).\n4) Select the best remediation action (Fix).\n5) Write a short change note describing what changed and how you validated it.",
+  "tickets": [
+    {
+      "id": "DNS-01",
+      "category": "DNS",
+      "title": "New workstation cannot complete domain join",
+      "summary": "A newly imaged workstation fails to join the domain. Internet access works, but the domain join wizard reports it cannot locate a domain controller.",
+      "tags": ["domain join", "srv", "client dns"],
+      "artifact": [
+        "Client (WS-NEW01) output:",
+        "nslookup _ldap._tcp.dc._msdcs.contoso.com",
+        "*** resolver can't find _ldap._tcp.dc._msdcs.contoso.com: NXDOMAIN",
+        "",
+        "Client ipconfig /all (snippet):",
+        "DNS Servers . . . . . . . . . . . : 8.8.8.8",
+        "                                      1.1.1.1"
+      ],
+      "validations": [
+        "Confirm the client uses internal DNS (DC IPs).",
+        "Re-run SRV lookup for _ldap._tcp.dc._msdcs.<domain>.",
+        "Attempt domain join again after correction."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you verify FIRST on the affected workstation?",
+          "options": [
+            "Which DNS servers the workstation is using (internal vs public)",
+            "Whether the workstation has the latest Windows updates",
+            "Whether the workstation time zone matches the domain controller",
+            "Whether the workstation has enough free disk space"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "Based on the evidence, what is the MOST likely reason the join fails?",
+          "options": [
+            "The domain controller is offline",
+            "The workstation is using public DNS and cannot resolve domain SRV records",
+            "The DHCP scope is out of addresses",
+            "The workstation has a duplicate computer name in Active Directory"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Configure the client (or DHCP option 006) to use the domain controller(s) as DNS servers",
+            "Create a new reverse lookup zone immediately",
+            "Disable secure dynamic updates on the DNS zone",
+            "Reinstall the workstation network driver"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-02",
+      "category": "DNS",
+      "title": "Users cannot reach a file server by name",
+      "summary": "Users can reach the file server by IP address, but attempts to reach it by hostname fail across multiple clients.",
+      "tags": ["a record", "name resolution", "internal server"],
+      "artifact": [
+        "Client output:",
+        "ping 10.0.0.50  -> replies OK",
+        "ping fileserver.contoso.com -> Ping request could not find host fileserver.contoso.com",
+        "",
+        "Client nslookup:",
+        "nslookup fileserver.contoso.com",
+        "*** dc01.contoso.com can't find fileserver.contoso.com: Non-existent domain"
+      ],
+      "validations": [
+        "Confirm the record exists in the correct forward lookup zone.",
+        "Validate resolution from multiple clients.",
+        "Confirm no conflicting records exist."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What is the FIRST thing to check on the DNS server?",
+          "options": [
+            "Whether an A record exists for fileserver.contoso.com in the correct zone",
+            "Whether the DNS server has forwarders configured",
+            "Whether a reverse lookup zone exists for 10.0.0.0/24",
+            "Whether DNS scavenging is enabled"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause of the failure?",
+          "options": [
+            "The server IP address changed and clients cached it",
+            "The hostname record is missing (deleted or never created)",
+            "A conditional forwarder is misconfigured",
+            "The DNS server recursion setting is disabled"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Create (or re-register) the host A record for fileserver.contoso.com",
+            "Add 8.8.8.8 to DNS forwarders",
+            "Disable aging and scavenging on the zone",
+            "Create a root zone named \".\""
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-03",
+      "category": "DNS",
+      "title": "A few users still see the old intranet after maintenance",
+      "summary": "After an intranet cutover, most users reach the updated intranet, but a few users still reach the old site or old content.",
+      "tags": ["cache", "cutover", "ttl"],
+      "artifact": [
+        "IT confirms DNS zone now points intranet.contoso.com -> 10.0.20.25",
+        "",
+        "Affected user PC:",
+        "ipconfig /displaydns (snippet):",
+        "intranet.contoso.com",
+        "Record Type . . . . : 1",
+        "Time To Live  . . . : 312",
+        "A (Host) Record . . : 10.0.10.15"
+      ],
+      "validations": [
+        "Verify nslookup returns the new IP on the client after remediation.",
+        "Confirm client cache no longer contains the old IP.",
+        "Validate intranet loads correctly."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What is the FIRST troubleshooting step on the affected user PC?",
+          "options": [
+            "Check the local DNS resolver cache for intranet.contoso.com",
+            "Restart the DNS Server service on the domain controller",
+            "Delete the intranet DNS record and recreate it",
+            "Disable the user’s firewall"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "Based on the evidence, what is the MOST likely cause?",
+          "options": [
+            "The DNS server is using root hints instead of forwarders",
+            "The user’s machine has a stale cached DNS record",
+            "The intranet server is down",
+            "The reverse lookup zone is missing"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "Which action is the best fix for the affected user?",
+          "options": [
+            "Flush the DNS cache on the affected PC and retry",
+            "Authorize DHCP in Active Directory",
+            "Enable zone transfers to a secondary DNS server",
+            "Disable secure dynamic updates"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-04",
+      "category": "DNS",
+      "title": "Users cannot use the short intranet URL",
+      "summary": "Users want to access the intranet using a short name (for example, http://portal) but it does not resolve internally.",
+      "tags": ["cname", "alias", "intranet"],
+      "artifact": [
+        "User behavior:",
+        "Typing: http://portal",
+        "Result: browser search / cannot resolve",
+        "",
+        "Existing host:",
+        "webserver01.contoso.com is reachable by name",
+        "",
+        "DNS query:",
+        "nslookup portal",
+        "*** dc01.contoso.com can't find portal: Non-existent domain"
+      ],
+      "validations": [
+        "Confirm the alias resolves to the correct target.",
+        "Confirm portal resolves from multiple clients.",
+        "Validate intranet loads using the short name."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What is the FIRST check on the DNS side to support a short name like \"portal\"?",
+          "options": [
+            "Check whether an alias record exists for portal",
+            "Check whether the DNS server has root hints configured",
+            "Check whether scavenging is enabled",
+            "Check whether the reverse lookup zone exists"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely reason the short name does not work?",
+          "options": [
+            "No alias (CNAME) record exists for portal",
+            "The DHCP scope is exhausted",
+            "The DC’s time is out of sync",
+            "The DNS server is not authorized"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Create a CNAME record named portal pointing to webserver01.contoso.com",
+            "Create a reverse lookup zone for 10.0.0.0/24",
+            "Disable recursion on the DNS server",
+            "Remove the contoso.com forward lookup zone"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-05",
+      "category": "DNS",
+      "title": "Internal resources work but external websites do not resolve",
+      "summary": "Users can access internal resources by name, but external names like google.com and outlook.com do not resolve across the organization.",
+      "tags": ["forwarders", "external resolution", "recursion"],
+      "artifact": [
+        "Client test:",
+        "nslookup fileserver.contoso.com -> resolves OK",
+        "",
+        "Server test on DC/DNS:",
+        "nslookup google.com",
+        "*** Request to dc01.contoso.com timed-out",
+        "",
+        "DNS Manager:",
+        "Server Properties -> Forwarders: (empty)"
+      ],
+      "validations": [
+        "Confirm external nslookup succeeds from server and client.",
+        "Confirm internal name resolution still works.",
+        "Check DNS event logs for timeouts after fix."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you check FIRST on the DNS server for external resolution issues?",
+          "options": [
+            "Forwarders configuration (or upstream resolvers)",
+            "Presence of a reverse lookup zone",
+            "Whether the zone is AD-integrated",
+            "Whether clients are using DHCP reservations"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause given the evidence?",
+          "options": [
+            "No upstream forwarders are configured, so external recursion is failing in this environment",
+            "The A record for google.com is missing from the contoso.com zone",
+            "Clients have stale DNS cache entries for external sites",
+            "The DHCP lease duration is too short"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Add valid forwarders (upstream DNS) on the DNS server and retest external lookups",
+            "Disable the DNS Server service and re-enable it",
+            "Delete the forward lookup zone for contoso.com",
+            "Disable secure dynamic updates"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-06",
+      "category": "DNS",
+      "title": "Security tool shows many devices as unknown by IP",
+      "summary": "A monitoring/security tool lists devices only by IP and shows many as unknown, even though you expect hostnames to appear.",
+      "tags": ["ptr", "reverse lookup", "monitoring"],
+      "artifact": [
+        "Tool output example:",
+        "Device: 10.0.0.15 -> Unknown",
+        "Device: 10.0.0.42 -> Unknown",
+        "",
+        "Admin test:",
+        "nslookup 10.0.0.15",
+        "*** dc01.contoso.com can't find 15.0.0.10.in-addr.arpa: Non-existent domain"
+      ],
+      "validations": [
+        "Confirm reverse zone exists for the subnet(s).",
+        "Confirm PTR lookups return names.",
+        "Confirm tool can now display hostnames."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you verify FIRST to support reverse lookups?",
+          "options": [
+            "That the correct reverse lookup zone exists for the subnet",
+            "That forwarders are configured",
+            "That DNS scavenging is disabled",
+            "That DHCP failover is enabled"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely reason nslookup by IP fails?",
+          "options": [
+            "A reverse lookup zone (PTR) is missing for the subnet",
+            "The client DNS cache is stale",
+            "A CNAME record is missing",
+            "The DNS server is unauthorized"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Create the appropriate reverse lookup zone and allow PTR registration",
+            "Create a forwarder to 8.8.8.8",
+            "Disable the DNS Client service on all workstations",
+            "Delete all A records and force clients to re-register"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-07",
+      "category": "DNS",
+      "title": "External name resolution stopped suddenly after a change",
+      "summary": "Internal name resolution still works, but external name resolution stopped immediately across the organization after a DNS-related change.",
+      "tags": ["root zone", "recursion", "external"],
+      "artifact": [
+        "Admin observations:",
+        "- Internal: nslookup fileserver.contoso.com -> OK",
+        "- External: nslookup microsoft.com -> fails",
+        "",
+        "DNS Manager shows a new zone named \".\" (dot) under Forward Lookup Zones."
+      ],
+      "validations": [
+        "Confirm external lookups succeed after removing the problematic configuration.",
+        "Verify internal zones continue to resolve.",
+        "Check DNS Server event log for recurrence."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What is the FIRST thing to check in DNS Manager given the evidence?",
+          "options": [
+            "Whether a root zone named \".\" exists on the DNS server",
+            "Whether DHCP option 006 is configured",
+            "Whether the reverse lookup zone exists",
+            "Whether the DNS cache is full"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely explanation for external resolution failing immediately?",
+          "options": [
+            "A root zone was created, preventing normal recursion/forwarder usage",
+            "All external websites changed their IP addresses overnight",
+            "Clients have stale DNS cache entries for external names",
+            "The file server A record is missing"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Remove the \".\" zone and restart DNS service if needed, then retest external resolution",
+            "Create a CNAME record for \".\"",
+            "Disable secure dynamic updates in the contoso.com zone",
+            "Reduce DHCP lease duration"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-08",
+      "category": "DNS",
+      "title": "Secondary DNS server shows a zone error and no records",
+      "summary": "A secondary DNS server was added for redundancy, but the zone does not populate and the console shows an error for the zone.",
+      "tags": ["zone transfer", "secondary dns", "redundancy"],
+      "artifact": [
+        "On secondary DNS server:",
+        "Forward Lookup Zones -> contoso.com shows: \"Zone not loaded\"",
+        "",
+        "Primary DNS server zone properties:",
+        "Zone Transfers tab: currently not allowing transfers"
+      ],
+      "validations": [
+        "Confirm the secondary zone loads and records appear.",
+        "Confirm secondary can resolve records from the zone.",
+        "Confirm zone transfer status remains healthy."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you check FIRST on the primary DNS server for a secondary zone that won't load?",
+          "options": [
+            "Whether zone transfers are allowed to the secondary server",
+            "Whether forwarders are configured",
+            "Whether the reverse lookup zone exists",
+            "Whether DNS scavenging is enabled"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely reason the secondary zone is empty/not loaded?",
+          "options": [
+            "Zone transfers are blocked or not permitted to the secondary server",
+            "The A record for the DNS server is missing",
+            "The client DNS cache is stale",
+            "The DHCP scope is exhausted"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Enable zone transfers (to the secondary server) on the primary zone and retry",
+            "Delete the primary DNS zone and recreate it",
+            "Disable recursion on the primary DNS server",
+            "Change the DHCP subnet mask"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-09",
+      "category": "DNS",
+      "title": "DNS updates appear on one domain controller but not the other",
+      "summary": "DNS records created/updated on one domain controller are not appearing on the other, even after an extended period.",
+      "tags": ["ad replication", "time sync", "multi-dc"],
+      "artifact": [
+        "Admin notes:",
+        "- Record created on DC1 appears immediately on DC1",
+        "- Record does not appear on DC2 after 60+ minutes",
+        "",
+        "DC2 Event Viewer shows Kerberos/Security related errors.",
+        "repadmin /showrepl shows failures."
+      ],
+      "validations": [
+        "Confirm time is synchronized across DCs.",
+        "Confirm AD replication is healthy.",
+        "Confirm DNS records replicate to the other DC."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you verify FIRST when replication-related symptoms appear between DCs?",
+          "options": [
+            "Time synchronization between domain controllers",
+            "Whether the reverse lookup zone exists",
+            "Whether forwarders are configured",
+            "Whether clients have stale DNS caches"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause based on the evidence?",
+          "options": [
+            "Time drift is causing authentication/replication failures, delaying DNS replication",
+            "The CNAME record is missing for the domain",
+            "Zone transfers are disabled",
+            "DHCP is issuing duplicate addresses"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Correct time/NTP configuration and confirm replication resumes",
+            "Create a root zone named \".\"",
+            "Disable secure dynamic updates",
+            "Delete the contoso.com zone and recreate it"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-10",
+      "category": "DNS",
+      "title": "Cannot add DNS records from one server; option is unavailable",
+      "summary": "An administrator cannot add new host records from one DNS server. The UI option to create a new host record is disabled.",
+      "tags": ["secondary zone", "read-only", "zone type"],
+      "artifact": [
+        "Admin observation:",
+        "\"New Host (A or AAAA)...\" is greyed out on DNS server DC2",
+        "",
+        "Zone type on DC2 shows the zone is configured as a Secondary zone."
+      ],
+      "validations": [
+        "Confirm records can be added on the writable DNS instance.",
+        "Confirm changes replicate/transfer to the other server as designed.",
+        "Validate resolution for the new record."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you check FIRST when DNS record creation options are disabled?",
+          "options": [
+            "The zone type (Primary/AD-integrated vs Secondary/read-only)",
+            "Forwarders configuration",
+            "Reverse lookup zone presence",
+            "DHCP scope utilization"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "Why is the record creation option unavailable on this server?",
+          "options": [
+            "The server is hosting a Secondary zone, which is read-only",
+            "The DNS cache is full",
+            "Clients are using public DNS",
+            "The DC is not authorized in Active Directory"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Add the record on the primary/writable DNS server (or convert to AD-integrated where appropriate)",
+            "Delete the DNS zone from all servers and recreate it",
+            "Disable recursion on the DNS server",
+            "Change DHCP option 003"
+          ],
+          "correct": 0
+        }
+      }
+    }
+  ]
+}
