@@ -1,1 +1,532 @@
-
+{
+  "id": "dhcp",
+  "title": "DHCP Concepts Practice",
+  "track": "System Engineering",
+  "subject": "DHCP",
+  "rolePill": "Systems Administrator",
+  "description": "Practice troubleshooting common DHCP problems using evidence-first triage, diagnosis, and fix decisions. Titles and summaries are symptom-based so the workflow reveals the root cause.",
+  "reportOverview": "This report summarizes your ticket outcomes and change notes for DHCP concepts practice. Use it to reinforce what evidence led you to each decision.",
+  "categories": ["DHCP"],
+  "evidenceInstructions": "Instructions:\n1) Read the observed symptom and scan the evidence.\n2) Decide what you should verify first (Triage).\n3) Choose the most likely cause based on the evidence (Diagnosis).\n4) Select the best remediation action (Fix).\n5) Write a short change note describing what changed and how you validated it.",
+  "tickets": [
+    {
+      "id": "DHCP-01",
+      "category": "DHCP",
+      "title": "New DHCP server shows running but clients cannot obtain leases",
+      "summary": "A newly installed DHCP server shows the service as running, but the DHCP console shows a red down arrow and clients cannot obtain IP addresses from it.",
+      "tags": ["authorization", "event 1046", "new server"],
+      "artifact": [
+        "DHCP Server event log:",
+        "Event ID 1046:",
+        "\"The DHCP service is not authorized to start.\"",
+        "",
+        "Client symptom:",
+        "ipconfig /renew -> times out"
+      ],
+      "validations": [
+        "Confirm DHCP server is authorized in AD.",
+        "Confirm console icon turns normal and leases issue.",
+        "Renew a client lease successfully."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you verify FIRST on the new DHCP server?",
+          "options": [
+            "Whether the DHCP server is authorized in Active Directory",
+            "Whether the client NIC driver is updated",
+            "Whether the reverse lookup zone exists",
+            "Whether DNS scavenging is enabled"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause given Event ID 1046?",
+          "options": [
+            "The DHCP server is not authorized in Active Directory",
+            "The DHCP scope is exhausted",
+            "The gateway option is incorrect",
+            "The client has a stale DNS cache"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Authorize the DHCP server in the DHCP console (or via AD) and restart the DHCP service if required",
+            "Create a CNAME record for the DHCP server",
+            "Disable secure dynamic updates in DNS",
+            "Reduce DHCP lease time to 5 minutes"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DHCP-02",
+      "category": "DHCP",
+      "title": "New computers can reach internal hosts by IP but cannot use names",
+      "summary": "A new batch of computers can ping internal servers by IP address, but they cannot resolve internal names or complete domain-related tasks.",
+      "tags": ["option 006", "dns servers", "scope options"],
+      "artifact": [
+        "Client ipconfig /all (snippet):",
+        "DNS Servers . . . . . . . . . . . : (blank)",
+        "",
+        "Client behavior:",
+        "ping 10.0.0.10 -> OK",
+        "ping dc01.contoso.com -> fails"
+      ],
+      "validations": [
+        "Confirm clients receive DNS server IPs via DHCP.",
+        "Confirm nslookup resolves internal names.",
+        "Confirm domain operations proceed normally."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you verify FIRST in the DHCP scope settings?",
+          "options": [
+            "Scope Option 006 (DNS Servers) is configured with internal DNS/DC IPs",
+            "Scope lease duration is 8 days",
+            "Scope has an exclusion range",
+            "DHCP failover is enabled"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause of the symptom?",
+          "options": [
+            "The scope is missing DNS server option(s), so clients have no DNS resolver configured",
+            "The DNS zone transfer is blocked",
+            "A root zone named \".\" exists",
+            "Clients are using stale resolver cache"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Configure DHCP Option 006 with the correct internal DNS server IPs and renew client leases",
+            "Create a reverse lookup zone",
+            "Disable DHCP on the server",
+            "Change the workstation hostname"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DHCP-03",
+      "category": "DHCP",
+      "title": "New arrivals cannot get internet after the office fills up",
+      "summary": "Early arrivals have working connectivity, but later arrivals cannot get online and show limited connectivity on their devices.",
+      "tags": ["scope utilization", "leases", "capacity"],
+      "artifact": [
+        "Client symptom:",
+        "Network status: \"Identifying... No Internet\"",
+        "Client IP becomes 169.254.x.x (APIPA) after renew attempts",
+        "",
+        "DHCP console -> Scope Statistics:",
+        "Addresses in use: 100%",
+        "Addresses available: 0"
+      ],
+      "validations": [
+        "Confirm address availability increases after remediation.",
+        "Renew on multiple clients succeeds.",
+        "Monitor scope utilization stays below capacity."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you check FIRST on the DHCP server?",
+          "options": [
+            "Scope address utilization and available addresses",
+            "DNS forwarders configuration",
+            "Whether the reverse lookup zone exists",
+            "Whether DHCP audit logging is enabled"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause given the evidence?",
+          "options": [
+            "The DHCP scope does not have free addresses available",
+            "A CNAME record is missing",
+            "The DHCP server is unauthorized",
+            "Clients are using public DNS"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Expand the scope range (or add capacity) and consider adjusting lease duration appropriately",
+            "Create a new forward lookup zone",
+            "Disable secure dynamic updates",
+            "Create a root zone named \".\""
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DHCP-04",
+      "category": "DHCP",
+      "title": "Laptop works on Wi-Fi but fails to get an address when docked",
+      "summary": "A laptop receives a valid IP address on Wi-Fi, but when connected via a docking station it fails to obtain an IP address.",
+      "tags": ["filters", "mac address", "allow list"],
+      "artifact": [
+        "Client docked behavior:",
+        "ipconfig /renew -> times out",
+        "",
+        "DHCP server configuration note:",
+        "An Allow filter is enabled on the DHCP server.",
+        "Wi-Fi MAC is present in Allow list; dock MAC is not."
+      ],
+      "validations": [
+        "Confirm dock MAC is included where needed.",
+        "Renew succeeds while docked.",
+        "Confirm correct scope/options are applied."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you verify FIRST on the DHCP server?",
+          "options": [
+            "Whether DHCP filtering is enabled and if the dock MAC is permitted",
+            "Whether DNS forwarders exist",
+            "Whether scavenging is enabled",
+            "Whether a reverse lookup zone exists"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause?",
+          "options": [
+            "The docking station NIC has a different MAC address that is not allowed by DHCP filtering",
+            "The DHCP scope is exhausted",
+            "The subnet mask is incorrect on the scope",
+            "The DNS server is missing a CNAME"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Add the docking station MAC to the Allow filter (or disable overly restrictive filtering) and renew the lease",
+            "Create a new DHCP scope for Wi-Fi only",
+            "Delete all reservations",
+            "Change the DNS zone type to Secondary"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DHCP-05",
+      "category": "DHCP",
+      "title": "A user receives an unexpected address range and cannot access internal resources",
+      "summary": "A user’s computer shows it is connected, but it receives an IP address that does not match the organization’s addressing and cannot access internal resources.",
+      "tags": ["rogue dhcp", "unexpected scope", "network"],
+      "artifact": [
+        "Client ipconfig /all (snippet):",
+        "IPv4 Address . . . . . . . . . . : 192.168.1.15",
+        "DHCP Server . . . . . . . . . . : 192.168.1.1",
+        "",
+        "Organization expected range:",
+        "10.0.0.0/16"
+      ],
+      "validations": [
+        "Confirm authorized DHCP servers are the only responders.",
+        "Renew results in an organizational IP range.",
+        "Consider preventive controls (e.g., switch protections) where appropriate."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you check FIRST based on the client evidence?",
+          "options": [
+            "Identify which device is acting as the DHCP server (192.168.1.1) and where it is connected",
+            "Create a reverse lookup zone for 192.168.1.0/24",
+            "Add DNS forwarders to the DC",
+            "Change the DHCP lease time to 1 hour"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause?",
+          "options": [
+            "An unauthorized DHCP device is issuing leases on the network",
+            "The DNS client cache is stale",
+            "The DHCP server is not authorized in AD",
+            "The subnet mask was typed incorrectly in the DHCP scope"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Locate and remove/disable the unauthorized DHCP device, then renew the client lease",
+            "Delete the contoso.com DNS zone",
+            "Disable secure dynamic updates",
+            "Convert the DHCP scope into a superscope"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DHCP-06",
+      "category": "DHCP",
+      "title": "DHCP console flags a specific address as unusable after repeated conflicts",
+      "summary": "A specific IP address keeps being marked as unusable in the DHCP console, and clients sometimes report IP conflicts.",
+      "tags": ["bad_address", "static ip", "exclusion"],
+      "artifact": [
+        "DHCP console shows:",
+        "10.0.0.25 marked as BAD_ADDRESS",
+        "",
+        "Network note:",
+        "A printer is configured manually with a static IP address."
+      ],
+      "validations": [
+        "Confirm the static device IP is excluded from the DHCP pool.",
+        "Remove conflict entry if appropriate and observe it does not return.",
+        "Verify clients no longer report IP conflict warnings."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you verify FIRST to stop repeated IP conflicts?",
+          "options": [
+            "Whether any device is using a static IP inside the DHCP dynamic range",
+            "Whether DNS forwarders are configured",
+            "Whether the reverse lookup zone exists",
+            "Whether DHCP is authorized in AD"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause?",
+          "options": [
+            "A static IP device is using an address in the DHCP pool, causing conflicts",
+            "The DHCP server binding is incorrect",
+            "The DHCP lease time is too long",
+            "Clients are using public DNS"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Add an exclusion for the static device IP (or move the static device outside the DHCP range), then clear the conflict entry",
+            "Create a new DNS CNAME record",
+            "Enable scavenging on DNS",
+            "Delete the DHCP scope and recreate it with the same range"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DHCP-07",
+      "category": "DHCP",
+      "title": "Clients on a different VLAN cannot obtain addresses while others can",
+      "summary": "Clients on one floor (separate VLAN/subnet) cannot obtain DHCP addresses, while clients on the same VLAN as the server work normally.",
+      "tags": ["relay", "ip helper", "vlan"],
+      "artifact": [
+        "Observation:",
+        "Clients on Floor-2 VLAN get 169.254.x.x after renew attempts.",
+        "Clients on Floor-1 VLAN obtain leases normally.",
+        "",
+        "DHCP server notes:",
+        "No requests appear from the Floor-2 subnet in DHCP logs."
+      ],
+      "validations": [
+        "Confirm DHCP relay/helper is configured for the VLAN interface.",
+        "Confirm DORA exchange completes for Floor-2 clients.",
+        "Renew succeeds on Floor-2 clients."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you verify FIRST for DHCP across VLANs?",
+          "options": [
+            "DHCP relay / IP helper configuration on the router or Layer-3 interface",
+            "DNS forwarders configuration",
+            "Whether the DHCP server is authorized",
+            "Whether a reverse lookup zone exists"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause based on the evidence?",
+          "options": [
+            "DHCP broadcasts are not being relayed from the VLAN/subnet to the DHCP server",
+            "The DHCP scope is exhausted",
+            "Clients are using a stale DNS cache",
+            "The DNS zone is configured as Secondary"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Configure the correct IP helper/relay address for that VLAN interface and retest renew",
+            "Disable DHCP on all switches",
+            "Change the DHCP scope to a /16 subnet",
+            "Create a root zone named \".\""
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DHCP-08",
+      "category": "DHCP",
+      "title": "DHCP redundancy does not take over when one server is down",
+      "summary": "One DHCP server is down, but clients are not obtaining leases from the second server as expected. The failover status shows an error state.",
+      "tags": ["failover", "shared secret", "communication interrupted"],
+      "artifact": [
+        "DHCP failover status on partner server:",
+        "State: Communication Interrupted",
+        "",
+        "Test:",
+        "When DHCP1 is stopped, new clients fail to obtain leases."
+      ],
+      "validations": [
+        "Confirm failover relationship shows healthy/normal state.",
+        "Confirm leases issue while one partner is down.",
+        "Confirm lease replication behaves normally."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you check FIRST in a DHCP failover issue where takeover fails?",
+          "options": [
+            "The failover relationship health and authentication (shared secret) between partners",
+            "Whether DNS forwarders are configured",
+            "Whether the reverse lookup zone exists",
+            "Whether the subnet mask is correct in DNS"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause given the evidence?",
+          "options": [
+            "The failover relationship is not functioning correctly (authentication/config mismatch), preventing partner takeover",
+            "The DHCP scope is exhausted",
+            "Clients are using public DNS",
+            "A CNAME record is missing"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Reconfigure/recreate the failover relationship with matching settings and shared secret, then resync",
+            "Disable DHCP on the second server",
+            "Delete all DHCP scopes",
+            "Enable DNS scavenging"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DHCP-09",
+      "category": "DHCP",
+      "title": "Reservation was updated but the client keeps using the old address",
+      "summary": "An administrator changed a reservation to a new IP, but the client continues to use the previous IP address.",
+      "tags": ["reservation", "lease", "renew"],
+      "artifact": [
+        "DHCP console:",
+        "- Reservation updated from 10.0.0.50 to 10.0.0.60",
+        "- Address Leases show an active lease for 10.0.0.50 for the same MAC",
+        "",
+        "Client currently shows IP: 10.0.0.50"
+      ],
+      "validations": [
+        "Confirm the old lease is released/cleared as appropriate.",
+        "Renew results in the reserved address.",
+        "Confirm no duplicate reservation/lease remains."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you check FIRST when a client ignores a new reservation?",
+          "options": [
+            "Whether the old lease is still active for that client identifier (MAC) and needs renewal/release",
+            "Whether DNS forwarders are configured",
+            "Whether the reverse lookup zone exists",
+            "Whether DHCP is unauthorized in AD"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely reason the client keeps the old IP?",
+          "options": [
+            "The client still holds an active lease for the old address and has not renewed/released yet",
+            "The DNS server has a root zone named \".\"",
+            "The DHCP scope is exhausted",
+            "The subnet mask is wrong on the client"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Force the client to release/renew (or clear the old lease) so it can obtain the updated reserved address",
+            "Delete the reservation permanently",
+            "Disable DHCP failover",
+            "Move the client to a different VLAN without changes"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DHCP-10",
+      "category": "DHCP",
+      "title": "Clients can talk locally but not beyond their subnet after a scope change",
+      "summary": "Clients receive an IP address but cannot communicate outside their immediate subnet segment. Only a small group of hosts are reachable.",
+      "tags": ["subnet mask", "scope settings", "routing"],
+      "artifact": [
+        "Client ipconfig /all (snippet):",
+        "IPv4 Address . . . . . . . . . . : 10.0.30.15",
+        "Subnet Mask  . . . . . . . . . . : 255.255.255.0",
+        "Default Gateway . . . . . . . . : 10.0.30.1",
+        "",
+        "Network design note:",
+        "Servers reside on 10.0.0.0/16 and should be reachable from this segment."
+      ],
+      "validations": [
+        "Confirm clients receive correct mask after remediation.",
+        "Confirm clients can reach intended subnets.",
+        "Confirm scope configuration matches network design."
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What should you verify FIRST on the client configuration obtained from DHCP?",
+          "options": [
+            "The subnet mask provided by the DHCP scope",
+            "Whether DNS forwarders exist",
+            "Whether the reverse lookup zone exists",
+            "Whether the client has a stale DNS cache"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause of limited connectivity given the evidence?",
+          "options": [
+            "The DHCP scope is providing an incorrect subnet mask for the network design",
+            "The DHCP server is unauthorized",
+            "A CNAME record is missing",
+            "DNS scavenging deleted records"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Correct the DHCP scope configuration by recreating it with the proper subnet mask, then renew clients",
+            "Add 8.8.8.8 as a DNS forwarder",
+            "Create a root zone named \".\"",
+            "Disable secure dynamic updates"
+          ],
+          "correct": 0
+        }
+      }
+    }
+  ]
+}
