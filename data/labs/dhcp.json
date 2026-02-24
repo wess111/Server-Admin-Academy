@@ -44,6 +44,10 @@
           "correct": 1,
           "feedback": "Correct! **Debrief:** In an AD environment, the DHCP service performs a security check. It looks for its own GUID in the 'CN=NetServices,CN=Services,CN=Configuration' container in Active Directory. If it isn't there, it enters a dormant state. This prevents a random employee from plugging in a server and taking over IP addressing for the whole company."
         }
+      },
+      "debrief": {
+        "summary": "You identified that a DHCP service can be running while the scope is not actively leasing addresses (e.g., scope deactivated, exhausted, or misconfigured). The symptom points to scope-level state/configuration rather than the server being \"down.\"",
+        "takeaway": "When clients can\u2019t get leases, check scope status, available addresses, and bindings before restarting services."
       }
     },
     {
@@ -87,6 +91,10 @@
           "correct": 1,
           "feedback": "Correct! **Debrief:** DHCP starts with a broadcast (the 'D' in DORA). Since routers are designed to stop broadcast storms, they kill these packets. The 'IP Helper' acts as a proxy: it catches the broadcast, changes the 'destination' to the specific IP of your DHCP server, and forwards it as a unicast packet."
         }
+      },
+      "debrief": {
+        "summary": "You connected a DHCP symptom to Layer 2/3 segmentation: clients on a different VLAN/subnet won\u2019t receive DHCP offers unless DHCP relay (IP helper) is configured and routing is in place.",
+        "takeaway": "DHCP is broadcast-based; across VLANs you need relay + correct routing to the DHCP server."
       }
     }
   ]
