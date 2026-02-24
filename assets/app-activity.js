@@ -2,15 +2,12 @@
 (() => {
   "use strict";
 
-  /* ----------------------------- Helpers ----------------------------- */
-
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
+  const LS_PREFIX = "sa_academy_v2_ticket_";
+  const LS_META_PREFIX = "sa_academy_v2_meta_";
   const CHANGE_NOTE_MIN = 40;
-
-  const LS_PREFIX = "sa_academy_v3_ticket_";
-  const LS_META_PREFIX = "sa_academy_v3_meta_";
 
   let lab = null;
   let tickets = [];
@@ -47,21 +44,21 @@
       return fallback;
     }
   }
-
   function writeJSON(key, value) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch {}
   }
 
-  /* ----------------------------- State ----------------------------- */
-
   function defaultTicketState() {
     return {
       answers: { triage: null, diagnosis: null, fix: null },
       correct: { triage: false, diagnosis: false, fix: false },
-      uiStage: "triage", // triage | diagnosis | fix | changeNote
+      uiStage: "triage",
       attempts: { total: 0, wrong: 0 },
+      triageNote: "",
+      diagnosisNote: "",
+      fixNote: "",
       changeNote: "",
       doneNote: false,
       resolved: false,
@@ -110,6 +107,9 @@
     });
 
     if (!["triage", "diagnosis", "fix", "changeNote"].includes(s.uiStage)) s.uiStage = "triage";
+    if (typeof s.triageNote !== "string") s.triageNote = "";
+    if (typeof s.diagnosisNote !== "string") s.diagnosisNote = "";
+    if (typeof s.fixNote !== "string") s.fixNote = "";
     if (typeof s.changeNote !== "string") s.changeNote = "";
     if (typeof s.doneNote !== "boolean") s.doneNote = false;
     if (typeof s.resolved !== "boolean") s.resolved = false;
@@ -119,16 +119,16 @@
   }
 
   function computeResolved(s) {
-    const allCorrect = !!(s.correct.triage && s.correct.diagnosis && s.correct.fix);
+    const allCorrect = !!(s.correct?.triage && s.correct?.diagnosis && s.correct?.fix);
     const noteOk = !!(s.doneNote && (s.changeNote || "").trim().length >= CHANGE_NOTE_MIN);
     return allCorrect && noteOk;
   }
 
   function getUnlockedStages(s) {
     const unlocked = new Set(["triage"]);
-    if (s.correct.triage) unlocked.add("diagnosis");
-    if (s.correct.triage && s.correct.diagnosis) unlocked.add("fix");
-    if (s.correct.triage && s.correct.diagnosis && s.correct.fix) unlocked.add("changeNote");
+    if (s.correct?.triage) unlocked.add("diagnosis");
+    if (s.correct?.triage && s.correct?.diagnosis) unlocked.add("fix");
+    if (s.correct?.triage && s.correct?.diagnosis && s.correct?.fix) unlocked.add("changeNote");
     return unlocked;
   }
 
@@ -140,11 +140,8 @@
     else if (unlocked.has("fix")) s.uiStage = "fix";
     else if (unlocked.has("diagnosis")) s.uiStage = "diagnosis";
     else s.uiStage = "triage";
-
     return s;
   }
-
-  /* ----------------------------- Meta (Top Fields) ----------------------------- */
 
   function setTodayIfEmpty() {
     const el = $("#activityDate");
@@ -188,7 +185,15 @@
     loadMeta();
   }
 
-  /* ----------------------------- Data Load ----------------------------- */
+  function getMeta() {
+    const val = (id) => (document.getElementById(id)?.value || "").trim();
+    return {
+      analystName: val("analystName") || "Analyst",
+      courseSection: val("courseSection"),
+      courseTitle: val("courseTitle") || (lab?.title || "Report"),
+      activityDate: val("activityDate")
+    };
+  }
 
   async function loadLabData(labId) {
     const res = await fetch(`./data/labs/${encodeURIComponent(labId)}.json`, { cache: "no-store" });
@@ -196,11 +201,10 @@
     return res.json();
   }
 
-  /* ----------------------------- UI: Tabs & Queue ----------------------------- */
-
   function buildTabs(categories) {
-    const tabs = $("#tabs");
-    tabs.innerHTML = "";
+    const tabsEl = $("#tabs");
+    if (!tabsEl) return;
+    tabsEl.innerHTML = "";
 
     const all = ["ALL", ...categories];
     for (const c of all) {
@@ -212,7 +216,7 @@
         $$(".tab").forEach((b) => b.classList.toggle("active", b.textContent === c));
         applyFilters();
       });
-      tabs.appendChild(btn);
+      tabsEl.appendChild(btn);
     }
   }
 
@@ -230,7 +234,7 @@
   }
 
   function applyFilters() {
-    const q = ($("#searchInput").value || "").trim();
+    const q = ($("#searchInput")?.value || "").trim();
     filteredTickets = tickets.filter((t) => {
       const catOk = activeCategory === "ALL" ? true : t.category === activeCategory;
       return catOk && ticketMatches(t, q);
@@ -254,6 +258,7 @@
 
   function renderTicketList() {
     const list = $("#ticketList");
+    if (!list) return;
     list.innerHTML = "";
 
     if (!filteredTickets.length) {
@@ -293,11 +298,8 @@
     }
   }
 
-  /* ----------------------------- Evidence (Old-style look) ----------------------------- */
-
   function evidenceToLines(t) {
     const lines = [];
-
     const pushLines = (val) => {
       if (!val) return;
       if (typeof val === "string") {
@@ -315,11 +317,9 @@
         });
       }
     };
-
     pushLines(t.artifact);
     pushLines(t.evidence);
     if (!lines.length) pushLines(t.env);
-
     return lines;
   }
 
@@ -334,17 +334,13 @@
     `;
   }
 
-  /* ----------------------------- Stage Tabs ----------------------------- */
-
   function renderStageTabs(ticketId, s) {
     const unlocked = getUnlockedStages(s);
-
     const mk = (key, label) => {
       const active = s.uiStage === key ? " active" : "";
       const locked = unlocked.has(key) ? "" : " disabled";
       return `
-        <button
-          type="button"
+        <button type="button"
           class="tab stageTab${active}${locked}"
           data-stage-tab="true"
           data-ticket="${escapeHtml(ticketId)}"
@@ -367,19 +363,17 @@
   function renderStatusLine(s) {
     const status = computeResolved(s)
       ? "Resolved"
-      : (s.correct.triage || s.correct.diagnosis || s.correct.fix || s.doneNote ? "In progress" : "Not started");
+      : (s.correct?.triage || s.correct?.diagnosis || s.correct?.fix || s.doneNote ? "In progress" : "Not started");
 
     return `
       <div class="statusLine">
         <strong>Status:</strong> ${escapeHtml(status)}
         <span class="sep">•</span>
-        <strong>Attempts:</strong> ${s.attempts.total} (wrong: ${s.attempts.wrong})
+        <strong>Attempts:</strong> ${s.attempts?.total || 0} (wrong: ${s.attempts?.wrong || 0})
         <div class="statusHint">Resolve by answering all three stages correctly + change note (min ${CHANGE_NOTE_MIN} chars).</div>
       </div>
     `;
   }
-
-  /* ----------------------------- Stages ----------------------------- */
 
   function renderMCQStage(stageKey, stageObj, ticketId, s) {
     const prettyName =
@@ -387,8 +381,8 @@
       stageKey === "diagnosis" ? "Diagnosis" :
       "Fix";
 
-    const selectedIdx = s.answers[stageKey];
-    const isCorrect = !!s.correct[stageKey];
+    const selectedIdx = s.answers?.[stageKey];
+    const isCorrect = !!s.correct?.[stageKey];
 
     const rightFlag =
       selectedIdx == null ? `<span class="mini-muted">Select an option</span>` :
@@ -399,8 +393,7 @@
       const picked = selectedIdx === idx;
       const cls = picked ? "btn option selected" : "btn option";
       return `
-        <button
-          type="button"
+        <button type="button"
           class="${cls}"
           data-answer="true"
           data-ticket="${escapeHtml(ticketId)}"
@@ -425,10 +418,7 @@
         </div>
 
         <div class="step-body">
-          <div class="optionsGrid">
-            ${optionsHtml}
-          </div>
-
+          <div class="optionsGrid">${optionsHtml}</div>
           <div class="note-actions">
             <button class="btn" type="button" data-next="true" data-ticket="${escapeHtml(ticketId)}">Next Stage</button>
             <button class="btn ghost" type="button" data-goto-note="true" data-ticket="${escapeHtml(ticketId)}">Go to Change Note</button>
@@ -464,7 +454,6 @@
 
           <label class="smallLabel" for="changeNoteBox">Change note</label>
           <textarea id="changeNoteBox" class="stepText" rows="8" placeholder="Write your change note here...">${escapeHtml(s.changeNote || "")}</textarea>
-
           <div class="mini-muted" id="changeNoteCount">Characters: ${chars}</div>
         </div>
       </div>
@@ -517,12 +506,9 @@
         </div>
 
         ${renderEvidenceOldStyle(t)}
-
         ${stageTabs}
         ${statusLine}
-
         ${stageHtml}
-
         ${renderValidations(t)}
       </div>
     `;
@@ -544,8 +530,6 @@
     }
   }
 
-  /* ----------------------------- Actions ----------------------------- */
-
   function selectTicket(ticketId) {
     selectedId = ticketId;
     renderTicketList();
@@ -563,8 +547,7 @@
     const idx = Number(optionIdx);
     if (!Number.isInteger(idx) || idx < 0 || idx > 3) return;
 
-    const s0 = loadTicketState(ticketId);
-    const s = ensureStateShape(ticketId, s0);
+    const s = ensureStateShape(ticketId, loadTicketState(ticketId));
 
     s.answers[stageKey] = idx;
     s.attempts.total += 1;
@@ -621,7 +604,6 @@
 
   function insertTemplate(ticketId) {
     const s = ensureStateShape(ticketId, loadTicketState(ticketId));
-
     const template =
 `Change implemented:
 Root cause:
@@ -650,17 +632,11 @@ Impact / downtime:`;
     updateProgressAndHealth();
   }
 
-  /* ----------------------------- Progress / Health ----------------------------- */
-
-  function computeTicketComplete(s) {
-    return computeResolved(s);
-  }
-
   function computeProgress() {
     let done = 0;
     for (const t of tickets) {
       const s = ensureStateShape(t.id, loadTicketState(t.id));
-      if (computeTicketComplete(s)) done++;
+      if (computeResolved(s)) done++;
     }
     return { done, total: tickets.length };
   }
@@ -671,7 +647,7 @@ Impact / downtime:`;
     for (const c of cats) {
       const subset = tickets.filter((t) => t.category === c);
       const total = subset.length;
-      const done = subset.reduce((acc, t) => acc + (computeTicketComplete(ensureStateShape(t.id, loadTicketState(t.id))) ? 1 : 0), 0);
+      const done = subset.reduce((acc, t) => acc + (computeResolved(ensureStateShape(t.id, loadTicketState(t.id))) ? 1 : 0), 0);
       const pct = total ? Math.round((done / total) * 100) : 0;
       byCat[c] = { done, total, pct };
     }
@@ -701,8 +677,6 @@ Impact / downtime:`;
     if (hb) hb.textContent = b ? `${b}: ${byCat[b].pct}%` : "—";
   }
 
-  /* ----------------------------- Report ----------------------------- */
-
   function openReportModal() {
     const m = $("#reportModal");
     if (m) m.setAttribute("aria-hidden", "false");
@@ -710,16 +684,6 @@ Impact / downtime:`;
   function closeReportModal() {
     const m = $("#reportModal");
     if (m) m.setAttribute("aria-hidden", "true");
-  }
-
-  function getMeta() {
-    const val = (id) => (document.getElementById(id)?.value || "").trim();
-    return {
-      analystName: val("analystName") || "Analyst",
-      courseSection: val("courseSection"),
-      courseTitle: val("courseTitle") || lab.title,
-      activityDate: val("activityDate")
-    };
   }
 
   function buildTextReport() {
@@ -738,52 +702,6 @@ Impact / downtime:`;
     lines.push("");
     lines.push(`Progress: ${p.done}/${p.total} (${p.total ? Math.round((p.done / p.total) * 100) : 0}%)`);
     Object.entries(byCat).forEach(([k, v]) => lines.push(`${k}: ${v.done}/${v.total} (${v.pct}%)`));
-    lines.push("");
-    lines.push("----- Ticket Work -----");
-
-    for (const t of tickets) {
-      const wf = t.workflow || {};
-      const gamified = isStageObject(wf.triage) && isStageObject(wf.diagnosis) && isStageObject(wf.fix);
-      const s = ensureStateShape(t.id, loadTicketState(t.id));
-
-      lines.push("");
-      lines.push(`${t.id} — ${t.title}`);
-      lines.push(`Category: ${t.category}`);
-      lines.push(`Status: ${computeTicketComplete(s) ? "Complete" : "In Progress"}`);
-      lines.push("");
-
-      lines.push("Evidence:");
-      const ev = evidenceToLines(t);
-      if (!ev.length) lines.push("(No evidence provided)");
-      else ev.forEach(x => lines.push(`- ${x}`));
-      lines.push("");
-
-      if (gamified) {
-        const pickLine = (k) => {
-          const picked = s.answers[k];
-          const label =
-            Number.isInteger(picked) && wf[k].options && wf[k].options[picked]
-              ? wf[k].options[picked]
-              : "(no selection)";
-          const mark = s.correct[k] ? "✅" : "❌";
-          return `${mark} ${label}`;
-        };
-
-        lines.push("Triage:");
-        lines.push(pickLine("triage"));
-        lines.push("");
-        lines.push("Diagnosis:");
-        lines.push(pickLine("diagnosis"));
-        lines.push("");
-        lines.push("Fix:");
-        lines.push(pickLine("fix"));
-        lines.push("");
-      }
-
-      lines.push("Change Note:");
-      lines.push((s.changeNote || "").trim() || "(blank)");
-    }
-
     return lines.join("\n");
   }
 
@@ -799,227 +717,229 @@ Impact / downtime:`;
     a.remove();
   }
 
-  // ✅ UPDATED: Compact, table-based PDF (Old style), with Report Overview + no huge whitespace
-  function downloadPDF() {
-    const meta = getMeta();
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: "pt", format: "letter" });
+  /* ----------------------------- PDF: print-based, fixed to NOT overflow ----------------------------- */
 
-    const marginX = 44;
-    const pageW = doc.internal.pageSize.getWidth();
-    const usableW = pageW - marginX * 2;
+  function buildPrintableHtml() {
+    const meta = getMeta();
+    const generated = new Date().toLocaleString();
 
     const p = computeProgress();
-    const overallPct = p.total ? Math.round((p.done / p.total) * 100) : 0;
     const byCat = computeCategoryHealth();
+    const overallPct = p.total ? Math.round((p.done / p.total) * 100) : 0;
 
-    const drawCard = (x, y, w, h) => {
-      doc.setDrawColor(210);
-      doc.setLineWidth(0.8);
-      doc.setFillColor(250, 250, 250);
-      doc.roundedRect(x, y, w, h, 10, 10, "FD");
+    const catLine = Object.entries(byCat)
+      .map(([k, v]) => `${escapeHtml(k)} ${v.pct}%`)
+      .join(" • ");
+
+    const statusPill = (status) => {
+      const cls = status === "Complete" ? "good" : status === "Attempted" ? "bad" : "warn";
+      return `<span class="pill ${cls}">${escapeHtml(status)}</span>`;
     };
 
-    const textBlock = (text, x, y, w, fontSize, leading) => {
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(fontSize);
-      const lines = doc.splitTextToSize(String(text || ""), w);
-      doc.text(lines, x, y);
-      return y + lines.length * leading;
+    const ticketStatus = (s) => {
+      if (computeResolved(s)) return "Complete";
+      const attempted = (s?.attempts?.total || 0) > 0 || (s?.changeNote || "").trim().length > 0;
+      return attempted ? "Attempted" : "Not started";
     };
 
-    const healthLine = (() => {
-      const entries = Object.entries(byCat);
-      const parts = entries.slice(0, 2).map(([k, v]) => `${k} ${v.pct}%`);
-      return `Overall ${overallPct}%${parts.length ? " • " + parts.join(" • ") : ""}`;
-    })();
+    const rows = tickets
+      .map((t) => {
+        const s = ensureStateShape(t.id, loadTicketState(t.id));
+        const st = ticketStatus(s);
+        const attempts = s?.attempts?.total || 0;
+        const wrong = s?.attempts?.wrong || 0;
+        const type = escapeHtml(t.type || "—");
+        return `
+          <tr>
+            <td>${escapeHtml(t.id)}</td>
+            <td>${escapeHtml(t.category)}</td>
+            <td>${type}</td>
+            <td>${escapeHtml(t.title)}</td>
+            <td>${statusPill(st)}</td>
+            <td class="c">${attempts}</td>
+            <td class="c">${wrong}</td>
+          </tr>
+        `;
+      })
+      .join("");
 
-    const reportTitle = `${lab.title} Incident Triage Report`;
-    const role = lab.rolePill || "Systems Administrator";
-    const generatedAt = new Date();
+    const notes = tickets
+      .map((t) => {
+        const s = ensureStateShape(t.id, loadTicketState(t.id));
+        const text = (s.changeNote || "").trim();
+        if (!text) return "";
+        const resolved = computeResolved(s);
+        return `
+          <div class="r-note-item">
+            <div class="r-note-head">
+              <span class="pill ${resolved ? "good" : "warn"}">${resolved ? "Resolved" : "In progress"}</span>
+              <span class="note-strong">${escapeHtml(t.id)} — ${escapeHtml(t.title)}</span>
+              <span class="note-muted">(${escapeHtml(t.category)})</span>
+            </div>
+            <div class="r-note-body">${escapeHtml(text)}</div>
+          </div>
+        `;
+      })
+      .filter(Boolean)
+      .join("");
 
-    let y = 42;
+    const overviewText = (lab.reportOverview || lab.description || "").trim() || "—";
 
-    // Header
-    const headerH = 118;
-    drawCard(marginX, y, usableW, headerH);
+    // ✅ This is the important part: FIXED print sizing + fixed table layout + forced wrapping.
+    const css = `
+      @page { size: letter landscape; margin: 12mm; }
+      * { box-sizing: border-box; }
+      html, body { background:#fff; color:#0f172a; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+      .r-wrap { max-width: 100%; margin: 0 auto; }
+      .r-header { border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 16px; }
+      .r-top { display:flex; justify-content:space-between; align-items:flex-start; gap: 14px; }
+      .r-title { font-weight: 900; font-size: 16px; letter-spacing: .2px; }
+      .r-sub { font-size: 11px; color:#334155; font-weight: 700; margin-top: 2px; }
+      .r-meta { display:grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 10px; font-size: 11px; color:#0f172a; }
+      .r-meta b { font-weight: 800; }
+      .section { margin-top: 12px; }
+      h2 { font-size: 12px; margin: 0 0 6px 0; }
+      .note { font-size: 11px; color:#334155; line-height: 1.4; white-space: pre-wrap; }
 
-    doc.setTextColor(20);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text(reportTitle, marginX + 18, y + 30);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.text(`${meta.courseTitle || lab.title}`, marginX + 18, y + 52);
-    doc.text(`${meta.courseSection || "—"}`, marginX + 18, y + 70);
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10.5);
-    doc.text(`Student:`, marginX + 18, y + 92);
-    doc.setFont("helvetica", "normal");
-    doc.text(`${meta.analystName || "—"}`, marginX + 70, y + 92);
-
-    const rx = marginX + usableW - 220;
-    doc.setFont("helvetica", "bold");
-    doc.text(`Date:`, rx, y + 52);
-    doc.setFont("helvetica", "normal");
-    doc.text(`${meta.activityDate || "—"}`, rx + 42, y + 52);
-
-    doc.setFont("helvetica", "bold");
-    doc.text(`Generated:`, rx, y + 70);
-    doc.setFont("helvetica", "normal");
-    doc.text(
-      `${generatedAt.toLocaleDateString()} ${generatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
-      rx + 66,
-      y + 70
-    );
-
-    doc.setFont("helvetica", "bold");
-    doc.text(`Role:`, rx, y + 92);
-    doc.setFont("helvetica", "normal");
-    doc.text(`${role}`, rx + 36, y + 92);
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.text(`Progress:`, marginX + 18, y + 110);
-    doc.setFont("helvetica", "normal");
-    doc.text(`${p.done}/${p.total} solved`, marginX + 76, y + 110);
-
-    doc.setFont("helvetica", "bold");
-    doc.text(`Health:`, rx, y + 110);
-    doc.setFont("helvetica", "normal");
-    doc.text(healthLine, rx + 42, y + 110);
-
-    // Report Overview (short so table starts immediately after)
-    y = y + headerH + 14;
-
-    const overviewText = (lab.reportOverview || lab.description || "").trim();
-    const overviewMaxLines = 4;
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10.5);
-    const ovLines = doc.splitTextToSize(overviewText || "—", usableW - 36);
-    const ovShown = ovLines.slice(0, overviewMaxLines);
-    const ovH = 44 + ovShown.length * 14;
-
-    drawCard(marginX, y, usableW, ovH);
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("Report Overview", marginX + 18, y + 28);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10.5);
-    doc.text(ovShown.length ? ovShown : ["—"], marginX + 18, y + 48);
-
-    // Challenge Outcomes Table
-    y = y + ovH + 14;
-
-    const statusFor = (s) => {
-      if (computeTicketComplete(s)) return "Complete";
-      const anyStarted =
-        (s?.attempts?.total || 0) > 0 ||
-        s?.answers?.triage != null ||
-        s?.answers?.diagnosis != null ||
-        s?.answers?.fix != null ||
-        (s?.changeNote || "").trim().length > 0;
-      return anyStarted ? "Attempted" : "Not started";
-    };
-
-    const rows = tickets.map((t) => {
-      const s = loadTicketState(t.id);
-      const attempts = s?.attempts?.total || 0;
-      const wrong = s?.attempts?.wrong || 0;
-      const type = t.type || "—";
-      return [t.id, t.category, type, t.title, statusFor(s), String(attempts), String(wrong)];
-    });
-
-    doc.autoTable({
-      startY: y,
-      head: [["ID", "Category", "Type", "Challenge", "Status", "Attempts", "Wrong"]],
-      body: rows.length ? rows : [["—", "—", "—", "—", "—", "0", "0"]],
-      theme: "grid",
-      styles: {
-        font: "helvetica",
-        fontSize: 9.5,
-        cellPadding: 6,
-        overflow: "linebreak",
-        textColor: 20
-      },
-      headStyles: {
-        fontStyle: "bold",
-        fillColor: [245, 245, 245],
-        textColor: 20
-      },
-      alternateRowStyles: { fillColor: [252, 252, 252] },
-      columnStyles: {
-        0: { cellWidth: 62 },
-        1: { cellWidth: 70 },
-        2: { cellWidth: 62 },
-        3: { cellWidth: 210 },
-        4: { cellWidth: 78 },
-        5: { cellWidth: 62, halign: "center" },
-        6: { cellWidth: 58, halign: "center" }
+      table { width:100%; border-collapse: collapse; table-layout: fixed; }
+      thead th, tbody td {
+        border: 1px solid #e2e8f0;
+        padding: 6px;
+        font-size: 10px;
+        vertical-align: top;
+        overflow-wrap: anywhere;
+        word-break: break-word;
       }
-    });
+      thead th { background:#f1f5f9; font-weight: 900; }
+      tbody tr:nth-child(even) td { background:#fbfdff; }
+      td.c { text-align:center; }
 
-    // Change Notes (only submitted)
-    let yy = doc.lastAutoTable.finalY + 14;
+      .pill { display:inline-block; padding: 2px 7px; border-radius: 999px; font-size: 10px; font-weight: 900; border:1px solid #e2e8f0; white-space: nowrap; }
+      .pill.good { background: rgba(34,197,94,.10); border-color: rgba(34,197,94,.25); color:#166534; }
+      .pill.warn { background: rgba(251,191,36,.12); border-color: rgba(251,191,36,.30); color:#92400e; }
+      .pill.bad  { background: rgba(239,68,68,.10); border-color: rgba(239,68,68,.25); color:#991b1b; }
 
-    const submitted = tickets
-      .map((t) => ({ t, s: loadTicketState(t.id) }))
-      .filter(({ s }) => (s?.doneNote === true) && (s?.changeNote || "").trim().length >= 1);
+      .r-note-item { border:1px solid #e2e8f0; border-radius: 12px; padding: 10px; margin-bottom: 8px; }
+      .r-note-head { display:flex; gap: 8px; align-items:center; flex-wrap: wrap; }
+      .note-strong { font-weight: 900; color:#0f172a; }
+      .note-muted { color:#475569; font-weight: 800; }
+      .r-note-body { margin-top: 6px; font-size: 11px; color:#0f172a; white-space: pre-wrap; line-height: 1.4; }
 
-    drawCard(marginX, yy, usableW, 72);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("Change Notes", marginX + 18, yy + 28);
+      .print-hint { margin-top: 8px; font-size: 10px; color:#64748b; }
+      @media print { .print-hint { display:none; } }
+    `;
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10.5);
+    // ✅ Use colgroup percentages so it ALWAYS fits the page width.
+    const colgroup = `
+      <colgroup>
+        <col style="width: 10%;" />
+        <col style="width: 9%;" />
+        <col style="width: 7%;" />
+        <col style="width: 44%;" />
+        <col style="width: 12%;" />
+        <col style="width: 9%;" />
+        <col style="width: 9%;" />
+      </colgroup>
+    `;
 
-    const cnIntro = submitted.length
-      ? "Notes included for tickets where a change note was submitted (minimum 40 characters)."
-      : "No change notes were submitted.";
-    const afterIntroY = textBlock(cnIntro, marginX + 18, yy + 46, usableW - 36, 10.5, 14);
+    return `
+      <!doctype html>
+      <html>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>${escapeHtml(lab.title)} — Report</title>
+        <style>${css}</style>
+      </head>
+      <body>
+        <div class="r-wrap">
+          <div class="r-header">
+            <div class="r-top">
+              <div>
+                <div class="r-title">NewVue Health — ${escapeHtml(lab.title)} Incident Triage Report</div>
+                <div class="r-sub">${escapeHtml(meta.courseTitle || lab.title)} • ${escapeHtml(meta.courseSection || "—")}</div>
+              </div>
+              <div style="text-align:right; font-size:11px; color:#334155; font-weight:700;">
+                <div><b>Date:</b> ${escapeHtml(meta.activityDate || "—")}</div>
+                <div><b>Generated:</b> ${escapeHtml(generated)}</div>
+              </div>
+            </div>
 
-    yy = Math.max(yy + 72, afterIntroY + 10);
+            <div class="r-meta">
+              <div><b>Student:</b> ${escapeHtml(meta.analystName || "—")}</div>
+              <div><b>Role:</b> ${escapeHtml(lab.rolePill || "Systems Administrator")}</div>
+              <div><b>Progress:</b> ${p.done}/${p.total} solved</div>
+              <div><b>Health:</b> Overall ${overallPct}%${catLine ? " • " + catLine : ""}</div>
+            </div>
+          </div>
 
-    if (submitted.length) {
-      doc.autoTable({
-        startY: yy,
-        head: [["Ticket", "Note"]],
-        body: submitted.map(({ t, s }) => [
-          `${t.id} — ${t.title}`,
-          (s.changeNote || "").trim()
-        ]),
-        theme: "grid",
-        styles: { font: "helvetica", fontSize: 9.5, cellPadding: 6, overflow: "linebreak" },
-        headStyles: { fontStyle: "bold", fillColor: [245, 245, 245], textColor: 20 },
-        columnStyles: { 0: { cellWidth: 190 }, 1: { cellWidth: 334 } }
-      });
-      yy = doc.lastAutoTable.finalY + 14;
+          <div class="section">
+            <h2>Report Overview</h2>
+            <div class="note">${escapeHtml(overviewText)}</div>
+          </div>
+
+          <div class="section">
+            <h2>Challenge Outcomes</h2>
+            <table>
+              ${colgroup}
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Category</th>
+                  <th>Type</th>
+                  <th>Challenge</th>
+                  <th>Status</th>
+                  <th style="text-align:center;">Attempts</th>
+                  <th style="text-align:center;">Wrong</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows || "<tr><td colspan='7'>No tickets found.</td></tr>"}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section">
+            <h2>Change Notes</h2>
+            <div class="note" style="margin-bottom:8px;">
+              Notes are included for tickets where a change note was submitted (minimum 40 characters).
+            </div>
+            ${notes || `<div class="note">No change notes were submitted.</div>`}
+          </div>
+
+          <div class="section">
+            <h2>Integrity Note</h2>
+            <div class="note">
+              This report reflects actions recorded in the offline simulation. Attach screenshots if your instructor requests additional evidence.
+            </div>
+          </div>
+
+          <div class="print-hint">
+            When the print dialog opens, choose <b>Save as PDF</b>.
+          </div>
+        </div>
+
+        <script>
+          window.addEventListener('load', () => {
+            setTimeout(() => window.print(), 200);
+          });
+        </script>
+      </body>
+      </html>
+    `;
+  }
+
+  function downloadPDF() {
+    const html = buildPrintableHtml();
+    const w = window.open("", "_blank");
+    if (!w) {
+      alert("Popup blocked. Please allow popups for this site, then try again.");
+      return;
     }
-
-    // Integrity Note
-    drawCard(marginX, yy, usableW, 64);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("Integrity Note", marginX + 18, yy + 28);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10.5);
-    textBlock(
-      "This report reflects actions recorded in the offline simulation. Attach screenshots if your instructor requests additional evidence.",
-      marginX + 18,
-      yy + 46,
-      usableW - 36,
-      10.5,
-      14
-    );
-
-    doc.save(`${lab.id}-${meta.analystName.replace(/\s+/g, "-").toLowerCase()}.pdf`);
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    w.focus();
   }
 
   function wireReport() {
@@ -1040,8 +960,6 @@ Impact / downtime:`;
     if (btnTXT) btnTXT.addEventListener("click", () => { closeReportModal(); downloadText(); });
   }
 
-  /* ----------------------------- Reset ----------------------------- */
-
   function resetLab() {
     for (const t of tickets) clearTicketState(t.id);
     selectedId = null;
@@ -1050,8 +968,6 @@ Impact / downtime:`;
       `<div class="card"><div class="card-title">Select a ticket</div><div class="card-desc">Lab reset.</div></div>`;
     updateProgressAndHealth();
   }
-
-  /* ----------------------------- Init ----------------------------- */
 
   async function init() {
     const labId = getLabId();
