@@ -1,163 +1,591 @@
 {
-  "id": "dhcp-expert-revamp",
-  "title": "DHCP Infrastructure: Expert Triage",
+  "id": "dns",
+  "title": "DNS Concepts Practice",
   "track": "System Engineering",
-  "subject": "DHCP",
+  "subject": "DNS",
   "rolePill": "Systems Administrator",
-  "description": "Advanced DHCP troubleshooting focusing on environment authorization, relay architecture, and scope management using evidence-first logic.",
-  "reportOverview": "This report evaluates your ability to distinguish between service availability and network visibility. Use these results to refine your understanding of the DHCP DORA process and relay agents.",
-  "categories": ["DHCP"],
-  "evidenceInstructions": "Instructions:\n1) Analyze the symptom and artifacts provided.\n2) Select the Triage action that provides the most visibility into the hidden error.\n3) Choose the Diagnosis that explains the logic of the failure.\n4) Select the Fix that remediates the root cause.\n5) Document your change note.",
+  "description": "Everyday DNS incidents using evidence-first triage → diagnosis → fix. Titles and summaries are symptom-based to keep root cause discovery inside the workflow.",
+  "reportOverview": "This report summarizes ticket outcomes and change notes for DNS concepts practice. Use it to review your evidence interpretation and troubleshooting path.",
+  "categories": [
+    "DNS"
+  ],
+  "evidenceInstructions": "Instructions:\n1) Read the symptom and review the evidence.\n2) Choose the first thing you would verify (Triage).\n3) Pick the most likely cause based on the evidence (Diagnosis).\n4) Select the best remediation step (Fix).\n5) Write a short change note describing what changed and how you validated it.",
   "tickets": [
     {
-      "id": "DHCP-ADV-01",
-      "category": "DHCP",
-      "title": "Service Running but Management Console is Red",
-      "summary": "DHCP has been installed on a new Domain Controller (DC-02). The service is 'Started' in Services.msc, but the DHCP console shows a red down arrow, and no clients are receiving IPs.",
-      "tags": ["authorization", "active directory", "rogue server"],
+      "id": "DNS-01",
+      "category": "DNS",
+      "title": "New workstation cannot complete domain join",
+      "summary": "A newly imaged workstation fails to join the domain. Internet access works, but the domain join wizard reports it cannot locate a domain controller.",
+      "tags": [
+        "domain join",
+        "srv",
+        "client dns"
+      ],
       "artifact": [
-        "Server: DC-02.newvue.local",
-        "Services.msc: DHCP Server Service is 'Running'",
-        "Console: IPv4 node shows a red down arrow icon",
-        "Event Viewer: System Log shows Event ID 1046"
+        "Client (WS-NEW01):",
+        "nslookup _ldap._tcp.dc._msdcs.contoso.com",
+        "*** resolver can't find _ldap._tcp.dc._msdcs.contoso.com: NXDOMAIN",
+        "",
+        "ipconfig /all (snippet):",
+        "DNS Servers . . . . . . . . . . . : 8.8.8.8",
+        "                                      1.1.1.1"
       ],
       "validations": [
-        "Verify server appears in 'Authorized Servers' list.",
-        "Confirm IPv4 icon turns green.",
-        "Test client lease acquisition."
+        "Confirm client is using internal DNS (DCs).",
+        "Confirm SRV lookup resolves after change.",
+        "Retry domain join."
       ],
-      "debrief": "In an Active Directory environment, the DHCP service performs a security handshake. It checks AD to see if it is 'Authorized.' If it is not on the whitelist, the service will remain in a dormant state even if the process is 'Running.' This prevents unauthorized 'rogue' servers from disrupting the network.",
+      "debrief": {
+        "summary": "You reinforced that AD depends on DNS SRV records. A domain join failing with SRV NXDOMAIN strongly points to client DNS misconfiguration (public resolvers instead of internal DC DNS).",
+        "takeaway": "You reinforced that AD depends on DNS SRV records."
+      },
       "workflow": {
         "triage": {
-          "q": "The service is running but the console is red. What is the most professional next step to uncover the specific block?",
+          "q": "What should you verify FIRST on the affected workstation?",
           "options": [
-            "Restart the server to see if the icon clears",
-            "Check the System Event Log for Event ID 1046 (Authorization check)",
-            "Delete the DHCP role and reinstall it via PowerShell",
-            "Ping the loopback address to check the NIC"
+            "Whether the workstation is fully patched and rebooted",
+            "Which DNS servers the workstation is using (internal vs public)",
+            "Whether NetBIOS over TCP/IP is enabled",
+            "Whether the workstation account already exists in AD"
           ],
           "correct": 1
         },
         "diagnosis": {
-          "q": "Event 1046 states: 'The DHCP service is not authorized to start.' What does this indicate?",
+          "q": "Based on the evidence, what is the MOST likely reason the join fails?",
           "options": [
-            "The server has a duplicate IP address on the network",
-            "The DHCP server has not been granted permission to operate within the AD Forest",
-            "The firewall is blocking Port 67",
-            "The DHCP Administrators group has been deleted"
+            "Client is using public DNS and cannot resolve AD SRV records",
+            "DC is out of disk space and not responding to LDAP",
+            "Time drift between workstation and DC is blocking Kerberos",
+            "The DNS zone is configured as Secondary and read-only"
           ],
-          "correct": 1
+          "correct": 0
         },
         "fix": {
-          "q": "How do you resolve this 'Unauthorized' state in the console?",
+          "q": "Which action is the best fix?",
           "options": [
-            "Add the server to the 'Domain Admins' group",
-            "Right-click 'DHCP' in the console and select 'Manage Authorized Servers' to add the DC",
-            "Run 'ipconfig /registerdns'",
-            "Disable IPv6 on the server"
+            "Enable WINS and retry the join",
+            "Configure the client (or DHCP option 006) to use DC DNS servers and retry domain join",
+            "Disable firewall on the workstation permanently",
+            "Create a reverse lookup zone for the workstation subnet"
           ],
           "correct": 1
         }
       }
     },
     {
-      "id": "DHCP-ADV-02",
-      "category": "DHCP",
-      "title": "Cross-VLAN Lease Failure",
-      "summary": "Users in the new Branch office (VLAN 20) are getting 169.254.x.x addresses. Users in the HQ (VLAN 10), where the DHCP server is located, are working fine.",
-      "tags": ["relay agent", "ip helper", "broadcast"],
+      "id": "DNS-02",
+      "category": "DNS",
+      "title": "Users cannot reach a server by name but IP works",
+      "summary": "Multiple users can reach a server by IP address, but the hostname fails to resolve across clients.",
+      "tags": [
+        "a record",
+        "name resolution"
+      ],
       "artifact": [
-        "VLAN 10 (HQ): 10.10.10.0/24 (Working)",
-        "VLAN 20 (Branch): 10.10.20.0/24 (Failing)",
-        "Router: Inter-VLAN routing is enabled; static IPs on VLAN 20 can ping the server.",
-        "DHCP Server: Scope for 10.10.20.0 exists and is active."
+        "Client:",
+        "ping 10.0.0.50 -> replies OK",
+        "ping fileserver.contoso.com -> could not find host",
+        "",
+        "nslookup fileserver.contoso.com",
+        "*** dc01.contoso.com can't find fileserver.contoso.com: Non-existent domain"
       ],
       "validations": [
-        "Verify DHCP Discover packets reach the server from VLAN 20.",
-        "Check Router configuration for IP Helper-Address.",
-        "Confirm VLAN 20 clients receive 10.10.20.x addresses."
+        "Check forward lookup zone record existence.",
+        "Validate resolution from multiple clients.",
+        "Confirm no conflicting records exist."
       ],
-      "debrief": "DHCP 'Discover' packets are Layer 2 broadcasts. Since routers are designed to block broadcasts, the requests from VLAN 20 never reach the server in VLAN 10. An 'IP Helper' or 'Relay Agent' on the router converts that broadcast into a unicast packet directed at the server's IP.",
+      "debrief": {
+        "summary": "You practiced a classic split: IP connectivity is fine, but name resolution is failing. NXDOMAIN for a known host commonly points to a missing/incorrect host record in the zone (or wrong zone being queried).",
+        "takeaway": "You practiced a classic split: IP connectivity is fine, but name resolution is failing."
+      },
       "workflow": {
         "triage": {
-          "q": "How do you verify if the server is even seeing the requests from the remote Branch office?",
+          "q": "What should you verify FIRST on the DNS server?",
           "options": [
-            "Check the 'Address Leases' of the HQ scope",
-            "Check the DHCP Server Statistics or run a Packet Capture for 'Discovers' from the 10.10.20.x range",
-            "Check if the server's CPU usage is high",
-            "Ping the Branch office gateway from the server"
+            "Whether DNS forwarders are configured",
+            "Whether an A record exists for fileserver.contoso.com in the correct zone",
+            "Whether scavenging is enabled in the zone",
+            "Whether the DHCP scope is issuing correct DNS servers"
           ],
           "correct": 1
         },
         "diagnosis": {
-          "q": "The Packet Capture shows zero traffic from VLAN 20. Routing is working for static IPs. What is the bottleneck?",
+          "q": "What is the MOST likely cause of the failure?",
           "options": [
-            "The DHCP server is too slow to respond",
-            "The Router is not configured to relay DHCP broadcasts across the VLAN boundary",
-            "The Branch scope has the wrong subnet mask",
-            "The DHCP server needs a physical NIC in every VLAN"
+            "The host record is missing or in the wrong zone",
+            "Clients are holding a stale cache record",
+            "The server is rejecting recursive queries",
+            "A conditional forwarder is timing out"
           ],
-          "correct": 1
+          "correct": 0
         },
         "fix": {
-          "q": "What is the industry-standard fix for this multi-VLAN architecture?",
+          "q": "Which action is the best fix?",
           "options": [
-            "Configure an 'IP Helper-Address' (DHCP Relay) on the VLAN 20 gateway interface",
-            "Create a 'Superscope' on the DHCP server",
-            "Enable 'Promiscuous Mode' on the server NIC",
-            "Move the DHCP server to the Branch office"
+            "Create/re-register the A record for fileserver.contoso.com (and PTR if required)",
+            "Add 8.8.8.8 to client DNS settings permanently",
+            "Disable DNS scavenging globally",
+            "Create a new root zone named \".\""
           ],
           "correct": 0
         }
       }
     },
     {
-      "id": "DHCP-ADV-03",
-      "category": "DHCP",
-      "title": "The 'BAD_ADDRESS' Conflict",
-      "summary": "The DHCP console is filling up with 'BAD_ADDRESS' entries in the leases. Users are intermittently reporting 'IP Address Conflict' errors on their screens.",
-      "tags": ["conflict detection", "bad_address", "exclusions"],
+      "id": "DNS-03",
+      "category": "DNS",
+      "title": "Some clients still reach the old intranet after cutover",
+      "summary": "After an intranet migration, most users reach the new server, but a few still connect to an old address or old content.",
+      "tags": [
+        "cache",
+        "ttl",
+        "cutover"
+      ],
       "artifact": [
-        "Console: Multiple 'BAD_ADDRESS' entries in the active scope.",
-        "Recent Change: 10 new network printers were installed with manual static IPs.",
-        "Symptom: Users cannot get an IP if the 'BAD_ADDRESS' count is high."
+        "DNS zone now has intranet.contoso.com -> 10.0.20.25",
+        "",
+        "Affected client ipconfig /displaydns:",
+        "intranet.contoso.com",
+        "Time To Live . . . : 290",
+        "A (Host) Record . .: 10.0.10.15"
       ],
       "validations": [
-        "Identify static IP range on printers.",
-        "Create exclusions for static ranges.",
-        "Clear BAD_ADDRESS entries and monitor for recurrence."
+        "Verify client cache clears and shows new record.",
+        "nslookup returns new IP on affected client.",
+        "User reaches new intranet."
       ],
-      "debrief": "The DHCP server uses 'Conflict Detection' (pings an IP before offering it). If something responds, it marks it 'BAD_ADDRESS' to prevent two devices from having the same IP. This usually happens when static IPs are assigned within the dynamic pool without setting an 'Exclusion.'",
+      "debrief": {
+        "summary": "You reinforced the difference between authoritative DNS records and client-side resolver cache. During cutovers, stale cache is a common cause of 'some users only' behavior.",
+        "takeaway": "You reinforced the difference between authoritative DNS records and client-side resolver cache."
+      },
       "workflow": {
         "triage": {
-          "q": "What does a 'BAD_ADDRESS' entry actually tell you about the DHCP server's behavior?",
+          "q": "What is the FIRST step on an affected client?",
           "options": [
-            "The database is corrupted",
-            "The server attempted to offer the IP, but detected another device already using it (Conflict Detection)",
-            "The client has a malformed MAC address",
-            "The IP is blocked by the Windows Firewall"
+            "Restart the DNS Server service on the DC",
+            "Flush the client DNS resolver cache and retest",
+            "Delete the intranet record from the DNS zone",
+            "Disable IPv6 on the client"
           ],
           "correct": 1
         },
         "diagnosis": {
-          "q": "Given the recent printer installation, why is the server attempting to issue these 'BAD' IPs?",
+          "q": "What is the MOST likely cause based on the evidence?",
           "options": [
-            "The printers are sending rogue DHCP offers",
-            "The printers were assigned static IPs that fall within the dynamic 'Address Pool' of the scope",
-            "The lease duration is too short",
-            "The DHCP database needs to be compacted"
+            "Client has a stale cached record that hasn't expired yet",
+            "The DNS server is using root hints incorrectly",
+            "Zone transfer is failing to the secondary server",
+            "The intranet server is blocking ICMP"
           ],
-          "correct": 1
+          "correct": 0
         },
         "fix": {
-          "q": "What is the best way to prevent these conflicts permanently?",
+          "q": "What is the best fix for affected users and future cutovers?",
           "options": [
-            "Disable Conflict Detection on the server",
-            "Configure 'Address Exclusions' for the range used by static devices like printers",
-            "Increase the lease duration to 30 days",
-            "Tell users to ignore the conflict popups"
+            "Flush DNS cache on affected clients; consider lowering TTL before planned migrations",
+            "Disable recursion on DNS servers",
+            "Enable non-secure dynamic updates",
+            "Create a wildcard A record for contoso.com"
           ],
-          "correct": 1
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-04",
+      "category": "DNS",
+      "title": "Short intranet name does not resolve internally",
+      "summary": "Users want to use a short internal name (like http://portal) but it does not resolve inside the network.",
+      "tags": [
+        "cname",
+        "alias"
+      ],
+      "artifact": [
+        "Users report: 'portal' doesn't open",
+        "",
+        "nslookup portal",
+        "*** dc01.contoso.com can't find portal: Non-existent domain",
+        "",
+        "webserver01.contoso.com is reachable"
+      ],
+      "validations": [
+        "Confirm portal alias resolves to the correct target.",
+        "Confirm clients resolve portal quickly.",
+        "Validate portal loads in browser."
+      ],
+      "debrief": {
+        "summary": "You practiced implementing name convenience without changing the app host: create an alias (CNAME) to point a friendly name at the real host.",
+        "takeaway": "You practiced implementing name convenience without changing the app host: create an alias (CNAME) to point a friendly name at the real h…"
+      },
+      "workflow": {
+        "triage": {
+          "q": "What should you verify FIRST to support a friendly short name like 'portal'?",
+          "options": [
+            "Whether a CNAME (alias) exists for portal in the zone",
+            "Whether a reverse lookup zone exists",
+            "Whether forwarders are configured",
+            "Whether the DNS server is authorized in AD"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely issue?",
+          "options": [
+            "No alias record exists for the short name",
+            "Clients have a stale resolver cache",
+            "The web server certificate is expired",
+            "The DNS server is not responding to UDP 53"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "What is the best fix?",
+          "options": [
+            "Create a CNAME portal -> webserver01.contoso.com and validate resolution",
+            "Create PTR records for all clients",
+            "Disable secure updates on the zone",
+            "Set all clients to use public DNS"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-05",
+      "category": "DNS",
+      "title": "Internal names work but external websites do not resolve",
+      "summary": "Internal name resolution works, but external names fail across the organization.",
+      "tags": [
+        "forwarders",
+        "external resolution"
+      ],
+      "artifact": [
+        "From DNS server:",
+        "nslookup google.com",
+        "*** Request to dc01.contoso.com timed-out",
+        "",
+        "DNS Manager -> Forwarders: (empty)"
+      ],
+      "validations": [
+        "Confirm external nslookup succeeds after change.",
+        "Confirm internal resolution remains healthy.",
+        "Check DNS event logs for timeouts."
+      ],
+      "debrief": {
+        "summary": "You reinforced the role of upstream resolution. In many enterprise networks, DNS servers must forward to approved resolvers; missing forwarders often causes widespread external resolution failure.",
+        "takeaway": "You reinforced the role of upstream resolution."
+      },
+      "workflow": {
+        "triage": {
+          "q": "What should you check FIRST on the DNS server for external lookup failures?",
+          "options": [
+            "Forwarders configuration (or approved upstream resolvers)",
+            "Whether the reverse lookup zone exists",
+            "Whether the AD-integrated zone is set to secure updates",
+            "Whether the client DNS cache is stale"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause given the evidence?",
+          "options": [
+            "No forwarders are configured and recursion/upstream resolution is failing in this environment",
+            "The contoso.com zone is missing a google.com record",
+            "The DNS server is not domain-joined",
+            "The DHCP scope is exhausted"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Configure valid forwarders (or confirm root hints policy), then retest external resolution",
+            "Create a wildcard record for *.com",
+            "Disable the DNS Server service and rely on client DNS only",
+            "Delete the internal zone and recreate it"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-06",
+      "category": "DNS",
+      "title": "Monitoring tool cannot identify devices by IP",
+      "summary": "A monitoring/security tool lists many devices only by IP and cannot show hostnames via reverse lookup.",
+      "tags": [
+        "ptr",
+        "reverse lookup"
+      ],
+      "artifact": [
+        "nslookup 10.0.0.15",
+        "*** dc01.contoso.com can't find 15.0.0.10.in-addr.arpa: Non-existent domain"
+      ],
+      "validations": [
+        "Confirm reverse zone exists for subnet(s).",
+        "Confirm PTR lookups return names.",
+        "Tool displays hostnames after fix."
+      ],
+      "debrief": {
+        "summary": "You reinforced that reverse lookups require a properly scoped reverse zone and PTR registration (from DHCP or hosts). Without the zone, PTR queries return NXDOMAIN.",
+        "takeaway": "You reinforced that reverse lookups require a properly scoped reverse zone and PTR registration (from DHCP or hosts)."
+      },
+      "workflow": {
+        "triage": {
+          "q": "What should you verify FIRST to support reverse lookups?",
+          "options": [
+            "That the correct reverse lookup zone exists for the subnet",
+            "That forwarders are configured",
+            "That scavenging is disabled",
+            "That the forward zone is AD-integrated"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause of the PTR lookup failure?",
+          "options": [
+            "Reverse zone is missing (or wrong scope), so PTR queries have nowhere to land",
+            "Client cache contains stale PTR records",
+            "CNAME records are missing in the forward zone",
+            "The DNS server is not authorized in AD"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "What is the best fix?",
+          "options": [
+            "Create the correct reverse lookup zone and ensure PTR registration is enabled/working",
+            "Disable recursion on DNS servers",
+            "Set all clients to use public DNS",
+            "Delete forward lookup zone and rebuild from scratch"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-07",
+      "category": "DNS",
+      "title": "External name resolution stopped immediately after a DNS change",
+      "summary": "Internal names still resolve, but external names stopped resolving right after a DNS configuration change.",
+      "tags": [
+        "root zone",
+        "dot zone",
+        "recursion"
+      ],
+      "artifact": [
+        "Internal: nslookup fileserver.contoso.com -> OK",
+        "External: nslookup microsoft.com -> fails",
+        "",
+        "DNS Manager shows a new zone named \".\" under Forward Lookup Zones."
+      ],
+      "validations": [
+        "Confirm external lookups succeed after fix.",
+        "Confirm internal zones continue to resolve.",
+        "Check DNS logs for recurrence."
+      ],
+      "debrief": {
+        "summary": "You identified a high-impact misconfiguration: a root (dot) zone can break recursion. This is a classic 'everything external broke instantly' DNS incident.",
+        "takeaway": "You identified a high-impact misconfiguration: a root (dot) zone can break recursion."
+      },
+      "workflow": {
+        "triage": {
+          "q": "What is the FIRST thing to check given the evidence?",
+          "options": [
+            "Whether a root zone named \".\" exists and is intercepting queries",
+            "Whether DHCP option 003 is correct",
+            "Whether a reverse zone exists",
+            "Whether scavenging is enabled"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely explanation for external resolution failing immediately?",
+          "options": [
+            "A root zone was created, preventing normal recursion/forwarder usage",
+            "All external authoritative servers are down",
+            "Client DNS caches are corrupted across the enterprise",
+            "The internal AD-integrated zone is read-only"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Delete the \".\" zone and restart DNS service if needed, then retest",
+            "Disable secure dynamic updates",
+            "Convert the internal zone to a secondary zone",
+            "Change DHCP lease duration"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-08",
+      "category": "DNS",
+      "title": "Secondary DNS server shows zone not loaded and missing records",
+      "summary": "A secondary DNS server was added for redundancy, but the zone does not populate and shows an error.",
+      "tags": [
+        "zone transfer",
+        "secondary"
+      ],
+      "artifact": [
+        "Secondary server: contoso.com shows 'Zone not loaded'",
+        "Primary zone transfers: currently not allowing transfers"
+      ],
+      "validations": [
+        "Confirm zone transfers succeed and records appear.",
+        "Validate name resolution from secondary.",
+        "Monitor transfer status remains healthy."
+      ],
+      "debrief": {
+        "summary": "You practiced secondary-zone fundamentals: secondaries rely on zone transfers. If transfers aren’t permitted to the secondary, the zone won’t load/populate.",
+        "takeaway": "You practiced secondary-zone fundamentals: secondaries rely on zone transfers."
+      },
+      "workflow": {
+        "triage": {
+          "q": "What should you verify FIRST on the primary DNS server?",
+          "options": [
+            "Zone transfer permissions to the secondary server",
+            "Forwarders configuration",
+            "Reverse zone configuration",
+            "DHCP failover configuration"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause?",
+          "options": [
+            "Zone transfers are blocked or not permitted to the secondary server",
+            "Clients are caching negative responses",
+            "The secondary server is using public DNS",
+            "The internal zone was deleted"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Allow zone transfers to the secondary and verify it can pull the zone",
+            "Disable recursion on the primary",
+            "Disable secure updates",
+            "Create a wildcard record for the zone"
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-09",
+      "category": "DNS",
+      "title": "DNS changes on one domain controller do not appear on another",
+      "summary": "DNS records updated on one domain controller do not show up on the other DC after a long delay.",
+      "tags": [
+        "ad replication",
+        "dns replication"
+      ],
+      "artifact": [
+        "Record created on DC1 appears on DC1",
+        "Record does not appear on DC2 after 60+ minutes",
+        "",
+        "DC2: repadmin /showrepl shows failures",
+        "DC2: Kerberos/Security errors present"
+      ],
+      "validations": [
+        "Confirm replication is healthy after remediation.",
+        "Confirm DNS record appears on DC2.",
+        "Validate SRV and host records are consistent."
+      ],
+      "debrief": {
+        "summary": "You reinforced that AD-integrated DNS depends on healthy AD replication. When replication is unhealthy, DNS data consistency breaks across DCs.",
+        "takeaway": "You reinforced that AD-integrated DNS depends on healthy AD replication."
+      },
+      "workflow": {
+        "triage": {
+          "q": "What should you verify FIRST when AD-integrated DNS data is inconsistent between DCs?",
+          "options": [
+            "AD replication health between domain controllers",
+            "DNS forwarders configuration",
+            "Whether the reverse zone exists",
+            "Whether scavenging is enabled"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What is the MOST likely cause based on the evidence?",
+          "options": [
+            "AD replication failures are preventing DNS data from replicating",
+            "Zone transfers are disabled on AD-integrated zones",
+            "Client DNS cache is stale",
+            "The zone is configured as Primary on only one DC"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "What is the best fix path?",
+          "options": [
+            "Resolve replication issues (connectivity/DFS-R/Kerberos/time), then confirm DNS data replicates",
+            "Delete the DNS zone from DC2 and recreate manually",
+            "Disable dynamic updates permanently",
+            "Create a root zone named \".\""
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-10",
+      "category": "DNS",
+      "title": "Cannot add DNS records from one server; create option is unavailable",
+      "summary": "An administrator cannot add new host records from one DNS server; the 'New Host' option is disabled.",
+      "tags": [
+        "secondary zone",
+        "read-only"
+      ],
+      "artifact": [
+        "On DC2 DNS Manager: 'New Host (A or AAAA)' is greyed out",
+        "Zone type on DC2: Secondary"
+      ],
+      "validations": [
+        "Add record from the writable DNS instance.",
+        "Confirm record resolves from clients.",
+        "Confirm expected transfer/replication behavior."
+      ],
+      "debrief": {
+        "summary": "You reinforced writable vs read-only DNS zones. Secondary zones are not editable; records must be added to the primary/writable source (or convert to AD-integrated where appropriate).",
+        "takeaway": "You reinforced writable vs read-only DNS zones."
+      },
+      "workflow": {
+        "triage": {
+          "q": "What should you check FIRST when record creation is disabled?",
+          "options": [
+            "The zone type (secondary/read-only vs primary/AD-integrated)",
+            "DNS forwarders",
+            "Reverse lookup zone",
+            "DHCP scope utilization"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "Why is record creation unavailable on this server?",
+          "options": [
+            "The server hosts a Secondary zone, which is read-only",
+            "The zone is corrupted and must be recreated",
+            "The server is not authorized in AD",
+            "Clients are using public DNS"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Which action is the best fix?",
+          "options": [
+            "Add the record on the primary/writable DNS server (or convert zone to AD-integrated when appropriate)",
+            "Disable recursion on the DNS server",
+            "Add 8.8.8.8 as a forwarder and retry",
+            "Turn off secure dynamic updates"
+          ],
+          "correct": 0
         }
       }
     }
