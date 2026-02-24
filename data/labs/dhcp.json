@@ -1,582 +1,93 @@
 {
-  "id": "dhcp",
-  "title": "DHCP Enterprise Troubleshooting",
+  "id": "dhcp-advanced",
+  "title": "DHCP Professional Triage Lab",
   "track": "System Engineering",
-  "subject": "DHCP",
-  "rolePill": "Systems Administrator",
-  "description": "Practice troubleshooting common DHCP problems using evidence-first triage, diagnosis, and fix decisions. Titles and summaries are symptom-based so the workflow reveals the root cause.",
-  "reportOverview": "This report summarizes your ticket outcomes and change notes for DHCP concepts practice. Use it to reinforce what evidence led you to each decision.",
-  "categories": [
-    "DHCP"
-  ],
-  "evidenceInstructions": "Instructions:\n1) Read the observed symptom and scan the evidence.\n2) Decide what you should verify first (Triage).\n3) Choose the most likely cause based on the evidence (Diagnosis).\n4) Select the best remediation action (Fix).\n5) Write a short change note describing what changed and how you validated it.",
   "tickets": [
     {
-      "id": "DHCP-01",
-      "category": "DHCP",
-      "title": "New DHCP server shows running but clients cannot obtain leases",
-      "summary": "A newly installed DHCP server shows the service as running, but the DHCP console shows a red down arrow and clients cannot obtain IP addresses from it.",
-      "tags": [
-        "authorization",
-        "event 1046",
-        "new server"
-      ],
+      "id": "DHCP-ADV-01",
+      "title": "Service Status: Running / Status: Unknown",
+      "summary": "You've installed the DHCP role on a new Domain Controller. The 'DHCP Server' service is started, but the management console shows a red down arrow on the IPv4 node. Clients are getting nothing.",
       "artifact": [
-        "DHCP Server event log:",
-        "Event ID 1046:",
-        "\"The DHCP service is not authorized to start.\"",
-        "",
-        "Client symptom:",
-        "ipconfig /renew -> times out"
+        "Server: DC-02 (Member of contoso.com)",
+        "Service Manager: DHCP Server Service is 'Running'",
+        "Console: IPv4 node shows a red down arrow icon.",
+        "Clients: Receiving 169.254.x.x addresses."
       ],
-      "validations": [
-        "Confirm DHCP server is authorized in AD.",
-        "Confirm console icon turns normal and leases issue.",
-        "Renew a client lease successfully."
-      ],
-      "debrief": "In a Windows Domain environment, DHCP servers must be 'Authorized' in Active Directory before they will respond to client requests. This is a security feature designed to prevent unauthorized (rogue) servers from disrupting the network. Even if the 'DHCP Server' service status is 'Running' in services.msc, the application-level logic will remain dormant until it verifies its authorized status in the AD configuration container.",
+      "debrief": "Triage in Windows often requires looking past the 'Running' service status. Because DHCP is integrated with Active Directory, the service performs an 'environment check.' If it doesn't find itself in the Authorized Servers list, it will refuse to hand out IPs to prevent rogue server behavior. You successfully navigated from 'Service Status' to 'Security Authorization.'",
       "workflow": {
         "triage": {
-          "q": "What should you verify FIRST on the new DHCP server node?",
+          "q": "The service is 'Running' but the console is 'Red'. What is the most professional next step to identify the block?",
           "options": [
-            "The status of the DHCP Server service in services.msc",
-            "Whether the server has been authorized within Active Directory",
-            "If the IPv4 Scope has been activated",
-            "The Binding settings for the server's network interface"
-          ],
-          "correct": 1
-        },
-        "diagnosis": {
-          "q": "What is the MOST likely cause given Event ID 1046?",
-          "options": [
-            "The DHCP service is disabled by Group Policy",
-            "The scope has not been activated yet",
-            "The server is part of a domain but lacks AD authorization",
-            "There is a rogue DHCP server preventing this one from starting"
-          ],
-          "correct": 2
-        },
-        "fix": {
-          "q": "Which action is the best fix?",
-          "options": [
-            "Right-click the server in the DHCP console and select 'Authorize'",
-            "Restart the Domain Controller to refresh AD permissions",
-            "Reinstall the DHCP Server Role via Server Manager",
-            "Manually start the DHCP Server service from the command line"
-          ],
-          "correct": 0
-        }
-      }
-    },
-    {
-      "id": "DHCP-02",
-      "category": "DHCP",
-      "title": "Internal resources unreachable by name after lease renewal",
-      "summary": "A new batch of computers can ping internal servers by IP address, but they cannot resolve internal names or complete domain-related tasks.",
-      "tags": [
-        "option 006",
-        "dns servers",
-        "scope options"
-      ],
-      "artifact": [
-        "Client ipconfig /all (snippet):",
-        "DNS Servers . . . . . . . . . . . : (blank)",
-        "",
-        "Client behavior:",
-        "ping 10.0.0.10 -> OK",
-        "ping dc01.contoso.com -> fails"
-      ],
-      "validations": [
-        "Confirm clients receive DNS server IPs via DHCP.",
-        "Confirm nslookup resolves internal names.",
-        "Confirm domain operations proceed normally."
-      ],
-      "debrief": "A successful DHCP 'DORA' process provides more than just an IP; it delivers the 'Scope Options' necessary for network participation. Option 006 (DNS Servers) is critical in Active Directory environments because clients use it to find Domain Controllers. Without it, the DNS field remains blank, and name resolution defaults to external or broadcast methods which fail for internal resources.",
-      "workflow": {
-        "triage": {
-          "q": "Which section of the DHCP console should be examined to investigate missing client settings?",
-          "options": [
-            "Server Options or Scope Options",
-            "Address Leases",
-            "The Exclusion list within the Scope",
-            "DHCP Policies and Filters"
+            "Check the DHCP Audit Logs or the System Event Log for authorization errors",
+            "Restart the server to see if the icon turns green",
+            "Delete the scope and recreate it to reset the console status",
+            "Ping the gateway to check for network connectivity"
           ],
           "correct": 0
         },
         "diagnosis": {
-          "q": "What is the MOST likely cause of the blank DNS field on the client?",
+          "q": "You find Event ID 1046: 'The DHCP service is not authorized to start'. What is the root cause?",
           "options": [
-            "The DNS Server service is down on the DC",
-            "Option 006 (DNS Servers) is not configured in the DHCP scope",
-            "The client is not a member of the DnsUpdateProxy group",
-            "The DHCP server cannot reach the DNS server to register records"
+            "The DHCP service account has been locked out in AD",
+            "The server has not been granted permission to issue leases within the Active Directory forest",
+            "A rogue DHCP server has already claimed the subnet",
+            "The server's IP address is not static, which is required for authorization"
           ],
           "correct": 1
         },
         "fix": {
-          "q": "Which action is the best fix?",
+          "q": "How do you resolve this 'Unauthorized' state?",
           "options": [
-            "Add a static DNS entry in the client's host file",
-            "Enable 'Always dynamically update DNS records' in Scope properties",
-            "Configure Scope Option 006 with the IPs of the internal DNS servers",
-            "Configure Scope Option 015 with the DNS Domain Name"
+            "Add the DHCP Server's computer account to the 'Domain Admins' group",
+            "Right-click 'DHCP' in the console and select 'Manage Authorized Servers' to add this node",
+            "Run 'netsh dhcp server initiate authorization'",
+            "Promote the server to a Global Catalog"
           ],
-          "correct": 2
+          "correct": 1
         }
       }
     },
     {
-      "id": "DHCP-03",
-      "category": "DHCP",
-      "title": "Intermittent 'Limited Connectivity' as the office fills up",
-      "summary": "Early arrivals have working connectivity, but later arrivals cannot get online and show limited connectivity on their devices.",
-      "tags": [
-        "scope utilization",
-        "leases",
-        "capacity"
-      ],
+      "id": "DHCP-ADV-07",
+      "title": "The 'One-Way' Subnet",
+      "summary": "A new satellite office (VLAN 20) was brought online. Users there can't get IPs. However, users in the HQ (VLAN 10), where the DHCP server sits, have no issues.",
       "artifact": [
-        "Client symptom:",
-        "Network status: \"Identifying... No Internet\"",
-        "Client IP becomes 169.254.x.x (APIPA) after renew attempts",
-        "",
-        "DHCP console -> Scope Statistics:",
-        "Addresses in use: 100%",
-        "Addresses available: 0"
+        "VLAN 10 (HQ): 10.10.10.0/24 (Working)",
+        "VLAN 20 (Branch): 10.10.20.0/24 (Failing)",
+        "DHCP Server: 10.10.10.5",
+        "Router: Inter-VLAN routing is confirmed working for static IPs."
       ],
-      "validations": [
-        "Confirm address availability increases after remediation.",
-        "Renew on multiple clients succeeds.",
-        "Monitor scope utilization stays below capacity."
-      ],
-      "debrief": "Scope exhaustion is a common issue in high-density environments like modern offices. When the available pool hits zero, the server simply ignores DHCP Discover packets. This forces clients to self-assign an APIPA address (169.254.x.x). To fix this, you must either expand the address range or shorten the lease duration to reclaim IPs from 'stale' devices (like users who leave the office) more quickly.",
+      "debrief": "This illustrates the 'Broadcast Boundary' problem. DHCP 'Discovers' are broadcasts; routers kill broadcasts. By verifying that the server never saw the request, you correctly identified that the 'Request' never left the subnet. Configuring the IP Helper (Relay) on the router is the standard enterprise fix for this Layer 2 limitation.",
       "workflow": {
         "triage": {
-          "q": "What should you check FIRST to investigate the lack of available IPs?",
+          "q": "The DHCP server is healthy for HQ. What should you check to see if the Branch requests are even reaching the server?",
           "options": [
-            "The list of Address Leases and the Scope Statistics",
-            "The DHCP Audit logs for 'DENIED' messages",
-            "The Failover tab to see if the partner server is down",
-            "The 'Allow' filter list for missing MAC addresses"
+            "Check the DHCP Server Statistics or a Packet Capture for 'DHCP Discovers' from the 10.10.20.x range",
+            "Check the Branch scope to see if it is 100% full",
+            "Check if the Branch users have the correct DNS settings",
+            "Check the DHCP 'Deny' filter list"
           ],
           "correct": 0
         },
         "diagnosis": {
-          "q": "What is the MOST likely cause of 100% utilization?",
+          "q": "The Packet Capture shows zero incoming traffic from the 10.10.20.0 subnet. What is the most likely architectural failure?",
           "options": [
-            "The lease duration is too short, causing constant renewals",
-            "The scope range is too small for the current number of active devices",
-            "The DHCP database is corrupted and showing incorrect stats",
-            "A malicious user is performing a DNS poisoning attack"
-          ],
-          "correct": 1
-        },
-        "fix": {
-          "q": "Which action is the best fix for long-term capacity management?",
-          "options": [
-            "Delete all current leases to clear the database",
-            "Disable the scope and recreate it with a larger range",
-            "Extend the address range in Scope Properties and shorten the lease duration",
-            "Switch the failover mode from Load Balance to Hot Standby"
+            "The DHCP server is too slow to respond to the remote subnet",
+            "The Branch Scope is deactivated",
+            "The Router/Switch is not configured to relay DHCP broadcasts across VLAN boundaries",
+            "The DHCP server doesn't have a NIC physically plugged into the Branch VLAN"
           ],
           "correct": 2
-        }
-      }
-    },
-    {
-      "id": "DHCP-04",
-      "category": "DHCP",
-      "title": "Connectivity lost only when switching to wired dock",
-      "summary": "A laptop receives a valid IP address on Wi-Fi, but when connected via a docking station it fails to obtain an IP address.",
-      "tags": [
-        "filters",
-        "mac address",
-        "allow list"
-      ],
-      "artifact": [
-        "Client docked behavior:",
-        "ipconfig /renew -> times out",
-        "",
-        "DHCP server configuration note:",
-        "An Allow filter is enabled on the DHCP server.",
-        "Wi-Fi MAC is present in Allow list; dock MAC is not."
-      ],
-      "validations": [
-        "Confirm dock MAC is included where needed.",
-        "Renew succeeds while docked.",
-        "Confirm correct scope/options are applied."
-      ],
-      "debrief": "DHCP Link Layer filtering (MAC filtering) is an effective but high-maintenance security control. Because a laptop uses a different MAC address for its Wi-Fi card than it does for its docking station (or built-in Ethernet), you must ensure every potential NIC is authorized. If 'Allow' filters are enabled, the server will drop requests from any MAC not explicitly listed, leading to a timeout on the client.",
-      "workflow": {
-        "triage": {
-          "q": "Given that Wi-Fi works but the dock fails, what should you verify on the DHCP server?",
-          "options": [
-            "If there is a conflict between the Wi-Fi and Docking station IP reservations",
-            "The status of DHCP Server Filters (Allow/Deny lists)",
-            "If the Ethernet VLAN has a different Scope Option 003",
-            "If the DHCP Failover partner is synchronized"
-          ],
-          "correct": 1
-        },
-        "diagnosis": {
-          "q": "What is the MOST likely cause of the timeout while docked?",
-          "options": [
-            "The dock's MAC address is not permitted by the 'Allow' filter",
-            "The dock's NIC does not support DHCP Option 81",
-            "The scope for the wired network is currently exhausted",
-            "The dock is being identified as a Rogue DHCP server"
-          ],
-          "correct": 0
         },
         "fix": {
-          "q": "Which action is the best fix?",
+          "q": "What is the industry-standard remediation for this?",
           "options": [
-            "Disable the Wi-Fi card whenever the laptop is docked",
-            "Add the Docking Station's MAC address to the 'Allow' filter",
-            "Create an exclusion for the laptop's current Wi-Fi IP",
-            "Increase the Maximum Client Lead Time (MCLT) in failover"
+            "Install a local DHCP server at the Branch office",
+            "Configure an 'IP Helper-Address' (DHCP Relay) on the Branch VLAN's gateway interface",
+            "Create a Superscope that combines VLAN 10 and VLAN 20",
+            "Change the subnet mask of the HQ scope to include the Branch range"
           ],
           "correct": 1
-        }
-      }
-    },
-    {
-      "id": "DHCP-05",
-      "category": "DHCP",
-      "title": "Workstation pulling IP from unknown range",
-      "summary": "A user’s computer shows it is connected, but it receives an IP address that does not match the organization’s addressing and cannot access internal resources.",
-      "tags": [
-        "rogue dhcp",
-        "unexpected scope",
-        "network"
-      ],
-      "artifact": [
-        "Client ipconfig /all (snippet):",
-        "IPv4 Address . . . . . . . . . . : 192.168.1.15",
-        "DHCP Server . . . . . . . . . . : 192.168.1.1",
-        "",
-        "Organization expected range:",
-        "10.0.0.0/16"
-      ],
-      "validations": [
-        "Confirm authorized DHCP servers are the only responders.",
-        "Renew results in an organizational IP range.",
-        "Consider preventive controls (e.g., switch protections) where appropriate."
-      ],
-      "debrief": "Rogue DHCP servers—often a consumer router plugged in by an employee—respond to client 'Discover' packets faster than the enterprise server. The first server to respond with an 'Offer' usually wins the lease. By checking 'ipconfig /all', you can see the 'DHCP Server' IP; if it doesn't match your server list, you have a rogue device. Modern networks use 'DHCP Snooping' on switches to block unauthorized DHCP traffic at the port level.",
-      "workflow": {
-        "triage": {
-          "q": "What is the first step in identifying the source of the 192.168.1.1 address?",
-          "options": [
-            "Check the DHCP Server's 'Address Leases' for the 192.168 range",
-            "Run a packet capture or use 'ping -a' to identify the device at 192.168.1.1",
-            "Check if the server's second NIC is accidentally configured with that IP",
-            "Verify if a Superscope was recently created on the DC"
-          ],
-          "correct": 1
-        },
-        "diagnosis": {
-          "q": "What is the MOST likely cause of this behavior?",
-          "options": [
-            "The internal DHCP server has a secondary IP bound to its interface",
-            "A rogue DHCP server or unauthorized router is present on the network segment",
-            "The user has manually configured an Alternate Configuration in IPv4 properties",
-            "The DHCP Relay Agent is pointing to the wrong IP address"
-          ],
-          "correct": 1
-        },
-        "fix": {
-          "q": "Which action is the best fix?",
-          "options": [
-            "Create a new Scope on the DC that matches the 192.168.1.0/24 range",
-            "Enable DHCP Snooping on the network switches and remove the rogue device",
-            "Authorize the 192.168.1.1 server in Active Directory",
-            "Configure the client to use a static IP to bypass the rogue server"
-          ],
-          "correct": 1
-        }
-      }
-    },
-    {
-      "id": "DHCP-06",
-      "category": "DHCP",
-      "title": "Address flagged as 'BAD_ADDRESS' in console",
-      "summary": "A specific IP address keeps being marked as unusable in the DHCP console, and clients sometimes report IP conflicts.",
-      "tags": [
-        "bad_address",
-        "static ip",
-        "exclusion"
-      ],
-      "artifact": [
-        "DHCP console shows:",
-        "10.0.0.25 marked as BAD_ADDRESS",
-        "",
-        "Network note:",
-        "A printer is configured manually with a static IP address."
-      ],
-      "validations": [
-        "Confirm the static device IP is excluded from the DHCP pool.",
-        "Remove conflict entry if appropriate and observe it does not return.",
-        "Verify clients no longer report IP conflict warnings."
-      ],
-      "debrief": "The 'BAD_ADDRESS' flag is the result of the DHCP server's 'Conflict Detection' logic. Before issuing an IP, the server pings it; if it gets a reply, it knows a device (like a manually configured printer) is already using that address. It marks the address as BAD to prevent duplicate assignments. The correct fix is to 'Exclude' that IP from the dynamic range so the server never tries to assign it to begin with.",
-      "workflow": {
-        "triage": {
-          "q": "What does a 'BAD_ADDRESS' entry typically indicate in a Windows DHCP console?",
-          "options": [
-            "The DHCP database has a corrupted record for that IP",
-            "The DHCP server detected the IP was already in use via conflict detection (ping)",
-            "The IP address is reserved for a MAC that no longer exists",
-            "The client failed to register its name in DNS for that IP"
-          ],
-          "correct": 1
-        },
-        "diagnosis": {
-          "q": "Why did the conflict occur with the printer?",
-          "options": [
-            "The printer is using a MAC address that is already reserved",
-            "The printer's static IP (10.0.0.25) is part of the dynamic pool and wasn't excluded",
-            "The DHCP server's Conflict Detection Attempts is set to 0",
-            "The printer is acting as a secondary DHCP server"
-          ],
-          "correct": 1
-        },
-        "fix": {
-          "q": "Which action is the best fix?",
-          "options": [
-            "Delete the BAD_ADDRESS entry and hope it doesn't return",
-            "Add 10.0.0.25 to the 'Exclusions' in the DHCP scope",
-            "Create a Reservation for the printer using its MAC address",
-            "Change the printer to obtain an IP automatically via DHCP"
-          ],
-          "correct": 1
-        }
-      }
-    },
-    {
-      "id": "DHCP-07",
-      "category": "DHCP",
-      "title": "DHCP works on Floor 1 but fails for Floor 2",
-      "summary": "Clients on one floor (separate VLAN/subnet) cannot obtain DHCP addresses, while clients on the same VLAN as the server work normally.",
-      "tags": [
-        "relay",
-        "ip helper",
-        "vlan"
-      ],
-      "artifact": [
-        "Observation:",
-        "Clients on Floor-2 VLAN get 169.254.x.x after renew attempts.",
-        "Clients on Floor-1 VLAN obtain leases normally.",
-        "",
-        "DHCP server notes:",
-        "No requests appear from the Floor-2 subnet in DHCP logs."
-      ],
-      "validations": [
-        "Confirm DHCP relay/helper is configured for the VLAN interface.",
-        "Confirm DORA exchange completes for Floor-2 clients.",
-        "Renew succeeds on Floor-2 clients."
-      ],
-      "debrief": "DHCP discovery relies on Layer 2 broadcasts, which routers do not forward by default. To serve clients on a different VLAN, you must configure a 'DHCP Relay Agent' (often called an 'IP Helper' in Cisco terminology) on the gateway for that VLAN. This agent catches the broadcast and forwards it as a unicast packet to the DHCP server. If the server sees zero requests from a subnet, the issue is almost always the relay configuration.",
-      "workflow": {
-        "triage": {
-          "q": "What should you verify FIRST regarding the network infrastructure between floors?",
-          "options": [
-            "The presence of an IP Helper/DHCP Relay address on the Floor 2 gateway",
-            "If the Floor 2 scope has been authorized in Active Directory",
-            "If the DHCP server has a secondary NIC for the Floor 2 VLAN",
-            "The 'Server Options' in the DHCP console"
-          ],
-          "correct": 0
-        },
-        "diagnosis": {
-          "q": "What is the MOST likely reason the server sees no requests from Floor 2?",
-          "options": [
-            "The Floor 2 subnet is too large for the DHCP server to process",
-            "DHCP broadcast packets are being blocked by the router/Layer-3 switch",
-            "The Floor 2 clients are using IPv6 and ignoring the DHCPv4 server",
-            "The DHCP service is only bound to the Floor 1 IP address"
-          ],
-          "correct": 1
-        },
-        "fix": {
-          "q": "Which action is the best fix?",
-          "options": [
-            "Create a new Scope for Floor 2 and activate it",
-            "Install a second DHCP server on the Floor 2 VLAN",
-            "Configure the router interface for Floor 2 with the 'ip helper-address' of the DHCP server",
-            "Enable 'Broadcast' flag on all Floor 2 workstations"
-          ],
-          "correct": 2
-        }
-      }
-    },
-    {
-      "id": "DHCP-08",
-      "category": "DHCP",
-      "title": "Redundancy fails: Secondary server not issuing leases",
-      "summary": "One DHCP server is down, but clients are not obtaining leases from the second server as expected. The failover status shows an error state.",
-      "tags": [
-        "failover",
-        "shared secret",
-        "communication interrupted"
-      ],
-      "artifact": [
-        "DHCP failover status on partner server:",
-        "State: Communication Interrupted",
-        "",
-        "Test:",
-        "When DHCP1 is stopped, new clients fail to obtain leases."
-      ],
-      "validations": [
-        "Confirm failover relationship shows healthy/normal state.",
-        "Confirm leases issue while one partner is down.",
-        "Confirm lease replication behaves normally."
-      ],
-      "debrief": "DHCP Failover (introduced in Server 2012) requires continuous synchronization between partners. 'Communication Interrupted' means the partners can't hear each other, but they haven't reached the 'Partner Down' state yet. Crucially, if the secondary server was never fully synchronized, it doesn't have a copy of the scopes to issue. Keeping failover healthy requires the same shared secret and TCP port 647 to be open between servers.",
-      "workflow": {
-        "triage": {
-          "q": "What does 'Communication Interrupted' status typically suggest?",
-          "options": [
-            "The secondary server's DHCP service has crashed",
-            "The two servers cannot talk to each other over the failover port (647)",
-            "The Active Directory domain is unreachable by both servers",
-            "The DHCP database has reached its maximum size limit"
-          ],
-          "correct": 1
-        },
-        "diagnosis": {
-          "q": "Why would clients fail to get an IP from the partner during an outage?",
-          "options": [
-            "The standby server only has 5% of the IP pool available",
-            "The failover synchronization failed, so the partner has no record of the scope",
-            "The Hot Standby server is waiting for the MCLT (Maximum Client Lead Time) to expire",
-            "The shared secret is incorrect, causing authentication to fail between servers"
-          ],
-          "correct": 1
-        },
-        "fix": {
-          "q": "Which action is the best fix?",
-          "options": [
-            "Manually copy the DHCP database from Server 1 to Server 2",
-            "Replicate the scope manually by right-clicking and selecting 'Replicate Scope'",
-            "Delete and recreate the failover relationship, ensuring the shared secret and ports are open",
-            "Change the failover mode from 'Hot Standby' to 'Load Balance'"
-          ],
-          "correct": 2
-        }
-      }
-    },
-    {
-      "id": "DHCP-09",
-      "category": "DHCP",
-      "title": "Updated reservation not taking effect",
-      "summary": "An administrator changed a reservation to a new IP, but the client continues to use the previous IP address.",
-      "tags": [
-        "reservation",
-        "lease",
-        "renew"
-      ],
-      "artifact": [
-        "DHCP console:",
-        "- Reservation updated from 10.0.0.50 to 10.0.0.60",
-        "- Address Leases show an active lease for 10.0.0.50 for the same MAC",
-        "",
-        "Client currently shows IP: 10.0.0.50"
-      ],
-      "validations": [
-        "Confirm the old lease is released/cleared as appropriate.",
-        "Renew results in the reserved address.",
-        "Confirm no duplicate reservation/lease remains."
-      ],
-      "debrief": "A DHCP Reservation is a 'promise' of a specific IP for a specific MAC, but it doesn't override an existing lease instantly. DHCP is a pull-based system; the client only checks for updates at the T1 (renewal) interval—usually 50% of the lease time. To force a change, you must manually trigger an 'ipconfig /renew' on the client or delete the active lease record in the DHCP console to force the client to negotiate a new one.",
-      "workflow": {
-        "triage": {
-          "q": "Why does the client still have 10.0.0.50 after the server change?",
-          "options": [
-            "The DHCP server hasn't committed the database change to disk",
-            "The client has not yet reached its renewal interval (T1) to ask for a new lease",
-            "The reservation was made for the wrong MAC address",
-            "The client's static IP configuration is overriding the DHCP reservation"
-          ],
-          "correct": 1
-        },
-        "diagnosis": {
-          "q": "What is preventing the client from picking up the .60 address immediately?",
-          "options": [
-            "The DHCP server requires a restart to apply reservations",
-            "The client still has a valid, unexpired lease for the old IP address",
-            "Reservations can only be applied to devices that are currently offline",
-            "The client is getting a response from a secondary DHCP server instead"
-          ],
-          "correct": 1
-        },
-        "fix": {
-          "q": "Which action is the best fix?",
-          "options": [
-            "Delete the client's host record in DNS",
-            "Run 'ipconfig /release' and 'ipconfig /renew' on the client machine",
-            "Change the Reservation IP back to .50 and then to .60 again",
-            "Reboot the DHCP server to force all clients to reconnect"
-          ],
-          "correct": 1
-        }
-      }
-    },
-    {
-      "id": "DHCP-10",
-      "category": "DHCP",
-      "title": "Limited communication after scope reconfiguration",
-      "summary": "Clients receive an IP address but cannot communicate outside their immediate subnet segment. Only a small group of hosts are reachable.",
-      "tags": [
-        "subnet mask",
-        "scope settings",
-        "routing"
-      ],
-      "artifact": [
-        "Client ipconfig /all (snippet):",
-        "IPv4 Address . . . . . . . . . . : 10.0.30.15",
-        "Subnet Mask  . . . . . . . . . . : 255.255.255.0",
-        "Default Gateway . . . . . . . . : 10.0.30.1",
-        "",
-        "Network design note:",
-        "Servers reside on 10.0.0.0/16 and should be reachable from this segment."
-      ],
-      "validations": [
-        "Confirm clients receive correct mask after remediation.",
-        "Confirm clients can reach intended subnets.",
-        "Confirm scope configuration matches network design."
-      ],
-      "debrief": "The Subnet Mask defines the 'local' boundaries of a network. If the mask is too restrictive (e.g., /24 instead of /16), the client thinks IPs that are actually on its local segment are on a different network. It then tries to send that traffic to the Default Gateway. If the router isn't prepared to handle that specific traffic flow, communication fails. Note: In Windows DHCP, the subnet mask is defined at scope creation and cannot be edited; you must recreate the scope to change it.",
-      "workflow": {
-        "triage": {
-          "q": "Comparing the client IP and Mask to the Network Design note, what stands out?",
-          "options": [
-            "The Default Gateway is in the wrong subnet",
-            "The Subnet Mask (255.255.255.0) is more restrictive than the design (10.0.0.0/16)",
-            "The IP address is outside the 10.0.0.0 range",
-            "The DHCP server is not providing a DNS suffix"
-          ],
-          "correct": 1
-        },
-        "diagnosis": {
-          "q": "What is the MOST likely cause of the communication failure?",
-          "options": [
-            "The router is blocking traffic between 10.0.30.x and 10.0.0.x",
-            "The incorrect subnet mask causes the client to believe 10.0.0.x is on a different network requiring a gateway",
-            "The client has the wrong DNS server configured in DHCP Option 006",
-            "The DHCP scope has run out of /16 addresses"
-          ],
-          "correct": 1
-        },
-        "fix": {
-          "q": "Which action is the best fix?",
-          "options": [
-            "Change the Subnet Mask in the existing Scope properties",
-            "Manually set the subnet mask on every workstation to 255.255.0.0",
-            "Delete and recreate the DHCP scope with the correct /16 (255.255.0.0) subnet mask",
-            "Add a static route to the client's routing table"
-          ],
-          "correct": 2
         }
       }
     }
