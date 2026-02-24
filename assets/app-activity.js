@@ -250,8 +250,7 @@
       JSON.stringify(t.evidence || {}),
       JSON.stringify(t.artifact || {}),
       JSON.stringify(t.env || {}),
-      (t.validations || []).join(" "),
-      JSON.stringify(t.debrief || {}) // allow searching debrief content too
+      (t.validations || []).join(" ")
     ]
       .join(" ")
       .toLowerCase();
@@ -287,9 +286,7 @@
       (s.changeNote || "").trim().length > 0 ||
       !!s.doneNote;
 
-    // Selecting a ticket counts as “in progress” visually.
     if (ticketId === selectedId) return "inprogress";
-
     return touched ? "inprogress" : "pending";
   }
 
@@ -374,7 +371,6 @@
       }
     };
 
-    // Prefer explicit artifact/evidence blocks
     pushLines(t.artifact);
     pushLines(t.evidence);
 
@@ -382,17 +378,14 @@
   }
 
   function evidenceInstructions(t) {
-    // Ticket-level overrides (optional)
     if (typeof t.evidenceInstructions === "string" && t.evidenceInstructions.trim()) {
       return t.evidenceInstructions.trim();
     }
 
-    // Lab-level default (optional)
     if (typeof lab?.evidenceInstructions === "string" && lab.evidenceInstructions.trim()) {
       return lab.evidenceInstructions.trim();
     }
 
-    // Generic, always-present guidance (what you asked for)
     return (
       "Instructions:\n" +
       "1) Read the observed problem and identify what you would verify first.\n" +
@@ -470,13 +463,12 @@
     const selectedIdx = s.answers?.[stageKey];
     const isCorrect = !!s.correct?.[stageKey];
 
-    // ✅ Changed wording to "Complete" (task mindset)
     const rightFlag =
       selectedIdx == null
         ? `<span class="mini-muted">Select an option</span>`
         : isCorrect
           ? `<span class="mini-good">Complete ✓</span>`
-          : `<span class="mini-bad">Needs Review ✕</span>`;
+          : `<span class="mini-bad">Not complete ✕</span>`;
 
     const optionsHtml = stageObj.options
       .map((label, idx) => {
@@ -551,64 +543,72 @@
     `;
   }
 
-  // ✅ NEW: Resolved summary + debrief (appears only when ticket is resolved)
-  function renderResolvedSummary(t, s) {
-    if (!computeResolved(s)) return "";
-
-    const wf = t.workflow || {};
-    const pickText = (stageKey) => {
-      const stage = wf[stageKey];
-      const idx = s.answers?.[stageKey];
-      if (!stage || !Array.isArray(stage.options) || idx == null) return null;
-      return stage.options[idx] ?? null;
-    };
-
-    const tri = pickText("triage");
-    const dia = pickText("diagnosis");
-    const fix = pickText("fix");
-
-    const pickedLines = [
-      tri ? `<li><strong>Triage:</strong> ${escapeHtml(tri)}</li>` : "",
-      dia ? `<li><strong>Diagnosis:</strong> ${escapeHtml(dia)}</li>` : "",
-      fix ? `<li><strong>Fix:</strong> ${escapeHtml(fix)}</li>` : ""
-    ].filter(Boolean).join("");
-
-    const d = t.debrief && typeof t.debrief === "object" ? t.debrief : null;
-
-    const bullets = (arr) =>
-      Array.isArray(arr) && arr.length
-        ? `<ul class="bullets">${arr.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`
-        : "";
-
-    const insightHtml = d ? `
+  function renderValidations(t) {
+    const v = t.validations || [];
+    return `
       <div class="miniCard" style="margin-top:12px;">
-        <div class="miniTitle">${escapeHtml(d.title || "Resolution Insight")}</div>
+        <div class="miniTitle">Suggested Validation Checks</div>
         <div class="miniDesc">
-          ${d.summary ? `<div style="white-space:pre-wrap; line-height:1.5;">${escapeHtml(d.summary)}</div>` : ""}
-          ${Array.isArray(d.whatGoodLooksLike) && d.whatGoodLooksLike.length
-            ? `<div style="margin-top:10px;"><strong>What good looks like</strong>${bullets(d.whatGoodLooksLike)}</div>`
-            : ""
-          }
-          ${Array.isArray(d.validation) && d.validation.length
-            ? `<div style="margin-top:10px;"><strong>Validation mindset</strong>${bullets(d.validation)}</div>`
-            : ""
-          }
-          ${d.takeaway ? `<div style="margin-top:10px;"><strong>Takeaway:</strong> ${escapeHtml(d.takeaway)}</div>` : ""}
+          ${v.length ? `<ul class="bullets">${v.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>` : `<span class="mini-muted">None provided.</span>`}
         </div>
       </div>
-    ` : "";
+    `;
+  }
+
+  /* ---------------------------- ✅ Debrief (NEW) ---------------------------- */
+
+  function getSelectedOptionLabel(t, stageKey, s) {
+    const stageObj = t.workflow?.[stageKey];
+    if (!isStageObject(stageObj)) return "—";
+    const idx = s.answers?.[stageKey];
+    if (!Number.isInteger(idx)) return "—";
+    return stageObj.options?.[idx] ?? "—";
+  }
+
+  function normalizeDebriefText(v) {
+    if (!v) return "";
+    if (typeof v === "string") return v.trim();
+    if (typeof v === "object") {
+      // Allow future formats like { summary, bullets } without breaking.
+      const parts = [];
+      if (typeof v.summary === "string" && v.summary.trim()) parts.push(v.summary.trim());
+      if (Array.isArray(v.bullets) && v.bullets.length) parts.push(v.bullets.map((x) => `• ${String(x)}`).join("\n"));
+      return parts.join("\n\n").trim();
+    }
+    return "";
+  }
+
+  function renderDebrief(t, s) {
+    if (!computeResolved(s)) return "";
+
+    const triagePick = getSelectedOptionLabel(t, "triage", s);
+    const diagnosisPick = getSelectedOptionLabel(t, "diagnosis", s);
+    const fixPick = getSelectedOptionLabel(t, "fix", s);
+
+    const custom = normalizeDebriefText(t.debrief) || normalizeDebriefText(lab?.debriefDefault);
+    const fallback =
+      "Debrief:\n" +
+      "This ticket is designed to reinforce evidence-first troubleshooting: verify what the client received/configured, correlate that with the symptom, then apply the least disruptive corrective change.";
+
+    const body = custom || fallback;
 
     return `
       <div class="miniCard" style="margin-top:12px;">
-        <div class="miniTitle">Ticket Resolved</div>
+        <div class="miniTitle">Debrief</div>
         <div class="miniDesc">
-          <div style="margin-bottom:6px;"><strong>You selected:</strong></div>
-          ${pickedLines ? `<ul class="bullets">${pickedLines}</ul>` : `<span class="mini-muted">Selections not available.</span>`}
+          <div style="font-weight:900; margin-bottom:6px;">You successfully completed this ticket.</div>
+          <ul class="bullets">
+            <li><strong>Triage:</strong> ${escapeHtml(triagePick)}</li>
+            <li><strong>Diagnosis:</strong> ${escapeHtml(diagnosisPick)}</li>
+            <li><strong>Fix:</strong> ${escapeHtml(fixPick)}</li>
+          </ul>
+          <pre class="evidencePre" style="margin-top:10px;">${escapeHtml(body)}</pre>
         </div>
       </div>
-      ${insightHtml}
     `;
   }
+
+  /* ---------------------------- ticket detail render ---------------------------- */
 
   function renderTicketDetail(ticketId) {
     const t = tickets.find((x) => x.id === ticketId);
@@ -652,8 +652,8 @@
         ${stageTabs}
         ${statusLine}
         ${stageHtml}
-
-        ${renderResolvedSummary(t, s)}
+        ${renderValidations(t)}
+        ${renderDebrief(t, s)}
       </div>
     `;
 
@@ -718,7 +718,6 @@
   function selectTicket(ticketId) {
     selectedId = ticketId;
 
-    // Mark selected ticket as “touched” so it shows IN PROGRESS immediately.
     const s = ensureStateShape(ticketId, loadTicketState(ticketId));
     saveTicketState(ticketId, s);
 
@@ -748,7 +747,6 @@
     s.correct[stageKey] = correctNow;
     if (!correctNow) s.attempts.wrong += 1;
 
-    // Unlock next stage only when correct.
     if (correctNow) {
       if (stageKey === "triage") s.uiStage = "diagnosis";
       else if (stageKey === "diagnosis") s.uiStage = "fix";
@@ -799,13 +797,13 @@
   function insertTemplate(ticketId, ticketTitle) {
     const s = ensureStateShape(ticketId, loadTicketState(ticketId));
 
-    // ✅ Simplified template (no fake "validation performed" / "impact downtime")
     const template =
 `Ticket: ${ticketTitle}
 
 Change implemented:
 Root cause:
-Notes:`;
+Validation performed:
+Impact / downtime:`;
 
     s.changeNote = template;
     saveTicketState(ticketId, s);
@@ -938,7 +936,6 @@ Notes:`;
     a.remove();
   }
 
-  // Compact portrait PDF with an old-style table (no overflow)
   function buildPrintableHtml() {
     const meta = getMeta();
     const generated = new Date().toLocaleString();
@@ -994,7 +991,6 @@ Notes:`;
 
     const overviewText = (lab.reportOverview || lab.description || "").trim() || "—";
 
-    // ✅ Portrait + fixed table layout + wrapping = never overflow.
     const css = `
       @page { size: letter portrait; margin: 14mm; }
       * { box-sizing: border-box; }
@@ -1044,7 +1040,6 @@ Notes:`;
       @media print { .hint { display:none; } }
     `;
 
-    // ✅ Column widths that fit portrait.
     const colgroup = `
       <colgroup>
         <col style="width: 12%;" />
@@ -1174,7 +1169,7 @@ Notes:`;
     const labId = getLabId();
     if (!labId) {
       $("#labTitle").textContent = "Missing lab id";
-      $("#labDesc").textContent = "Open from the academy site or add ?lab=dns-dhcp to the URL.";
+      $("#labDesc").textContent = "Open from the academy site or add ?lab=dns to the URL.";
       return;
     }
 
@@ -1210,7 +1205,6 @@ Notes:`;
     wireMeta();
     wireReport();
 
-    // Delegate clicks
     document.addEventListener("click", (e) => {
       const btn = e.target && e.target.closest ? e.target.closest("button") : null;
       if (!btn) return;
@@ -1275,7 +1269,6 @@ Notes:`;
     applyFilters();
     updateProgressAndHealth();
 
-    // ✅ Do NOT auto-open a ticket. Show dashboard instead.
     renderDashboard();
   }
 
@@ -1285,4 +1278,3 @@ Notes:`;
     $("#labDesc").textContent = "Confirm ./data/labs/<lab>.json exists and matches the ?lab= value.";
   });
 })();
-
