@@ -440,23 +440,30 @@
   }
 
   function renderStatusLine(s) {
-    const status = computeResolved(s)
+    const resolved = computeResolved(s);
+
+    const status = resolved
       ? "Resolved"
       : (s.attempts?.total || 0) > 0 || (s.changeNote || "").trim().length > 0
         ? "In progress"
         : "Not started";
 
-    return `
-      <div style="margin:18px 0 22px 0; line-height:1.6;">
-  <div style="font-size:13px;">
-    <strong>Status:</strong> ${computeResolved(s) ? "Resolved" : "In Progress"} •
-    <strong>Attempts:</strong> ${s.attempts} (wrong: ${s.wrongAttempts || 0})
-  </div>
+    const total = s.attempts?.total || 0;
+    const wrong = s.attempts?.wrong || 0;
 
-  <div class="mini-muted" style="margin-top:6px;">
-    Resolve by answering all three stages correctly + change note (min ${CHANGE_NOTE_MIN} chars).
-  </div>
-</div>
+    const hint = resolved
+      ? "All stages completed. Review your selections and the Resolution Insight below."
+      : `Resolve by answering all three stages correctly + change note (min ${CHANGE_NOTE_MIN} chars).`;
+
+    return `
+      <div class="statusLine">
+        <div class="statusMain">
+          <strong>Status:</strong> ${escapeHtml(status)}
+          <span class="sep">•</span>
+          <strong>Attempts:</strong> ${total}${wrong ? ` <span class="mini-muted">(incorrect: ${wrong})</span>` : ""}
+        </div>
+        <div class="statusHint">${escapeHtml(hint)}</div>
+      </div>
     `;
   }
 
@@ -541,6 +548,7 @@
             <button class="btn ghost" type="button" data-back-fix="true" data-ticket="${escapeHtml(ticketId)}">Back to Fix</button>
           </div>
 
+          <div style="height:12px;"></div>
           <textarea id="changeNoteBox" class="stepText" rows="8" placeholder="Write your change note here...">${escapeHtml(s.changeNote || "")}</textarea>
           <div class="mini-muted" id="changeNoteCount">Characters: ${chars}</div>
         </div>
@@ -829,8 +837,8 @@
 
 Change implemented:
 Root cause:
-Validation performed:
-Impact / downtime:`;
+Verification:
+Notes:`;
 
     s.changeNote = template;
     saveTicketState(ticketId, s);
@@ -902,8 +910,71 @@ Impact / downtime:`;
 
     if (ha) ha.textContent = a ? `${a}: ${byCat[a].pct}%` : "—";
     if (hb) hb.textContent = b ? `${b}: ${byCat[b].pct}%` : "—";
+
+    renderCompletionPanel();
   }
 
+
+  /* ---------------------------- completion summary ---------------------------- */
+
+  function getReturnHref() {
+    const params = new URLSearchParams(location.search);
+    const from = (params.get("from") || "").trim();
+    if (from) return from;
+
+    const ref = document.referrer || "";
+    try {
+      if (ref && new URL(ref).origin === location.origin) return ref;
+    } catch {
+      // ignore malformed referrer
+    }
+    return "./index.html";
+  }
+
+  function wireHomeLink() {
+    const a = document.querySelector(".home-link");
+    if (!a) return;
+    const href = getReturnHref();
+    a.href = href;
+    a.textContent = "← Back";
+  }
+
+  function renderCompletionPanel() {
+    const mount = document.getElementById("completionPanel");
+    if (!mount) return;
+
+    const p = computeProgress();
+    const allDone = p.total > 0 && p.done === p.total;
+
+    if (!allDone) {
+      mount.innerHTML = "";
+      return;
+    }
+
+    let attemptsTotal = 0;
+    let wrongTotal = 0;
+    tickets.forEach((t) => {
+      const s = ensureStateShape(t.id, loadTicketState(t.id));
+      attemptsTotal += s.attempts?.total || 0;
+      wrongTotal += s.attempts?.wrong || 0;
+    });
+
+    const returnHref = getReturnHref();
+
+    mount.innerHTML = `
+      <div class="panel completionCard">
+        <div class="panel-title">✅ All tickets successfully resolved</div>
+        <div class="panel-sub">
+          You completed <strong>${p.done}</strong> of <strong>${p.total}</strong> tickets.
+          ${attemptsTotal ? `Total attempts: <strong>${attemptsTotal}</strong>${wrongTotal ? ` <span class="muted">(incorrect: ${wrongTotal})</span>` : ""}.` : ""}
+        </div>
+        <div class="completionActions">
+          <button class="btn" type="button" data-open-report="true">Generate &amp; Print Report</button>
+          <a class="btn ghost" href="${escapeHtml(returnHref)}">Return</a>
+        </div>
+      </div>
+    `;
+  }
   /* ---------------------------- report modal ---------------------------- */
 
   function openReportModal() {
@@ -1212,6 +1283,8 @@ Impact / downtime:`;
     $("#footerLeft").textContent = `${lab.track} • ${lab.subject}`;
     if (lab.rolePill) $("#rolePill").textContent = lab.rolePill;
 
+    wireHomeLink();
+
     buildTabs(lab.categories || []);
 
     const sIn = $("#searchInput");
@@ -1305,5 +1378,3 @@ Impact / downtime:`;
     $("#labDesc").textContent = "Confirm ./data/labs/<lab>.json exists and matches the ?lab= value.";
   });
 })();
-
-
