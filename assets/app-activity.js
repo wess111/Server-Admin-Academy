@@ -5,6 +5,7 @@
   - Ticket queue status (PENDING / IN PROGRESS / RESOLVED)
   - Evidence/Artifact block styled like the old version
   - PDF export uses a dedicated print window with a compact, portrait table that never overflows
+  - ✅ Debrief block appears after ticket is resolved (reinforcement)
 */
 
 (() => {
@@ -1284,3 +1285,4 @@ Notes:`;
     $("#labDesc").textContent = "Confirm ./data/labs/<lab>.json exists and matches the ?lab= value.";
   });
 })();
+
