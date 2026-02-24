@@ -1,3 +1,4 @@
+/* FULL FILE: assets/app-activity.js */
 (() => {
   "use strict";
 
@@ -135,7 +136,6 @@
     const unlocked = getUnlockedStages(s);
     if (unlocked.has(s.uiStage)) return s;
 
-    // move user to latest unlocked stage
     if (unlocked.has("changeNote")) s.uiStage = "changeNote";
     else if (unlocked.has("fix")) s.uiStage = "fix";
     else if (unlocked.has("diagnosis")) s.uiStage = "diagnosis";
@@ -316,7 +316,6 @@
       }
     };
 
-    // priority: artifact -> evidence -> env (fallback)
     pushLines(t.artifact);
     pushLines(t.evidence);
     if (!lines.length) pushLines(t.env);
@@ -335,7 +334,7 @@
     `;
   }
 
-  /* ----------------------------- Stage Tabs (reuse .tab styling) ----------------------------- */
+  /* ----------------------------- Stage Tabs ----------------------------- */
 
   function renderStageTabs(ticketId, s) {
     const unlocked = getUnlockedStages(s);
@@ -343,7 +342,6 @@
     const mk = (key, label) => {
       const active = s.uiStage === key ? " active" : "";
       const locked = unlocked.has(key) ? "" : " disabled";
-      // Reuse the same class 'tab' so it stays consistent with your system.
       return `
         <button
           type="button"
@@ -529,7 +527,6 @@
       </div>
     `;
 
-    // Wire change-note live count + persistence
     const box = $("#changeNoteBox");
     if (box) {
       box.addEventListener("input", () => {
@@ -576,7 +573,6 @@
     s.correct[stageKey] = correctNow;
     if (!correctNow) s.attempts.wrong += 1;
 
-    // Unlock progression only if correct
     if (correctNow) {
       if (stageKey === "triage") s.uiStage = "diagnosis";
       else if (stageKey === "diagnosis") s.uiStage = "fix";
@@ -626,7 +622,6 @@
   function insertTemplate(ticketId) {
     const s = ensureStateShape(ticketId, loadTicketState(ticketId));
 
-    // SIMPLE + NEAT template (matches your older clean version)
     const template =
 `Change implemented:
 Root cause:
@@ -804,17 +799,225 @@ Impact / downtime:`;
     a.remove();
   }
 
+  // ✅ UPDATED: Compact, table-based PDF (Old style), with Report Overview + no huge whitespace
   function downloadPDF() {
     const meta = getMeta();
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: "pt", format: "letter" });
 
-    const txt = buildTextReport();
-    const lines = doc.splitTextToSize(txt, 520);
+    const marginX = 44;
+    const pageW = doc.internal.pageSize.getWidth();
+    const usableW = pageW - marginX * 2;
+
+    const p = computeProgress();
+    const overallPct = p.total ? Math.round((p.done / p.total) * 100) : 0;
+    const byCat = computeCategoryHealth();
+
+    const drawCard = (x, y, w, h) => {
+      doc.setDrawColor(210);
+      doc.setLineWidth(0.8);
+      doc.setFillColor(250, 250, 250);
+      doc.roundedRect(x, y, w, h, 10, 10, "FD");
+    };
+
+    const textBlock = (text, x, y, w, fontSize, leading) => {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(fontSize);
+      const lines = doc.splitTextToSize(String(text || ""), w);
+      doc.text(lines, x, y);
+      return y + lines.length * leading;
+    };
+
+    const healthLine = (() => {
+      const entries = Object.entries(byCat);
+      const parts = entries.slice(0, 2).map(([k, v]) => `${k} ${v.pct}%`);
+      return `Overall ${overallPct}%${parts.length ? " • " + parts.join(" • ") : ""}`;
+    })();
+
+    const reportTitle = `${lab.title} Incident Triage Report`;
+    const role = lab.rolePill || "Systems Administrator";
+    const generatedAt = new Date();
+
+    let y = 42;
+
+    // Header
+    const headerH = 118;
+    drawCard(marginX, y, usableW, headerH);
+
+    doc.setTextColor(20);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text(reportTitle, marginX + 18, y + 30);
 
     doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text(`${meta.courseTitle || lab.title}`, marginX + 18, y + 52);
+    doc.text(`${meta.courseSection || "—"}`, marginX + 18, y + 70);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10.5);
+    doc.text(`Student:`, marginX + 18, y + 92);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${meta.analystName || "—"}`, marginX + 70, y + 92);
+
+    const rx = marginX + usableW - 220;
+    doc.setFont("helvetica", "bold");
+    doc.text(`Date:`, rx, y + 52);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${meta.activityDate || "—"}`, rx + 42, y + 52);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`Generated:`, rx, y + 70);
+    doc.setFont("helvetica", "normal");
+    doc.text(
+      `${generatedAt.toLocaleDateString()} ${generatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
+      rx + 66,
+      y + 70
+    );
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`Role:`, rx, y + 92);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${role}`, rx + 36, y + 92);
+
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    doc.text(lines, 44, 54);
+    doc.text(`Progress:`, marginX + 18, y + 110);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${p.done}/${p.total} solved`, marginX + 76, y + 110);
+
+    doc.setFont("helvetica", "bold");
+    doc.text(`Health:`, rx, y + 110);
+    doc.setFont("helvetica", "normal");
+    doc.text(healthLine, rx + 42, y + 110);
+
+    // Report Overview (short so table starts immediately after)
+    y = y + headerH + 14;
+
+    const overviewText = (lab.reportOverview || lab.description || "").trim();
+    const overviewMaxLines = 4;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10.5);
+    const ovLines = doc.splitTextToSize(overviewText || "—", usableW - 36);
+    const ovShown = ovLines.slice(0, overviewMaxLines);
+    const ovH = 44 + ovShown.length * 14;
+
+    drawCard(marginX, y, usableW, ovH);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("Report Overview", marginX + 18, y + 28);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10.5);
+    doc.text(ovShown.length ? ovShown : ["—"], marginX + 18, y + 48);
+
+    // Challenge Outcomes Table
+    y = y + ovH + 14;
+
+    const statusFor = (s) => {
+      if (computeTicketComplete(s)) return "Complete";
+      const anyStarted =
+        (s?.attempts?.total || 0) > 0 ||
+        s?.answers?.triage != null ||
+        s?.answers?.diagnosis != null ||
+        s?.answers?.fix != null ||
+        (s?.changeNote || "").trim().length > 0;
+      return anyStarted ? "Attempted" : "Not started";
+    };
+
+    const rows = tickets.map((t) => {
+      const s = loadTicketState(t.id);
+      const attempts = s?.attempts?.total || 0;
+      const wrong = s?.attempts?.wrong || 0;
+      const type = t.type || "—";
+      return [t.id, t.category, type, t.title, statusFor(s), String(attempts), String(wrong)];
+    });
+
+    doc.autoTable({
+      startY: y,
+      head: [["ID", "Category", "Type", "Challenge", "Status", "Attempts", "Wrong"]],
+      body: rows.length ? rows : [["—", "—", "—", "—", "—", "0", "0"]],
+      theme: "grid",
+      styles: {
+        font: "helvetica",
+        fontSize: 9.5,
+        cellPadding: 6,
+        overflow: "linebreak",
+        textColor: 20
+      },
+      headStyles: {
+        fontStyle: "bold",
+        fillColor: [245, 245, 245],
+        textColor: 20
+      },
+      alternateRowStyles: { fillColor: [252, 252, 252] },
+      columnStyles: {
+        0: { cellWidth: 62 },
+        1: { cellWidth: 70 },
+        2: { cellWidth: 62 },
+        3: { cellWidth: 210 },
+        4: { cellWidth: 78 },
+        5: { cellWidth: 62, halign: "center" },
+        6: { cellWidth: 58, halign: "center" }
+      }
+    });
+
+    // Change Notes (only submitted)
+    let yy = doc.lastAutoTable.finalY + 14;
+
+    const submitted = tickets
+      .map((t) => ({ t, s: loadTicketState(t.id) }))
+      .filter(({ s }) => (s?.doneNote === true) && (s?.changeNote || "").trim().length >= 1);
+
+    drawCard(marginX, yy, usableW, 72);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("Change Notes", marginX + 18, yy + 28);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10.5);
+
+    const cnIntro = submitted.length
+      ? "Notes included for tickets where a change note was submitted (minimum 40 characters)."
+      : "No change notes were submitted.";
+    const afterIntroY = textBlock(cnIntro, marginX + 18, yy + 46, usableW - 36, 10.5, 14);
+
+    yy = Math.max(yy + 72, afterIntroY + 10);
+
+    if (submitted.length) {
+      doc.autoTable({
+        startY: yy,
+        head: [["Ticket", "Note"]],
+        body: submitted.map(({ t, s }) => [
+          `${t.id} — ${t.title}`,
+          (s.changeNote || "").trim()
+        ]),
+        theme: "grid",
+        styles: { font: "helvetica", fontSize: 9.5, cellPadding: 6, overflow: "linebreak" },
+        headStyles: { fontStyle: "bold", fillColor: [245, 245, 245], textColor: 20 },
+        columnStyles: { 0: { cellWidth: 190 }, 1: { cellWidth: 334 } }
+      });
+      yy = doc.lastAutoTable.finalY + 14;
+    }
+
+    // Integrity Note
+    drawCard(marginX, yy, usableW, 64);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("Integrity Note", marginX + 18, yy + 28);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10.5);
+    textBlock(
+      "This report reflects actions recorded in the offline simulation. Attach screenshots if your instructor requests additional evidence.",
+      marginX + 18,
+      yy + 46,
+      usableW - 36,
+      10.5,
+      14
+    );
 
     doc.save(`${lab.id}-${meta.analystName.replace(/\s+/g, "-").toLowerCase()}.pdf`);
   }
@@ -887,15 +1090,12 @@ Impact / downtime:`;
     wireMeta();
     wireReport();
 
-    // Delegated click handlers
     document.addEventListener("click", (e) => {
       const btn = e.target && e.target.closest ? e.target.closest("button") : null;
       if (!btn) return;
 
-      // Block clicks on locked stage tabs
       if (btn.classList.contains("disabled") && btn.dataset.stageTab === "true") return;
 
-      // Answer buttons
       if (btn.dataset.answer === "true") {
         const ticketId = btn.getAttribute("data-ticket");
         const stageKey = btn.getAttribute("data-stage");
@@ -904,7 +1104,6 @@ Impact / downtime:`;
         return;
       }
 
-      // Stage tabs
       if (btn.dataset.stageTab === "true") {
         const ticketId = btn.getAttribute("data-ticket");
         const stage = btn.getAttribute("data-stage");
@@ -920,35 +1119,30 @@ Impact / downtime:`;
         return;
       }
 
-      // Next stage
       if (btn.dataset.next === "true") {
         const ticketId = btn.getAttribute("data-ticket");
         if (ticketId) goNextStage(ticketId);
         return;
       }
 
-      // Go to Change Note
       if (btn.dataset.gotoNote === "true") {
         const ticketId = btn.getAttribute("data-ticket");
         if (ticketId) goChangeNote(ticketId);
         return;
       }
 
-      // Back to Fix
       if (btn.dataset.backFix === "true") {
         const ticketId = btn.getAttribute("data-ticket");
         if (ticketId) backToFix(ticketId);
         return;
       }
 
-      // Insert Template
       if (btn.dataset.insertTemplate === "true") {
         const ticketId = btn.getAttribute("data-ticket");
         if (ticketId) insertTemplate(ticketId);
         return;
       }
 
-      // Submit Note
       if (btn.dataset.submitNote === "true") {
         const ticketId = btn.getAttribute("data-ticket");
         if (ticketId) submitNote(ticketId);
