@@ -1,126 +1,163 @@
 {
-  "id": "dns-dhcp",
-  "title": "DNS & DHCP Troubleshooting",
-  "track": "ServerAdmin",
-  "subject": "Networking Services",
-  "description": "30 enterprise tickets. Solve the technical challenges to restore system health. The system will automatically validate your choices.",
-  "rolePill": "Role: Systems Administrator",
-  "categories": [
-    "DNS",
-    "DHCP"
-  ],
+  "id": "dhcp-expert-revamp",
+  "title": "DHCP Infrastructure: Expert Triage",
+  "track": "System Engineering",
+  "subject": "DHCP",
+  "rolePill": "Systems Administrator",
+  "description": "Advanced DHCP troubleshooting focusing on environment authorization, relay architecture, and scope management using evidence-first logic.",
+  "reportOverview": "This report evaluates your ability to distinguish between service availability and network visibility. Use these results to refine your understanding of the DHCP DORA process and relay agents.",
+  "categories": ["DHCP"],
+  "evidenceInstructions": "Instructions:\n1) Analyze the symptom and artifacts provided.\n2) Select the Triage action that provides the most visibility into the hidden error.\n3) Choose the Diagnosis that explains the logic of the failure.\n4) Select the Fix that remediates the root cause.\n5) Document your change note.",
   "tickets": [
     {
-      "id": "DNS-001",
-      "category": "DNS",
-      "title": "Domain join fails for DEPOT-LT17",
-      "summary": "A technician reports that joining DEPOT-LT17 to the domain fails. Connectivity to the DC IP is fine, but the domain name cannot be resolved.",
+      "id": "DHCP-ADV-01",
+      "category": "DHCP",
+      "title": "Service Running but Management Console is Red",
+      "summary": "DHCP has been installed on a new Domain Controller (DC-02). The service is 'Started' in Services.msc, but the DHCP console shows a red down arrow, and no clients are receiving IPs.",
+      "tags": ["authorization", "active directory", "rogue server"],
+      "artifact": [
+        "Server: DC-02.newvue.local",
+        "Services.msc: DHCP Server Service is 'Running'",
+        "Console: IPv4 node shows a red down arrow icon",
+        "Event Viewer: System Log shows Event ID 1046"
+      ],
+      "validations": [
+        "Verify server appears in 'Authorized Servers' list.",
+        "Confirm IPv4 icon turns green.",
+        "Test client lease acquisition."
+      ],
+      "debrief": "In an Active Directory environment, the DHCP service performs a security handshake. It checks AD to see if it is 'Authorized.' If it is not on the whitelist, the service will remain in a dormant state even if the process is 'Running.' This prevents unauthorized 'rogue' servers from disrupting the network.",
       "workflow": {
         "triage": {
-          "q": "What is the best first triage step?",
+          "q": "The service is running but the console is red. What is the most professional next step to uncover the specific block?",
           "options": [
-            "Apply a random fix based on guesswork with no validation.",
-            "Assume it is a user mistake and close the ticket.",
-            "Reboot immediately without collecting any details.",
-            "Confirm scope and capture exact symptoms/error text before acting."
-          ],
-          "correct": 3
-        },
-        "diagnosis": {
-          "q": "Which approach best supports a sound diagnosis?",
-          "options": [
-            "Blame the network without checking any logs or configuration.",
-            "Skip diagnosis and go straight to changes on production systems.",
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Rely only on user opinion rather than measurable evidence."
-          ],
-          "correct": 2
-        },
-        "fix": {
-          "q": "Which remediation practice is best?",
-          "options": [
-            "Make multiple changes at once so you cannot isolate what fixed it.",
-            "Declare success without testing or validation.",
-            "Disable security controls to make the problem go away.",
-            "Apply the least-risk remediation, then verify the service is restored and document results."
-          ],
-          "correct": 3
-        }
-      }
-    },
-    {
-      "id": "DNS-002",
-      "category": "DNS",
-      "title": "Stale Record for FileServer-01",
-      "summary": "Users are being directed to an old IP address (10.0.0.50) when trying to access FileServer-01. The server was moved to 10.0.0.75 last night.",
-      "workflow": {
-        "triage": {
-          "q": "What is the best first triage step?",
-          "options": [
-            "Assume it is a user mistake and close the ticket.",
-            "Confirm scope and capture exact symptoms/error text before acting.",
-            "Reboot immediately without collecting any details.",
-            "Apply a random fix based on guesswork with no validation."
+            "Restart the server to see if the icon clears",
+            "Check the System Event Log for Event ID 1046 (Authorization check)",
+            "Delete the DHCP role and reinstall it via PowerShell",
+            "Ping the loopback address to check the NIC"
           ],
           "correct": 1
         },
         "diagnosis": {
-          "q": "Which approach best supports a sound diagnosis?",
+          "q": "Event 1046 states: 'The DHCP service is not authorized to start.' What does this indicate?",
           "options": [
-            "Rely only on user opinion rather than measurable evidence.",
-            "Blame the network without checking any logs or configuration.",
-            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
-            "Skip diagnosis and go straight to changes on production systems."
+            "The server has a duplicate IP address on the network",
+            "The DHCP server has not been granted permission to operate within the AD Forest",
+            "The firewall is blocking Port 67",
+            "The DHCP Administrators group has been deleted"
           ],
-          "correct": 2
+          "correct": 1
         },
         "fix": {
-          "q": "Which remediation practice is best?",
+          "q": "How do you resolve this 'Unauthorized' state in the console?",
           "options": [
-            "Apply the least-risk remediation, then verify the service is restored and document results.",
-            "Disable security controls to make the problem go away.",
-            "Declare success without testing or validation.",
-            "Make multiple changes at once so you cannot isolate what fixed it."
+            "Add the server to the 'Domain Admins' group",
+            "Right-click 'DHCP' in the console and select 'Manage Authorized Servers' to add the DC",
+            "Run 'ipconfig /registerdns'",
+            "Disable IPv6 on the server"
+          ],
+          "correct": 1
+        }
+      }
+    },
+    {
+      "id": "DHCP-ADV-02",
+      "category": "DHCP",
+      "title": "Cross-VLAN Lease Failure",
+      "summary": "Users in the new Branch office (VLAN 20) are getting 169.254.x.x addresses. Users in the HQ (VLAN 10), where the DHCP server is located, are working fine.",
+      "tags": ["relay agent", "ip helper", "broadcast"],
+      "artifact": [
+        "VLAN 10 (HQ): 10.10.10.0/24 (Working)",
+        "VLAN 20 (Branch): 10.10.20.0/24 (Failing)",
+        "Router: Inter-VLAN routing is enabled; static IPs on VLAN 20 can ping the server.",
+        "DHCP Server: Scope for 10.10.20.0 exists and is active."
+      ],
+      "validations": [
+        "Verify DHCP Discover packets reach the server from VLAN 20.",
+        "Check Router configuration for IP Helper-Address.",
+        "Confirm VLAN 20 clients receive 10.10.20.x addresses."
+      ],
+      "debrief": "DHCP 'Discover' packets are Layer 2 broadcasts. Since routers are designed to block broadcasts, the requests from VLAN 20 never reach the server in VLAN 10. An 'IP Helper' or 'Relay Agent' on the router converts that broadcast into a unicast packet directed at the server's IP.",
+      "workflow": {
+        "triage": {
+          "q": "How do you verify if the server is even seeing the requests from the remote Branch office?",
+          "options": [
+            "Check the 'Address Leases' of the HQ scope",
+            "Check the DHCP Server Statistics or run a Packet Capture for 'Discovers' from the 10.10.20.x range",
+            "Check if the server's CPU usage is high",
+            "Ping the Branch office gateway from the server"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "The Packet Capture shows zero traffic from VLAN 20. Routing is working for static IPs. What is the bottleneck?",
+          "options": [
+            "The DHCP server is too slow to respond",
+            "The Router is not configured to relay DHCP broadcasts across the VLAN boundary",
+            "The Branch scope has the wrong subnet mask",
+            "The DHCP server needs a physical NIC in every VLAN"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "What is the industry-standard fix for this multi-VLAN architecture?",
+          "options": [
+            "Configure an 'IP Helper-Address' (DHCP Relay) on the VLAN 20 gateway interface",
+            "Create a 'Superscope' on the DHCP server",
+            "Enable 'Promiscuous Mode' on the server NIC",
+            "Move the DHCP server to the Branch office"
           ],
           "correct": 0
         }
       }
     },
     {
-      "id": "DNS-003",
-      "category": "DNS",
-      "title": "External Websites Not Resolving",
-      "summary": "Internal resources work fine, but no users in the office can reach google.com or office.com.",
+      "id": "DHCP-ADV-03",
+      "category": "DHCP",
+      "title": "The 'BAD_ADDRESS' Conflict",
+      "summary": "The DHCP console is filling up with 'BAD_ADDRESS' entries in the leases. Users are intermittently reporting 'IP Address Conflict' errors on their screens.",
+      "tags": ["conflict detection", "bad_address", "exclusions"],
+      "artifact": [
+        "Console: Multiple 'BAD_ADDRESS' entries in the active scope.",
+        "Recent Change: 10 new network printers were installed with manual static IPs.",
+        "Symptom: Users cannot get an IP if the 'BAD_ADDRESS' count is high."
+      ],
+      "validations": [
+        "Identify static IP range on printers.",
+        "Create exclusions for static ranges.",
+        "Clear BAD_ADDRESS entries and monitor for recurrence."
+      ],
+      "debrief": "The DHCP server uses 'Conflict Detection' (pings an IP before offering it). If something responds, it marks it 'BAD_ADDRESS' to prevent two devices from having the same IP. This usually happens when static IPs are assigned within the dynamic pool without setting an 'Exclusion.'",
       "workflow": {
         "triage": {
-          "q": "What is the best first triage step?",
+          "q": "What does a 'BAD_ADDRESS' entry actually tell you about the DHCP server's behavior?",
           "options": [
-            "Assume it is a user mistake and close the ticket.",
-            "Reboot immediately without collecting any details.",
-            "Apply a random fix based on guesswork with no validation.",
-            "Confirm scope and capture exact symptoms/error text before acting."
+            "The database is corrupted",
+            "The server attempted to offer the IP, but detected another device already using it (Conflict Detection)",
+            "The client has a malformed MAC address",
+            "The IP is blocked by the Windows Firewall"
           ],
-          "correct": 3
+          "correct": 1
         },
         "diagnosis": {
-          "q": "Which approach best supports a sound diagnosis?",
+          "q": "Given the recent printer installation, why is the server attempting to issue these 'BAD' IPs?",
           "options": [
-            "Rely only on user opinion rather than measurable evidence.",
-            "Blame the network without checking any logs or configuration.",
-            "Skip diagnosis and go straight to changes on production systems.",
-            "Form a likely root cause and identify specific evidence to confirm or rule it out."
+            "The printers are sending rogue DHCP offers",
+            "The printers were assigned static IPs that fall within the dynamic 'Address Pool' of the scope",
+            "The lease duration is too short",
+            "The DHCP database needs to be compacted"
           ],
-          "correct": 3
+          "correct": 1
         },
         "fix": {
-          "q": "Which remediation practice is best?",
+          "q": "What is the best way to prevent these conflicts permanently?",
           "options": [
-            "Make multiple changes at once so you cannot isolate what fixed it.",
-            "Declare success without testing or validation.",
-            "Disable security controls to make the problem go away.",
-            "Apply the least-risk remediation, then verify the service is restored and document results."
+            "Disable Conflict Detection on the server",
+            "Configure 'Address Exclusions' for the range used by static devices like printers",
+            "Increase the lease duration to 30 days",
+            "Tell users to ignore the conflict popups"
           ],
-          "correct": 3
+          "correct": 1
         }
       }
     }
