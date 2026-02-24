@@ -468,12 +468,10 @@
     const selectedIdx = s.answers?.[stageKey];
     const isCorrect = !!s.correct?.[stageKey];
 
-    const rightFlag =
-      selectedIdx == null
-        ? `<span class="mini-muted">Select an option</span>`
-        : isCorrect
-          ? `<span class="mini-good">Correct ✓</span>`
-          : `<span class="mini-bad">Incorrect ✕</span>`;
+const rightFlag =
+  selectedIdx == null ? `<span class="mini-muted">Select an option</span>` :
+  isCorrect ? `<span class="mini-good">Complete ✓</span>` :
+  `<span class="mini-bad">Needs Review ✕</span>`;
 
     const optionsHtml = stageObj.options
       .map((label, idx) => {
@@ -1235,3 +1233,4 @@ Impact / downtime:`;
     $("#labDesc").textContent = "Confirm ./data/labs/<lab>.json exists and matches the ?lab= value.";
   });
 })();
+
