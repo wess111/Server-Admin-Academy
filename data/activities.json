@@ -1,12 +1,21 @@
 [
   {
-    "title": "DNS & DHCP Troubleshooting",
+    "title": "DNS Concepts Practice",
     "domain": "systems-engineering",
     "mode": "incident-scenarios",
-    "difficulty": "intermediate",
+    "difficulty": "beginner",
     "status": "available",
-    "link": "./activity.html?lab=dns-dhcp",
-    "description": "30 enterprise tickets (15 DNS, 15 DHCP) using the 4-step triage workflow."
+    "link": "./activity.html?lab=dns",
+    "description": "10 everyday DNS troubleshooting scenarios using progressive triage → diagnosis → fix workflow."
+  },
+  {
+    "title": "DHCP Concepts Practice",
+    "domain": "systems-engineering",
+    "mode": "incident-scenarios",
+    "difficulty": "beginner",
+    "status": "available",
+    "link": "./activity.html?lab=dhcp",
+    "description": "10 everyday DHCP troubleshooting scenarios using progressive triage → diagnosis → fix workflow."
   },
   {
     "title": "Windows Support I",
@@ -15,7 +24,7 @@
     "difficulty": "beginner",
     "status": "available",
     "link": "./activity.html?lab=windows-support-1",
-    "description": "8 gamified support tickets focused on Windows installation, disk storage, user accounts, and file sharing."
+    "description": "Gamified support tickets focused on Windows installation, storage, user accounts, and file sharing."
   },
   {
     "title": "Help Desk Triage Knowledge Check (Coming Soon)",
