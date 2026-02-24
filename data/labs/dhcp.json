@@ -1,100 +1,173 @@
 {
-  "id": "dhcp-pro-lab",
-  "title": "Enterprise DHCP: Advanced Triage",
+  "id": "dhcp-expert-infrastructure",
+  "title": "DHCP Systems Engineering: Infrastructure Triage",
   "track": "System Engineering",
+  "subject": "DHCP",
+  "rolePill": "Systems Administrator",
+  "description": "In an enterprise network, DHCP is more than just 'handing out IPs.' It is a coordinated dance of broadcasts, relays, and Active Directory security checks. In this activity, you will troubleshoot lease failures across VLAN boundaries, resolve authorization blocks, and mitigate IP conflicts using professional diagnostic tools.",
+  "reportOverview": "This report evaluates your ability to troubleshoot the DORA process and relay architecture. Use these results to refine your understanding of how DHCP interacts with Routers and Active Directory.",
+  "categories": ["DHCP"],
+  "evidenceInstructions": "Instructions:\n1) Analyze the symptom and artifacts (Event Logs, Packet Captures, Console Icons).\n2) Select the Triage action that provides the most visibility into the hidden error.\n3) Choose the Diagnosis that explains the logic of the failure.\n4) Select the Fix that remediates the root cause based on industry standards.",
   "tickets": [
     {
       "id": "DHCP-ADV-01",
-      "title": "Red Icon: Service Running but Inactive",
-      "summary": "DHCP is installed on DC-02. The service is 'Started' in Windows, but the console shows a red down arrow. Clients cannot get leases.",
+      "category": "DHCP",
+      "title": "Service Status: 'Running' but Console is Red",
+      "summary": "A secondary DHCP server (DC-02) has been installed to provide redundancy. The service is 'Started' in Services.msc, but the DHCP console shows a red down arrow, and it is not responding to any client requests.",
+      "tags": ["authorization", "active directory", "security"],
       "artifact": [
-        "Console: IPv4 Node has a Red Down Arrow.",
-        "Services.msc: DHCP Server is 'Running'.",
-        "Event Viewer: System Log contains Event 1046."
+        "Server: DC-02.newvue.local",
+        "Services.msc: DHCP Server Service is 'Running'",
+        "Console: IPv4 node shows a red down arrow icon",
+        "Event Viewer: System Log shows Event ID 1046: 'The DHCP service has determined that it is not authorized to service clients.'"
       ],
+      "validations": [
+        "Verify server appears in 'Authorized Servers' list.",
+        "Confirm IPv4 icon turns green.",
+        "Test client lease acquisition via NV-CL1."
+      ],
+      "debrief": {
+        "summary": "In an AD environment, DHCP servers must be authorized in the directory before they can start leasing. This is a security feature to prevent 'Rogue DHCP' servers from disrupting the network. Even if the service is 'Running,' it will remain dormant until authorized.",
+        "takeaway": "Always check Authorization status for new DHCP servers in AD. A 'Running' service does not mean an 'Active' service."
+      },
       "workflow": {
         "triage": {
-          "q": "The service is started, yet the console indicates the server is not responding. What is your first investigative move?",
+          "q": "The service is 'Running' in Windows, but the DHCP console is red. What is the most professional next step to identify why the server is dormant?",
           "options": [
-            "Restart the DHCP Service to clear the red icon",
-            "Examine the System Event Log for Event ID 1046 or 1044",
-            "Reinstall the DHCP Role using PowerShell",
-            "Ping the local loopback (127.0.0.1) to check the IP stack"
+            "Restart the server to clear the icon",
+            "Check the System Event Log for Event ID 1046 (Authorization check)",
+            "Uninstall and reinstall the DHCP role",
+            "Change the service logon account to 'Domain Admin'"
           ],
           "correct": 1
         },
         "diagnosis": {
-          "q": "Event 1046 is found: 'The DHCP service is not authorized to start.' What does this mean in a Domain environment?",
+          "q": "Event 1046 indicates the server is not authorized. What does this mean in a Domain environment?",
           "options": [
-            "The server's license has expired",
-            "The DHCP server must be authorized in Active Directory to prevent rogue servers",
-            "The DHCP service account password has expired",
-            "The Scope has reached its maximum lease capacity"
+            "The server has an expired license",
+            "The DHCP server's computer account is not in the 'DHCP Administrators' group",
+            "The server has not been whitelisted in Active Directory to provide DHCP services",
+            "The server's IP address is already in use by another device"
           ],
-          "correct": 1
+          "correct": 2
         },
         "fix": {
-          "q": "How do you authorize this server?",
+          "q": "How do you resolve this 'Unauthorized' state in the DHCP management console?",
           "options": [
-            "Add the server IP to the 'Domain Admins' group",
-            "Right-click 'DHCP' in the console and select 'Manage Authorized Servers'",
-            "Run 'ipconfig /registerdns' on the server",
-            "Disable the Windows Firewall on the Domain Controller"
+            "Right-click the server node in the DHCP console and select 'Authorize'",
+            "Run 'gpupdate /force' on the Domain Controller",
+            "Assign a static IP address to the client machines",
+            "Reboot the primary Domain Controller"
           ],
-          "correct": 1,
-          "feedback": "Correct! **Debrief:** In an AD environment, the DHCP service performs a security check. It looks for its own GUID in the 'CN=NetServices,CN=Services,CN=Configuration' container in Active Directory. If it isn't there, it enters a dormant state. This prevents a random employee from plugging in a server and taking over IP addressing for the whole company."
+          "correct": 0
         }
-      },
-      "debrief": {
-        "summary": "You identified that a DHCP service can be running while the scope is not actively leasing addresses (e.g., scope deactivated, exhausted, or misconfigured). The symptom points to scope-level state/configuration rather than the server being \"down.\"",
-        "takeaway": "When clients can\u2019t get leases, check scope status, available addresses, and bindings before restarting services."
       }
     },
     {
-      "id": "DHCP-ADV-07",
-      "title": "The 'VLAN Gap' Connectivity Issue",
-      "summary": "Clients on VLAN 20 are failing to get IPs, but clients on the same VLAN as the server (VLAN 10) are working perfectly.",
+      "id": "DHCP-ADV-02",
+      "category": "DHCP",
+      "title": "Remote Branch: APIPA 169.254.x.x Addresses",
+      "summary": "Users in the new 'VLAN 20' subnet are unable to get an IP. They are receiving 169.254 addresses. The DHCP server is in 'VLAN 10' and is working fine for local users.",
+      "tags": ["relay agent", "ip helper", "broadcast"],
       "artifact": [
-        "VLAN 10: 10.10.10.0/24 (Working)",
-        "VLAN 20: 10.10.20.0/24 (Failing - APIPA 169.254.x.x)",
-        "Router: Inter-VLAN routing is enabled and tested."
+        "VLAN 10 (HQ): 172.18.1.0/24 (Working)",
+        "VLAN 20 (Branch): 172.18.2.0/24 (Failing)",
+        "Router: Inter-VLAN routing is enabled; Branch users can ping HQ servers if they use static IPs.",
+        "DHCP Server: Scope for 172.18.2.0 is active and authorized."
       ],
+      "validations": [
+        "Verify DHCP Discover packets reach the server from VLAN 20.",
+        "Check Router configuration for IP Helper-Address.",
+        "Confirm VLAN 20 clients receive 172.18.2.x addresses."
+      ],
+      "debrief": {
+        "summary": "DHCP 'Discover' packets are Layer 2 broadcasts. Since routers block broadcasts, requests from VLAN 20 never reach the server in VLAN 10. A 'Relay Agent' (IP Helper) is required to convert that broadcast into a unicast packet.",
+        "takeaway": "If routing works for static IPs but DHCP fails across subnets, the issue is almost always a missing Relay Agent or IP Helper configuration on the router."
+      },
       "workflow": {
         "triage": {
-          "q": "To see if the server is even receiving requests from the remote subnet, where do you look?",
+          "q": "Clients in the remote subnet are getting APIPA addresses. What is the first thing you should check to see if the server is receiving their requests?",
           "options": [
-            "The DHCP Server Statistics and Packet Capture (Wireshark) for 'Discovers'",
-            "The Scope Options for Option 003 (Router)",
-            "The 'Address Leases' of the working VLAN 10",
-            "The Active Directory Sites and Services console"
+            "Check if the server's local firewall is blocking all UDP traffic",
+            "Perform a packet capture (Wireshark) on the DHCP server to see if 'DHCP Discover' packets are arriving from the 172.18.2.0 gateway",
+            "Check the 'Address Leases' for the local HQ subnet",
+            "Verify the server has enough RAM to handle more requests"
           ],
-          "correct": 0
+          "correct": 1
         },
         "diagnosis": {
-          "q": "The Packet Capture shows NO incoming traffic from VLAN 20. Why are the broadcasts not reaching the server?",
+          "q": "Static IPs can communicate across VLANs, but DHCP captures show zero traffic from the remote subnet. What is the logical failure?",
           "options": [
-            "The server's Firewall is blocking VLAN 20 specifically",
-            "Standard routers do not forward Layer 2 DHCP broadcasts across VLAN boundaries",
-            "The DHCP service only listens on one network interface at a time",
-            "The subnet mask on the client is too restrictive"
+            "The DHCP server is too slow to respond to remote clients",
+            "The Router/Gateway for VLAN 20 is not configured to relay DHCP broadcasts to the server's IP",
+            "The DHCP server needs a physical network card in every VLAN",
+            "The scope for 172.18.2.0 has a typo in the subnet mask"
           ],
           "correct": 1
         },
         "fix": {
-          "q": "What is the industry-standard fix for this multi-VLAN issue?",
+          "q": "What is the industry-standard remediation for this multi-subnet architecture?",
           "options": [
-            "Move the DHCP server to VLAN 20",
-            "Configure an 'IP Helper-Address' (DHCP Relay) on the VLAN 20 gateway interface",
-            "Enable 'Promiscuous Mode' on the server's NIC",
-            "Create a Superscope including both VLANs"
+            "Configure an 'IP Helper-Address' (DHCP Relay) on the VLAN 20 gateway interface pointing to the DHCP server IP",
+            "Create a 'Superscope' on the DHCP server to merge the two subnets",
+            "Increase the lease duration to 30 days to reduce broadcast traffic",
+            "Enable 'Promiscuous Mode' on the DHCP server's network adapter"
           ],
-          "correct": 1,
-          "feedback": "Correct! **Debrief:** DHCP starts with a broadcast (the 'D' in DORA). Since routers are designed to stop broadcast storms, they kill these packets. The 'IP Helper' acts as a proxy: it catches the broadcast, changes the 'destination' to the specific IP of your DHCP server, and forwards it as a unicast packet."
+          "correct": 0
         }
-      },
+      }
+    },
+    {
+      "id": "DHCP-ADV-03",
+      "category": "DHCP",
+      "title": "Scope Flooded with 'BAD_ADDRESS'",
+      "summary": "The DHCP console for the NewVue_Internal scope is filling up with 'BAD_ADDRESS' entries. Users are reporting intermittent 'IP Address Conflict' popups on their workstations.",
+      "tags": ["conflict detection", "bad_address", "exclusions"],
+      "artifact": [
+        "Console: 15 'BAD_ADDRESS' entries appear in the lease list.",
+        "Context: A team recently installed 10 smart-sensors with manual static IPs in the middle of the dynamic range.",
+        "Server Properties: 'Conflict Detection Attempts' is set to 2."
+      ],
+      "validations": [
+        "Identify the static IP range used by the sensors.",
+        "Create exclusions for those IPs in the DHCP scope.",
+        "Clear BAD_ADDRESS entries and verify they do not return."
+      ],
       "debrief": {
-        "summary": "You connected a DHCP symptom to Layer 2/3 segmentation: clients on a different VLAN/subnet won\u2019t receive DHCP offers unless DHCP relay (IP helper) is configured and routing is in place.",
-        "takeaway": "DHCP is broadcast-based; across VLANs you need relay + correct routing to the DHCP server."
+        "summary": "The DHCP server uses 'Conflict Detection' to ping an IP before offering it to a client. If it gets a response (meaning a device is already using that IP statically), it marks it 'BAD_ADDRESS' and moves to the next IP. This prevents the server from causing a conflict.",
+        "takeaway": "BAD_ADDRESS is a symptom of a 'Rogue' static IP or a missing exclusion. Use Exclusions to protect any IPs that are manually assigned to devices."
+      },
+      "workflow": {
+        "triage": {
+          "q": "You see 'BAD_ADDRESS' in the lease list. What does this tell you about the DHCP server's internal logic?",
+          "options": [
+            "The DHCP database is corrupted and needs a repair",
+            "The server attempted to issue an IP but detected a conflict via ICMP (Ping) before completing the lease",
+            "The clients have invalid MAC addresses",
+            "The server has run out of available IP addresses"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Why are these conflicts occurring if the DHCP server is 'aware' of them?",
+          "options": [
+            "The DHCP server is malfunctioning",
+            "Devices are being manually assigned static IPs that fall within the dynamic 'Address Pool' without an Exclusion record",
+            "The lease duration is too short, causing clients to fight for IPs",
+            "The DNS server is not updating PTR records fast enough"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "What is the best way to prevent 'BAD_ADDRESS' entries from re-appearing?",
+          "options": [
+            "Disable Conflict Detection to speed up leasing",
+            "Configure an 'Address Exclusion' range that covers the IPs used by the static devices",
+            "Tell the users to reboot their machines until the error goes away",
+            "Increase the range of the scope so there are 'more' IPs available"
+          ],
+          "correct": 1
+        }
       }
     }
   ]
