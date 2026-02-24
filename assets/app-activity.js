@@ -5,6 +5,7 @@
   - Ticket queue status (PENDING / IN PROGRESS / RESOLVED)
   - Evidence/Artifact block styled like the old version
   - PDF export uses a dedicated print window with a compact, portrait table that never overflows
+  - ✅ Debrief block appears after ticket is resolved (reinforcement)
 */
 
 (() => {
@@ -120,7 +121,7 @@
       if (!(k in s.correct)) s.correct[k] = false;
     });
 
-    if (!['triage','diagnosis','fix','changeNote'].includes(s.uiStage)) s.uiStage = 'triage';
+    if (!["triage", "diagnosis", "fix", "changeNote"].includes(s.uiStage)) s.uiStage = "triage";
     if (typeof s.changeNote !== "string") s.changeNote = "";
     if (typeof s.doneNote !== "boolean") s.doneNote = false;
     if (typeof s.resolved !== "boolean") s.resolved = false;
@@ -131,7 +132,9 @@
 
   function computeResolved(s) {
     const allCorrect = !!(s.correct?.triage && s.correct?.diagnosis && s.correct?.fix);
-    const noteOk = !!(s.doneNote && (s.changeNote || "").trim().length >= CHANGE_NOTE_MIN);
+    // Ticket is considered resolved when the full workflow is correct AND the student documentation meets the minimum.
+    // (No hidden dependency on clicking "Submit Note".)
+    const noteOk = (s.changeNote || "").trim().length >= CHANGE_NOTE_MIN;
     return allCorrect && noteOk;
   }
 
@@ -285,9 +288,7 @@
       (s.changeNote || "").trim().length > 0 ||
       !!s.doneNote;
 
-    // Selecting a ticket counts as “in progress” visually.
     if (ticketId === selectedId) return "inprogress";
-
     return touched ? "inprogress" : "pending";
   }
 
@@ -372,7 +373,6 @@
       }
     };
 
-    // Prefer explicit artifact/evidence blocks
     pushLines(t.artifact);
     pushLines(t.evidence);
 
@@ -380,23 +380,20 @@
   }
 
   function evidenceInstructions(t) {
-    // Ticket-level overrides (optional)
     if (typeof t.evidenceInstructions === "string" && t.evidenceInstructions.trim()) {
       return t.evidenceInstructions.trim();
     }
 
-    // Lab-level default (optional)
     if (typeof lab?.evidenceInstructions === "string" && lab.evidenceInstructions.trim()) {
       return lab.evidenceInstructions.trim();
     }
 
-    // Generic, always-present guidance (what you asked for)
     return (
       "Instructions:\n" +
       "1) Read the observed problem and identify what you would verify first.\n" +
       "2) Use the evidence/artifact (logs, screenshot, command output) to confirm or rule out likely causes.\n" +
       "3) Select the best answer in each stage (Triage → Diagnosis → Fix).\n" +
-      "4) Write a short change note describing what changed and how you validated it." 
+      "4) Write a short change note describing what changed and how you validated it."
     );
   }
 
@@ -472,8 +469,8 @@
       selectedIdx == null
         ? `<span class="mini-muted">Select an option</span>`
         : isCorrect
-          ? `<span class="mini-good">Correct ✓</span>`
-          : `<span class="mini-bad">Incorrect ✕</span>`;
+          ? `<span class="mini-good">Complete ✓</span>`
+          : `<span class="mini-bad">Not complete ✕</span>`;
 
     const optionsHtml = stageObj.options
       .map((label, idx) => {
@@ -560,6 +557,84 @@
     `;
   }
 
+  /* ---------------------------- ✅ Debrief (NEW) ---------------------------- */
+
+  function getSelectedOptionLabel(t, stageKey, s) {
+    const stageObj = t.workflow?.[stageKey];
+    if (!isStageObject(stageObj)) return "—";
+    const idx = s.answers?.[stageKey];
+    if (!Number.isInteger(idx)) return "—";
+    return stageObj.options?.[idx] ?? "—";
+  }
+
+  function normalizeDebriefObject(v) {
+    // Approved structure:
+    // debrief: { summary: "...", takeaway: "..." }
+    // Backward compatible: if string, treat it as summary.
+    const out = { summary: "", takeaway: "" };
+
+    if (!v) return out;
+
+    if (typeof v === "string") {
+      out.summary = v.trim();
+      return out;
+    }
+
+    if (typeof v === "object") {
+      if (typeof v.summary === "string") out.summary = v.summary.trim();
+      if (typeof v.takeaway === "string") out.takeaway = v.takeaway.trim();
+      // Back-compat: accept { text } or { bullets } if present.
+      if (!out.summary && typeof v.text === "string") out.summary = v.text.trim();
+      if (!out.takeaway && Array.isArray(v.bullets) && v.bullets.length) out.takeaway = v.bullets.map((x) => String(x)).join(" ");
+      return out;
+    }
+
+    return out;
+  }
+
+  function renderDebrief(t, s) {
+    if (!computeResolved(s)) return "";
+
+    const triagePick = getSelectedOptionLabel(t, "triage", s);
+    const diagnosisPick = getSelectedOptionLabel(t, "diagnosis", s);
+    const fixPick = getSelectedOptionLabel(t, "fix", s);
+
+    const fromTicket = normalizeDebriefObject(t.debrief);
+    const fromLab = normalizeDebriefObject(lab?.debriefDefault);
+
+    const summary =
+      fromTicket.summary ||
+      fromLab.summary ||
+      "You validated the correct workflow: confirm symptoms, identify the root cause from evidence, then apply the least disruptive fix.";
+
+    const takeaway =
+      fromTicket.takeaway ||
+      fromLab.takeaway ||
+      "";
+
+    return `
+      <div class="miniCard" style="margin-top:12px;">
+        <div class="miniTitle">🟢 Ticket Resolved</div>
+        <div class="miniDesc">
+          <div style="font-weight:900; margin-bottom:6px;">You selected:</div>
+          <ul class="bullets" style="margin-top:0;">
+            <li>${escapeHtml(triagePick)}</li>
+            <li>${escapeHtml(diagnosisPick)}</li>
+            <li>${escapeHtml(fixPick)}</li>
+          </ul>
+
+          <div style="font-weight:900; margin-top:10px;">Resolution Insight</div>
+          <div class="mini-muted" style="margin-top:4px;">${escapeHtml(summary)}</div>
+
+          ${takeaway ? `<div style="margin-top:8px;"><strong>Takeaway:</strong> ${escapeHtml(takeaway)}</div>` : ""}
+        </div>
+      </div>
+    `;
+  }
+
+
+  /* ---------------------------- ticket detail render ---------------------------- */
+
   function renderTicketDetail(ticketId) {
     const t = tickets.find((x) => x.id === ticketId);
     if (!t) return;
@@ -602,7 +677,7 @@
         ${stageTabs}
         ${statusLine}
         ${stageHtml}
-        ${renderValidations(t)}
+        ${renderDebrief(t, s)}
       </div>
     `;
 
@@ -657,7 +732,7 @@
           <div class="evidenceTitle">How to work a ticket</div>
           <pre class="evidencePre">1) Open a ticket from the left queue.
 2) Complete Triage, then Diagnosis, then Fix.
-3) After all three are correct, write a Change Note (min ${CHANGE_NOTE_MIN} chars).
+3) After all three are complete, write a Change Note (min ${CHANGE_NOTE_MIN} chars).
 4) Generate your PDF report when finished.</pre>
         </div>
       </div>
@@ -667,7 +742,6 @@
   function selectTicket(ticketId) {
     selectedId = ticketId;
 
-    // Mark selected ticket as “touched” so it shows IN PROGRESS immediately.
     const s = ensureStateShape(ticketId, loadTicketState(ticketId));
     saveTicketState(ticketId, s);
 
@@ -697,7 +771,6 @@
     s.correct[stageKey] = correctNow;
     if (!correctNow) s.attempts.wrong += 1;
 
-    // Unlock next stage only when correct.
     if (correctNow) {
       if (stageKey === "triage") s.uiStage = "diagnosis";
       else if (stageKey === "diagnosis") s.uiStage = "fix";
@@ -748,7 +821,6 @@
   function insertTemplate(ticketId, ticketTitle) {
     const s = ensureStateShape(ticketId, loadTicketState(ticketId));
 
-    // Keep it simple + neat like the old one.
     const template =
 `Ticket: ${ticketTitle}
 
@@ -888,7 +960,6 @@ Impact / downtime:`;
     a.remove();
   }
 
-  // Compact portrait PDF with an old-style table (no overflow)
   function buildPrintableHtml() {
     const meta = getMeta();
     const generated = new Date().toLocaleString();
@@ -944,7 +1015,6 @@ Impact / downtime:`;
 
     const overviewText = (lab.reportOverview || lab.description || "").trim() || "—";
 
-    // ✅ Portrait + fixed table layout + wrapping = never overflow.
     const css = `
       @page { size: letter portrait; margin: 14mm; }
       * { box-sizing: border-box; }
@@ -994,7 +1064,6 @@ Impact / downtime:`;
       @media print { .hint { display:none; } }
     `;
 
-    // ✅ Column widths that fit portrait.
     const colgroup = `
       <colgroup>
         <col style="width: 12%;" />
@@ -1124,7 +1193,7 @@ Impact / downtime:`;
     const labId = getLabId();
     if (!labId) {
       $("#labTitle").textContent = "Missing lab id";
-      $("#labDesc").textContent = "Open from the academy site or add ?lab=dns-dhcp to the URL.";
+      $("#labDesc").textContent = "Open from the academy site or add ?lab=dns to the URL.";
       return;
     }
 
@@ -1160,7 +1229,6 @@ Impact / downtime:`;
     wireMeta();
     wireReport();
 
-    // Delegate clicks
     document.addEventListener("click", (e) => {
       const btn = e.target && e.target.closest ? e.target.closest("button") : null;
       if (!btn) return;
@@ -1225,7 +1293,6 @@ Impact / downtime:`;
     applyFilters();
     updateProgressAndHealth();
 
-    // ✅ Do NOT auto-open a ticket. Show dashboard instead.
     renderDashboard();
   }
 
