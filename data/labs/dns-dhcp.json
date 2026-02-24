@@ -1,0 +1,128 @@
+{
+  "id": "dns-dhcp",
+  "title": "DNS & DHCP Troubleshooting",
+  "track": "ServerAdmin",
+  "subject": "Networking Services",
+  "description": "30 enterprise tickets. Solve the technical challenges to restore system health. The system will automatically validate your choices.",
+  "rolePill": "Role: Systems Administrator",
+  "categories": [
+    "DNS",
+    "DHCP"
+  ],
+  "tickets": [
+    {
+      "id": "DNS-001",
+      "category": "DNS",
+      "title": "Domain join fails for DEPOT-LT17",
+      "summary": "A technician reports that joining DEPOT-LT17 to the domain fails. Connectivity to the DC IP is fine, but the domain name cannot be resolved.",
+      "workflow": {
+        "triage": {
+          "q": "What is the best first triage step?",
+          "options": [
+            "Apply a random fix based on guesswork with no validation.",
+            "Assume it is a user mistake and close the ticket.",
+            "Reboot immediately without collecting any details.",
+            "Confirm scope and capture exact symptoms/error text before acting."
+          ],
+          "correct": 3
+        },
+        "diagnosis": {
+          "q": "Which approach best supports a sound diagnosis?",
+          "options": [
+            "Blame the network without checking any logs or configuration.",
+            "Skip diagnosis and go straight to changes on production systems.",
+            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
+            "Rely only on user opinion rather than measurable evidence."
+          ],
+          "correct": 2
+        },
+        "fix": {
+          "q": "Which remediation practice is best?",
+          "options": [
+            "Make multiple changes at once so you cannot isolate what fixed it.",
+            "Declare success without testing or validation.",
+            "Disable security controls to make the problem go away.",
+            "Apply the least-risk remediation, then verify the service is restored and document results."
+          ],
+          "correct": 3
+        }
+      }
+    },
+    {
+      "id": "DNS-002",
+      "category": "DNS",
+      "title": "Stale Record for FileServer-01",
+      "summary": "Users are being directed to an old IP address (10.0.0.50) when trying to access FileServer-01. The server was moved to 10.0.0.75 last night.",
+      "workflow": {
+        "triage": {
+          "q": "What is the best first triage step?",
+          "options": [
+            "Assume it is a user mistake and close the ticket.",
+            "Confirm scope and capture exact symptoms/error text before acting.",
+            "Reboot immediately without collecting any details.",
+            "Apply a random fix based on guesswork with no validation."
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Which approach best supports a sound diagnosis?",
+          "options": [
+            "Rely only on user opinion rather than measurable evidence.",
+            "Blame the network without checking any logs or configuration.",
+            "Form a likely root cause and identify specific evidence to confirm or rule it out.",
+            "Skip diagnosis and go straight to changes on production systems."
+          ],
+          "correct": 2
+        },
+        "fix": {
+          "q": "Which remediation practice is best?",
+          "options": [
+            "Apply the least-risk remediation, then verify the service is restored and document results.",
+            "Disable security controls to make the problem go away.",
+            "Declare success without testing or validation.",
+            "Make multiple changes at once so you cannot isolate what fixed it."
+          ],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-003",
+      "category": "DNS",
+      "title": "External Websites Not Resolving",
+      "summary": "Internal resources work fine, but no users in the office can reach google.com or office.com.",
+      "workflow": {
+        "triage": {
+          "q": "What is the best first triage step?",
+          "options": [
+            "Assume it is a user mistake and close the ticket.",
+            "Reboot immediately without collecting any details.",
+            "Apply a random fix based on guesswork with no validation.",
+            "Confirm scope and capture exact symptoms/error text before acting."
+          ],
+          "correct": 3
+        },
+        "diagnosis": {
+          "q": "Which approach best supports a sound diagnosis?",
+          "options": [
+            "Rely only on user opinion rather than measurable evidence.",
+            "Blame the network without checking any logs or configuration.",
+            "Skip diagnosis and go straight to changes on production systems.",
+            "Form a likely root cause and identify specific evidence to confirm or rule it out."
+          ],
+          "correct": 3
+        },
+        "fix": {
+          "q": "Which remediation practice is best?",
+          "options": [
+            "Make multiple changes at once so you cannot isolate what fixed it.",
+            "Declare success without testing or validation.",
+            "Disable security controls to make the problem go away.",
+            "Apply the least-risk remediation, then verify the service is restored and document results."
+          ],
+          "correct": 3
+        }
+      }
+    }
+  ]
+}
