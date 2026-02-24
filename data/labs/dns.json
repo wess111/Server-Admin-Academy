@@ -4,7 +4,7 @@
   "track": "System Engineering",
   "subject": "DNS",
   "rolePill": "Systems Administrator",
-  "description": "Everyday DNS incidents using evidence-first triage → diagnosis → fix. Titles and summaries are symptom-based to keep root cause discovery inside the workflow.",
+  "description": "Everyday DNS incidents using evidence-first triage \u2192 diagnosis \u2192 fix. Titles and summaries are symptom-based to keep root cause discovery inside the workflow.",
   "reportOverview": "This report summarizes ticket outcomes and change notes for DNS concepts practice. Use it to review your evidence interpretation and troubleshooting path.",
   "categories": [
     "DNS"
@@ -37,7 +37,7 @@
       ],
       "debrief": {
         "summary": "You reinforced that AD depends on DNS SRV records. A domain join failing with SRV NXDOMAIN strongly points to client DNS misconfiguration (public resolvers instead of internal DC DNS).",
-        "takeaway": "You reinforced that AD depends on DNS SRV records."
+        "takeaway": "Domain joins are DNS-dependent: point clients to internal DC DNS and verify SRV records before anything else."
       },
       "workflow": {
         "triage": {
@@ -96,7 +96,7 @@
       ],
       "debrief": {
         "summary": "You practiced a classic split: IP connectivity is fine, but name resolution is failing. NXDOMAIN for a known host commonly points to a missing/incorrect host record in the zone (or wrong zone being queried).",
-        "takeaway": "You practiced a classic split: IP connectivity is fine, but name resolution is failing."
+        "takeaway": "If IP works but name fails, validate the exact A/AAAA record and that the client is querying the correct zone/server."
       },
       "workflow": {
         "triage": {
@@ -156,7 +156,7 @@
       ],
       "debrief": {
         "summary": "You reinforced the difference between authoritative DNS records and client-side resolver cache. During cutovers, stale cache is a common cause of 'some users only' behavior.",
-        "takeaway": "You reinforced the difference between authoritative DNS records and client-side resolver cache."
+        "takeaway": "Cutover issues are often TTL/cache: lower TTL ahead of change and clear client caches to eliminate 'some users' behavior."
       },
       "workflow": {
         "triage": {
@@ -215,7 +215,7 @@
       ],
       "debrief": {
         "summary": "You practiced implementing name convenience without changing the app host: create an alias (CNAME) to point a friendly name at the real host.",
-        "takeaway": "You practiced implementing name convenience without changing the app host: create an alias (CNAME) to point a friendly name at the real h…"
+        "takeaway": "Use DNS aliases (CNAME) for friendly internal names instead of changing app configs or hostnames."
       },
       "workflow": {
         "triage": {
@@ -273,7 +273,7 @@
       ],
       "debrief": {
         "summary": "You reinforced the role of upstream resolution. In many enterprise networks, DNS servers must forward to approved resolvers; missing forwarders often causes widespread external resolution failure.",
-        "takeaway": "You reinforced the role of upstream resolution."
+        "takeaway": "Internal OK + external broken usually means recursion/forwarders/root hints\u2014check forwarders and recursion settings first."
       },
       "workflow": {
         "triage": {
@@ -328,7 +328,7 @@
       ],
       "debrief": {
         "summary": "You reinforced that reverse lookups require a properly scoped reverse zone and PTR registration (from DHCP or hosts). Without the zone, PTR queries return NXDOMAIN.",
-        "takeaway": "You reinforced that reverse lookups require a properly scoped reverse zone and PTR registration (from DHCP or hosts)."
+        "takeaway": "Reverse DNS requires reverse zones and PTR registration (typically via DHCP). No zone = no PTR results."
       },
       "workflow": {
         "triage": {
@@ -386,7 +386,7 @@
       ],
       "debrief": {
         "summary": "You identified a high-impact misconfiguration: a root (dot) zone can break recursion. This is a classic 'everything external broke instantly' DNS incident.",
-        "takeaway": "You identified a high-impact misconfiguration: a root (dot) zone can break recursion."
+        "takeaway": "A '.' (root) zone is a recursion killer\u2014avoid it unless you intentionally run an isolated, non-recursive DNS server."
       },
       "workflow": {
         "triage": {
@@ -440,8 +440,8 @@
         "Monitor transfer status remains healthy."
       ],
       "debrief": {
-        "summary": "You practiced secondary-zone fundamentals: secondaries rely on zone transfers. If transfers aren’t permitted to the secondary, the zone won’t load/populate.",
-        "takeaway": "You practiced secondary-zone fundamentals: secondaries rely on zone transfers."
+        "summary": "You practiced secondary-zone fundamentals: secondaries rely on zone transfers. If transfers aren\u2019t permitted to the secondary, the zone won\u2019t load/populate.",
+        "takeaway": "Secondaries live on zone transfers\u2014ensure transfers are allowed to the secondary and verify the transfer path."
       },
       "workflow": {
         "triage": {
@@ -499,7 +499,7 @@
       ],
       "debrief": {
         "summary": "You reinforced that AD-integrated DNS depends on healthy AD replication. When replication is unhealthy, DNS data consistency breaks across DCs.",
-        "takeaway": "You reinforced that AD-integrated DNS depends on healthy AD replication."
+        "takeaway": "AD-integrated DNS consistency relies on AD replication; fix replication health to fix 'DNS not syncing' symptoms."
       },
       "workflow": {
         "triage": {
@@ -554,7 +554,7 @@
       ],
       "debrief": {
         "summary": "You reinforced writable vs read-only DNS zones. Secondary zones are not editable; records must be added to the primary/writable source (or convert to AD-integrated where appropriate).",
-        "takeaway": "You reinforced writable vs read-only DNS zones."
+        "takeaway": "If 'Create' is unavailable, you\u2019re on a read-only/secondary zone\u2014edit on the primary or convert to a writable zone."
       },
       "workflow": {
         "triage": {
