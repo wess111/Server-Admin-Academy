@@ -57,23 +57,13 @@
 
   function defaultTicketState() {
     return {
-      // MCQ workflow
       answers: { triage: null, diagnosis: null, fix: null },
       correct: { triage: false, diagnosis: false, fix: false },
-
-      // Progressive UI
       uiStage: "triage", // triage | diagnosis | fix | changeNote
-
-      // Attempts tracking
       attempts: { total: 0, wrong: 0 },
-
-      // Change note
       changeNote: "",
       doneNote: false,
-
-      // Final status
       resolved: false,
-
       lastSavedAt: null
     };
   }
@@ -134,26 +124,23 @@
   }
 
   function getUnlockedStages(s) {
-    // Unlock is based on correctness, not simply visiting stages.
     const unlocked = new Set(["triage"]);
-
     if (s.correct.triage) unlocked.add("diagnosis");
     if (s.correct.triage && s.correct.diagnosis) unlocked.add("fix");
     if (s.correct.triage && s.correct.diagnosis && s.correct.fix) unlocked.add("changeNote");
-
     return unlocked;
   }
 
   function normalizeUiStage(s) {
     const unlocked = getUnlockedStages(s);
-    if (!unlocked.has(s.uiStage)) {
-      // Force them to the earliest unlocked stage
-      if (unlocked.has("triage")) s.uiStage = "triage";
-      if (unlocked.has("diagnosis")) s.uiStage = "diagnosis";
-      if (unlocked.has("fix")) s.uiStage = "fix";
-      if (unlocked.has("changeNote")) s.uiStage = "changeNote";
-      // Note: above logic moves to latest unlocked; that’s okay and friendly.
-    }
+    if (unlocked.has(s.uiStage)) return s;
+
+    // move user to latest unlocked stage
+    if (unlocked.has("changeNote")) s.uiStage = "changeNote";
+    else if (unlocked.has("fix")) s.uiStage = "fix";
+    else if (unlocked.has("diagnosis")) s.uiStage = "diagnosis";
+    else s.uiStage = "triage";
+
     return s;
   }
 
@@ -306,69 +293,61 @@
     }
   }
 
-  /* ----------------------------- Evidence/Artifact Rendering ----------------------------- */
+  /* ----------------------------- Evidence (Old-style look) ----------------------------- */
 
-  function renderEvidenceBlock(t) {
-    // Preferred fields: evidence / artifact. If absent, fall back to env.
-    // Supports string, array of strings, or object key/value.
+  function evidenceToLines(t) {
     const lines = [];
 
     const pushLines = (val) => {
       if (!val) return;
       if (typeof val === "string") {
-        const parts = val.split("\n").map(x => x.trim()).filter(Boolean);
-        parts.forEach(p => lines.push(p));
+        val.split("\n").map(x => x.trim()).filter(Boolean).forEach(x => lines.push(x));
         return;
       }
       if (Array.isArray(val)) {
-        val.forEach(x => {
-          if (typeof x === "string" && x.trim()) lines.push(x.trim());
-        });
+        val.forEach(x => typeof x === "string" && x.trim() && lines.push(x.trim()));
         return;
       }
       if (typeof val === "object") {
         Object.entries(val).forEach(([k, v]) => {
-          const txt = `${k}: ${String(v ?? "").trim()}`;
-          if (txt.trim()) lines.push(txt);
+          const txt = `${k}: ${String(v ?? "").trim()}`.trim();
+          if (txt) lines.push(txt);
         });
       }
     };
 
+    // priority: artifact -> evidence -> env (fallback)
     pushLines(t.artifact);
     pushLines(t.evidence);
+    if (!lines.length) pushLines(t.env);
 
-    // Fallback to env if nothing exists
-    if (!lines.length) {
-      pushLines(t.env);
-    }
+    return lines;
+  }
 
-    const content = lines.length
-      ? `<ul class="bullets">${lines.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`
-      : `<div class="miniDesc">(No evidence provided)</div>`;
-
+  function renderEvidenceOldStyle(t) {
+    const lines = evidenceToLines(t);
+    const body = lines.length ? lines.join("\n") : "(No evidence provided)";
     return `
-      <div class="artifactCard">
-        <div class="artifactTitle">Evidence / Artifact</div>
-        <div class="artifactBody">
-          ${content}
-        </div>
+      <div class="evidenceBox">
+        <div class="evidenceTitle">Evidence</div>
+        <pre class="evidencePre">${escapeHtml(body)}</pre>
       </div>
     `;
   }
 
-  /* ----------------------------- Stage Rendering ----------------------------- */
+  /* ----------------------------- Stage Tabs (reuse .tab styling) ----------------------------- */
 
   function renderStageTabs(ticketId, s) {
     const unlocked = getUnlockedStages(s);
 
-    const tabBtn = (key, label) => {
+    const mk = (key, label) => {
       const active = s.uiStage === key ? " active" : "";
-      const disabled = unlocked.has(key) ? "" : " disabled";
-
+      const locked = unlocked.has(key) ? "" : " disabled";
+      // Reuse the same class 'tab' so it stays consistent with your system.
       return `
         <button
           type="button"
-          class="stageTab${active}${disabled}"
+          class="tab stageTab${active}${locked}"
           data-stage-tab="true"
           data-ticket="${escapeHtml(ticketId)}"
           data-stage="${escapeHtml(key)}"
@@ -378,17 +357,20 @@
     };
 
     return `
-      <div class="stageTabs">
-        ${tabBtn("triage", "Triage")}
-        ${tabBtn("diagnosis", "Diagnosis")}
-        ${tabBtn("fix", "Fix")}
-        ${tabBtn("changeNote", "Change Note")}
+      <div class="tabs stageTabs">
+        ${mk("triage", "Triage")}
+        ${mk("diagnosis", "Diagnosis")}
+        ${mk("fix", "Fix")}
+        ${mk("changeNote", "Change Note")}
       </div>
     `;
   }
 
   function renderStatusLine(s) {
-    const status = computeResolved(s) ? "Resolved" : (s.correct.triage || s.correct.diagnosis || s.correct.fix || s.doneNote ? "In progress" : "Not started");
+    const status = computeResolved(s)
+      ? "Resolved"
+      : (s.correct.triage || s.correct.diagnosis || s.correct.fix || s.doneNote ? "In progress" : "Not started");
+
     return `
       <div class="statusLine">
         <strong>Status:</strong> ${escapeHtml(status)}
@@ -399,6 +381,8 @@
     `;
   }
 
+  /* ----------------------------- Stages ----------------------------- */
+
   function renderMCQStage(stageKey, stageObj, ticketId, s) {
     const prettyName =
       stageKey === "triage" ? "Triage" :
@@ -408,7 +392,6 @@
     const selectedIdx = s.answers[stageKey];
     const isCorrect = !!s.correct[stageKey];
 
-    // show small right-side status when they have selected something
     const rightFlag =
       selectedIdx == null ? `<span class="mini-muted">Select an option</span>` :
       isCorrect ? `<span class="mini-good">Correct ✓</span>` :
@@ -535,7 +518,7 @@
           <div class="detailSummary">${escapeHtml(t.summary)}</div>
         </div>
 
-        ${renderEvidenceBlock(t)}
+        ${renderEvidenceOldStyle(t)}
 
         ${stageTabs}
         ${statusLine}
@@ -625,7 +608,7 @@
   function goChangeNote(ticketId) {
     const s = ensureStateShape(ticketId, loadTicketState(ticketId));
     const unlocked = getUnlockedStages(s);
-    if (!unlocked.has("changeNote")) return; // locked until fix is correct
+    if (!unlocked.has("changeNote")) return;
     s.uiStage = "changeNote";
     saveTicketState(ticketId, s);
     renderTicketDetail(ticketId);
@@ -641,19 +624,15 @@
   }
 
   function insertTemplate(ticketId) {
-    const t = tickets.find((x) => x.id === ticketId);
-    if (!t) return;
-
     const s = ensureStateShape(ticketId, loadTicketState(ticketId));
 
-    // SIMPLE + NEAT template (like your older screenshot)
+    // SIMPLE + NEAT template (matches your older clean version)
     const template =
 `Change implemented:
 Root cause:
 Validation performed:
 Impact / downtime:`;
 
-    // If empty, insert. If not empty, append with spacing.
     if (!s.changeNote.trim()) s.changeNote = template;
     else s.changeNote = `${s.changeNote.trim()}\n\n${template}`;
 
@@ -727,7 +706,7 @@ Impact / downtime:`;
     if (hb) hb.textContent = b ? `${b}: ${byCat[b].pct}%` : "—";
   }
 
-  /* ----------------------------- Report (existing buttons) ----------------------------- */
+  /* ----------------------------- Report ----------------------------- */
 
   function openReportModal() {
     const m = $("#reportModal");
@@ -778,23 +757,10 @@ Impact / downtime:`;
       lines.push(`Status: ${computeTicketComplete(s) ? "Complete" : "In Progress"}`);
       lines.push("");
 
-      // Include evidence/artifact
-      lines.push("Evidence / Artifact:");
-      const evLines = [];
-      const addEv = (val) => {
-        if (!val) return;
-        if (typeof val === "string") {
-          val.split("\n").map(x => x.trim()).filter(Boolean).forEach(x => evLines.push(x));
-        } else if (Array.isArray(val)) {
-          val.forEach(x => typeof x === "string" && x.trim() && evLines.push(x.trim()));
-        } else if (typeof val === "object") {
-          Object.entries(val).forEach(([k, v]) => evLines.push(`${k}: ${String(v ?? "").trim()}`));
-        }
-      };
-      addEv(t.artifact);
-      addEv(t.evidence);
-      if (!evLines.length) addEv(t.env);
-      lines.push(evLines.length ? evLines.map(x => `- ${x}`).join("\n") : "(none)");
+      lines.push("Evidence:");
+      const ev = evidenceToLines(t);
+      if (!ev.length) lines.push("(No evidence provided)");
+      else ev.forEach(x => lines.push(`- ${x}`));
       lines.push("");
 
       if (gamified) {
@@ -839,7 +805,6 @@ Impact / downtime:`;
   }
 
   function downloadPDF() {
-    // Keep your existing PDF generator dependency; basic export is enough for now.
     const meta = getMeta();
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: "pt", format: "letter" });
@@ -926,6 +891,9 @@ Impact / downtime:`;
     document.addEventListener("click", (e) => {
       const btn = e.target && e.target.closest ? e.target.closest("button") : null;
       if (!btn) return;
+
+      // Block clicks on locked stage tabs
+      if (btn.classList.contains("disabled") && btn.dataset.stageTab === "true") return;
 
       // Answer buttons
       if (btn.dataset.answer === "true") {
