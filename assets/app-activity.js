@@ -1,12 +1,22 @@
-/* FULL FILE: assets/app-activity.js */
+/*
+  Server Admin Academy – Activity Runner
+  - Progressive workflow (triage -> diagnosis -> fix -> change note)
+  - Gamified validation (MCQ with correct index per stage)
+  - Ticket queue status (PENDING / IN PROGRESS / RESOLVED)
+  - Evidence/Artifact block styled like the old version
+  - PDF export uses a dedicated print window with a compact, portrait table that never overflows
+  - ✅ Debrief block appears after ticket is resolved (reinforcement)
+*/
+
 (() => {
   "use strict";
 
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-  const LS_PREFIX = "sa_academy_v2_ticket_";
-  const LS_META_PREFIX = "sa_academy_v2_meta_";
+  const LS_PREFIX = "sa_academy_v3_ticket_";
+  const LS_META_PREFIX = "sa_academy_v3_meta_";
+
   const CHANGE_NOTE_MIN = 40;
 
   let lab = null;
@@ -14,6 +24,8 @@
   let activeCategory = "ALL";
   let filteredTickets = [];
   let selectedId = null;
+
+  /* ---------------------------- utils ---------------------------- */
 
   function escapeHtml(s) {
     return String(s ?? "")
@@ -32,6 +44,7 @@
   function lsKey(ticketId) {
     return `${LS_PREFIX}${lab.id}__${ticketId}`;
   }
+
   function metaKey() {
     return `${LS_META_PREFIX}${lab.id}`;
   }
@@ -44,10 +57,13 @@
       return fallback;
     }
   }
+
   function writeJSON(key, value) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
-    } catch {}
+    } catch {
+      // ignore quota/blocked
+    }
   }
 
   function defaultTicketState() {
@@ -56,13 +72,10 @@
       correct: { triage: false, diagnosis: false, fix: false },
       uiStage: "triage",
       attempts: { total: 0, wrong: 0 },
-      triageNote: "",
-      diagnosisNote: "",
-      fixNote: "",
       changeNote: "",
       doneNote: false,
       resolved: false,
-      lastSavedAt: null
+      lastTouchedAt: null
     };
   }
 
@@ -71,14 +84,16 @@
   }
 
   function saveTicketState(ticketId, state) {
-    state.lastSavedAt = Date.now();
+    state.lastTouchedAt = Date.now();
     writeJSON(lsKey(ticketId), state);
   }
 
   function clearTicketState(ticketId) {
     try {
       localStorage.removeItem(lsKey(ticketId));
-    } catch {}
+    } catch {
+      // ignore
+    }
   }
 
   function isStageObject(v) {
@@ -107,9 +122,6 @@
     });
 
     if (!["triage", "diagnosis", "fix", "changeNote"].includes(s.uiStage)) s.uiStage = "triage";
-    if (typeof s.triageNote !== "string") s.triageNote = "";
-    if (typeof s.diagnosisNote !== "string") s.diagnosisNote = "";
-    if (typeof s.fixNote !== "string") s.fixNote = "";
     if (typeof s.changeNote !== "string") s.changeNote = "";
     if (typeof s.doneNote !== "boolean") s.doneNote = false;
     if (typeof s.resolved !== "boolean") s.resolved = false;
@@ -140,8 +152,11 @@
     else if (unlocked.has("fix")) s.uiStage = "fix";
     else if (unlocked.has("diagnosis")) s.uiStage = "diagnosis";
     else s.uiStage = "triage";
+
     return s;
   }
+
+  /* ---------------------------- meta ---------------------------- */
 
   function setTodayIfEmpty() {
     const el = $("#activityDate");
@@ -195,11 +210,15 @@
     };
   }
 
+  /* ---------------------------- data load ---------------------------- */
+
   async function loadLabData(labId) {
     const res = await fetch(`./data/labs/${encodeURIComponent(labId)}.json`, { cache: "no-store" });
     if (!res.ok) throw new Error("Lab data not found");
     return res.json();
   }
+
+  /* ---------------------------- tabs + search ---------------------------- */
 
   function buildTabs(categories) {
     const tabsEl = $("#tabs");
@@ -223,13 +242,18 @@
   function ticketMatches(t, q) {
     if (!q) return true;
     const hay = [
-      t.id, t.category, t.title, t.summary,
+      t.id,
+      t.category,
+      t.title,
+      t.summary,
       (t.tags || []).join(" "),
-      JSON.stringify(t.env || {}),
       JSON.stringify(t.evidence || {}),
       JSON.stringify(t.artifact || {}),
-      JSON.stringify(t.debrief || {})
-    ].join(" ").toLowerCase();
+      JSON.stringify(t.env || {}),
+      (t.validations || []).join(" ")
+    ]
+      .join(" ")
+      .toLowerCase();
     return hay.includes(q.toLowerCase());
   }
 
@@ -244,12 +268,35 @@
 
     if (selectedId && !filteredTickets.some((t) => t.id === selectedId)) {
       selectedId = null;
-      $("#ticketDetail").innerHTML =
-        `<div class="card"><div class="card-title">Select a ticket</div><div class="card-desc">Your previous selection is hidden by filters.</div></div>`;
+      renderDashboard();
     }
 
     updateProgressAndHealth();
   }
+
+  /* ---------------------------- queue status ---------------------------- */
+
+  function ticketQueueStatus(ticketId) {
+    const s = ensureStateShape(ticketId, loadTicketState(ticketId));
+    if (computeResolved(s)) return "resolved";
+
+    const touched =
+      (s.attempts?.total || 0) > 0 ||
+      ["triage", "diagnosis", "fix"].some((k) => s.answers?.[k] !== null && s.answers?.[k] !== undefined) ||
+      (s.changeNote || "").trim().length > 0 ||
+      !!s.doneNote;
+
+    if (ticketId === selectedId) return "inprogress";
+    return touched ? "inprogress" : "pending";
+  }
+
+  function ticketStatusLabel(status) {
+    if (status === "resolved") return "RESOLVED";
+    if (status === "inprogress") return "IN PROGRESS";
+    return "PENDING";
+  }
+
+  /* ---------------------------- ticket list render ---------------------------- */
 
   function truncate(s, n) {
     const str = String(s || "");
@@ -262,52 +309,58 @@
     list.innerHTML = "";
 
     if (!filteredTickets.length) {
-      list.innerHTML =
-        `<div class="card"><div class="card-title">No tickets found</div><div class="card-desc">Try a different tab or search.</div></div>`;
+      list.innerHTML = `<div class="card"><div class="card-title">No tickets found</div><div class="card-desc">Try a different tab or search.</div></div>`;
       return;
     }
 
     for (const t of filteredTickets) {
-      const s = ensureStateShape(t.id, loadTicketState(t.id));
-      const status = computeResolved(s) ? "Resolved" : "To do";
+      const status = ticketQueueStatus(t.id);
 
       const card = document.createElement("div");
-      card.className = "card" + (t.id === selectedId ? " selected" : "");
+      card.className = "card queueCard" + (t.id === selectedId ? " selected" : "");
+      card.setAttribute("data-status", status);
 
       const tags = (t.tags || [])
-        .slice(0, 4)
+        .slice(0, 3)
         .map((x) => `<span class="tag">${escapeHtml(x)}</span>`)
         .join("");
 
       card.innerHTML = `
-        <div class="rowBetween">
-          <div class="leftCol">
-            <div class="card-title">${escapeHtml(t.title)}</div>
-            <div class="card-desc">${escapeHtml(truncate(t.summary, 120))}</div>
-            <div class="tags">${tags}</div>
-          </div>
-          <div class="rightCol">
-            <div class="idText">${escapeHtml(t.id)}</div>
+        <div class="queueTop">
+          <div class="queuePills">
             <span class="badge">${escapeHtml(t.category)}</span>
-            <span class="badge badgeStatus">${escapeHtml(status)}</span>
+            <span class="statusPill ${status}">${escapeHtml(ticketStatusLabel(status))}</span>
           </div>
+          <div class="idText">${escapeHtml(t.id)}</div>
         </div>
+
+        <div class="card-title">${escapeHtml(t.title)}</div>
+        <div class="card-desc">${escapeHtml(truncate(t.summary, 120))}</div>
+        ${tags ? `<div class="tags">${tags}</div>` : ``}
       `;
+
       card.addEventListener("click", () => selectTicket(t.id));
       list.appendChild(card);
     }
   }
 
-  function evidenceToLines(t) {
+  /* ---------------------------- evidence ---------------------------- */
+
+  function evidenceLinesFromTicket(t) {
     const lines = [];
+
     const pushLines = (val) => {
       if (!val) return;
       if (typeof val === "string") {
-        val.split("\n").map(x => x.trim()).filter(Boolean).forEach(x => lines.push(x));
+        val
+          .split("\n")
+          .map((x) => x.trim())
+          .filter(Boolean)
+          .forEach((x) => lines.push(x));
         return;
       }
       if (Array.isArray(val)) {
-        val.forEach(x => typeof x === "string" && x.trim() && lines.push(x.trim()));
+        val.forEach((x) => typeof x === "string" && x.trim() && lines.push(x.trim()));
         return;
       }
       if (typeof val === "object") {
@@ -317,28 +370,49 @@
         });
       }
     };
+
     pushLines(t.artifact);
     pushLines(t.evidence);
-    if (!lines.length) pushLines(t.env);
+
     return lines;
   }
 
+  function evidenceInstructions(t) {
+    if (typeof t.evidenceInstructions === "string" && t.evidenceInstructions.trim()) {
+      return t.evidenceInstructions.trim();
+    }
+
+    if (typeof lab?.evidenceInstructions === "string" && lab.evidenceInstructions.trim()) {
+      return lab.evidenceInstructions.trim();
+    }
+
+    return (
+      "Instructions:\n" +
+      "1) Read the observed problem and identify what you would verify first.\n" +
+      "2) Use the evidence/artifact (logs, screenshot, command output) to confirm or rule out likely causes.\n" +
+      "3) Select the best answer in each stage (Triage → Diagnosis → Fix).\n" +
+      "4) Write a short change note describing what changed and how you validated it."
+    );
+  }
+
   function renderEvidenceOldStyle(t) {
-    const lines = evidenceToLines(t);
-    const body = lines.length
-      ? lines.join("\n")
-      : "Use the ticket details to decide your triage step.\nThen proceed through diagnosis and fix.\nFinish with a clear change note (minimum 40 characters).";
+    const lines = evidenceLinesFromTicket(t);
+    const body = lines.length ? lines.join("\n") : "(No evidence provided for this ticket.)";
+    const instr = evidenceInstructions(t);
 
     return `
       <div class="evidenceBox">
         <div class="evidenceTitle">Evidence</div>
-        <pre class="evidencePre">${escapeHtml(body)}</pre>
+        <pre class="evidencePre">${escapeHtml(body)}\n\n${escapeHtml(instr)}</pre>
       </div>
     `;
   }
 
+  /* ---------------------------- ticket detail ---------------------------- */
+
   function renderStageTabs(ticketId, s) {
     const unlocked = getUnlockedStages(s);
+
     const mk = (key, label) => {
       const active = s.uiStage === key ? " active" : "";
       const locked = unlocked.has(key) ? "" : " disabled";
@@ -366,7 +440,9 @@
   function renderStatusLine(s) {
     const status = computeResolved(s)
       ? "Resolved"
-      : (s.correct?.triage || s.correct?.diagnosis || s.correct?.fix || s.doneNote ? "In progress" : "Not started");
+      : (s.attempts?.total || 0) > 0 || (s.changeNote || "").trim().length > 0
+        ? "In progress"
+        : "Not started";
 
     return `
       <div class="statusLine">
@@ -388,24 +464,28 @@
     const isCorrect = !!s.correct?.[stageKey];
 
     const rightFlag =
-      selectedIdx == null ? `<span class="mini-muted">Select an option</span>` :
-      isCorrect ? `<span class="mini-good">Complete ✓</span>` :
-      `<span class="mini-bad">Needs Review ✕</span>`;
+      selectedIdx == null
+        ? `<span class="mini-muted">Select an option</span>`
+        : isCorrect
+          ? `<span class="mini-good">Complete ✓</span>`
+          : `<span class="mini-bad">Not complete ✕</span>`;
 
-    const optionsHtml = stageObj.options.map((label, idx) => {
-      const picked = selectedIdx === idx;
-      const cls = picked ? "btn option selected" : "btn option";
-      return `
-        <button type="button"
-          class="${cls}"
-          data-answer="true"
-          data-ticket="${escapeHtml(ticketId)}"
-          data-stage="${escapeHtml(stageKey)}"
-          data-idx="${idx}"
-          aria-pressed="${picked ? "true" : "false"}"
-        >${escapeHtml(label)}</button>
-      `;
-    }).join("");
+    const optionsHtml = stageObj.options
+      .map((label, idx) => {
+        const picked = selectedIdx === idx;
+        const cls = picked ? "btn option selected" : "btn option";
+        return `
+          <button type="button"
+            class="${cls}"
+            data-answer="true"
+            data-ticket="${escapeHtml(ticketId)}"
+            data-stage="${escapeHtml(stageKey)}"
+            data-idx="${idx}"
+            aria-pressed="${picked ? "true" : "false"}"
+          >${escapeHtml(label)}</button>
+        `;
+      })
+      .join("");
 
     return `
       <div class="step">
@@ -431,7 +511,7 @@
     `;
   }
 
-  function renderChangeNote(ticketId, s) {
+  function renderChangeNote(ticketId, s, ticketTitle) {
     const chars = (s.changeNote || "").length;
     const ready = chars >= CHANGE_NOTE_MIN;
 
@@ -450,7 +530,7 @@
 
         <div class="step-body">
           <div class="note-actions">
-            <button class="btn ghost" type="button" data-insert-template="true" data-ticket="${escapeHtml(ticketId)}">Insert Template</button>
+            <button class="btn ghost" type="button" data-insert-template="true" data-ticket="${escapeHtml(ticketId)}" data-title="${escapeHtml(ticketTitle)}">Insert Template</button>
             <button class="btn" type="button" data-submit-note="true" data-ticket="${escapeHtml(ticketId)}">Submit Note</button>
             <button class="btn ghost" type="button" data-back-fix="true" data-ticket="${escapeHtml(ticketId)}">Back to Fix</button>
           </div>
@@ -463,66 +543,72 @@
     `;
   }
 
-  // NEW: After the ticket is RESOLVED, show exactly what the user selected + the debrief.
-  function renderResolutionPanel(t, s) {
+  function renderValidations(t) {
+    const v = t.validations || [];
+    return `
+      <div class="miniCard" style="margin-top:12px;">
+        <div class="miniTitle">Suggested Validation Checks</div>
+        <div class="miniDesc">
+          ${v.length ? `<ul class="bullets">${v.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>` : `<span class="mini-muted">None provided.</span>`}
+        </div>
+      </div>
+    `;
+  }
+
+  /* ---------------------------- ✅ Debrief (NEW) ---------------------------- */
+
+  function getSelectedOptionLabel(t, stageKey, s) {
+    const stageObj = t.workflow?.[stageKey];
+    if (!isStageObject(stageObj)) return "—";
+    const idx = s.answers?.[stageKey];
+    if (!Number.isInteger(idx)) return "—";
+    return stageObj.options?.[idx] ?? "—";
+  }
+
+  function normalizeDebriefText(v) {
+    if (!v) return "";
+    if (typeof v === "string") return v.trim();
+    if (typeof v === "object") {
+      // Allow future formats like { summary, bullets } without breaking.
+      const parts = [];
+      if (typeof v.summary === "string" && v.summary.trim()) parts.push(v.summary.trim());
+      if (Array.isArray(v.bullets) && v.bullets.length) parts.push(v.bullets.map((x) => `• ${String(x)}`).join("\n"));
+      return parts.join("\n\n").trim();
+    }
+    return "";
+  }
+
+  function renderDebrief(t, s) {
     if (!computeResolved(s)) return "";
 
-    const wf = t.workflow || {};
-    const tri = isStageObject(wf.triage) ? wf.triage : null;
-    const dia = isStageObject(wf.diagnosis) ? wf.diagnosis : null;
-    const fix = isStageObject(wf.fix) ? wf.fix : null;
+    const triagePick = getSelectedOptionLabel(t, "triage", s);
+    const diagnosisPick = getSelectedOptionLabel(t, "diagnosis", s);
+    const fixPick = getSelectedOptionLabel(t, "fix", s);
 
-    const pickedLine = (label, stageObj, idx) => {
-      if (!stageObj || idx == null) return "";
-      const txt = stageObj.options?.[idx];
-      if (!txt) return "";
-      return `<li><strong>${escapeHtml(label)}:</strong> ${escapeHtml(txt)}</li>`;
-    };
+    const custom = normalizeDebriefText(t.debrief) || normalizeDebriefText(lab?.debriefDefault);
+    const fallback =
+      "Debrief:\n" +
+      "This ticket is designed to reinforce evidence-first troubleshooting: verify what the client received/configured, correlate that with the symptom, then apply the least disruptive corrective change.";
 
-    const picked = [
-      pickedLine("Triage", tri, s.answers?.triage),
-      pickedLine("Diagnosis", dia, s.answers?.diagnosis),
-      pickedLine("Fix", fix, s.answers?.fix)
-    ].filter(Boolean).join("");
-
-    const d = t.debrief && typeof t.debrief === "object" ? t.debrief : null;
-    const dTitle = (d?.title || "Resolution Insight").trim();
-    const dSummary = (d?.summary || "").trim();
-    const dTakeaway = (d?.takeaway || "").trim();
-
-    const bullets = (arr) =>
-      Array.isArray(arr) && arr.length
-        ? `<ul class="bullets">${arr.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`
-        : "";
-
-    const whatGood = bullets(d?.whatGoodLooksLike);
-    const validation = bullets(d?.validation);
-
-    const insightHtml = (dSummary || whatGood || validation || dTakeaway)
-      ? `
-        <div class="miniCard" style="margin-top:12px;">
-          <div class="miniTitle">${escapeHtml(dTitle)}</div>
-          <div class="miniDesc">
-            ${dSummary ? `<div style="white-space:pre-wrap; line-height:1.5;">${escapeHtml(dSummary)}</div>` : ""}
-            ${whatGood ? `<div style="margin-top:10px;"><strong>What good looks like</strong>${whatGood}</div>` : ""}
-            ${validation ? `<div style="margin-top:10px;"><strong>Validation mindset</strong>${validation}</div>` : ""}
-            ${dTakeaway ? `<div style="margin-top:10px;"><strong>Takeaway:</strong> ${escapeHtml(dTakeaway)}</div>` : ""}
-          </div>
-        </div>
-      `
-      : "";
+    const body = custom || fallback;
 
     return `
       <div class="miniCard" style="margin-top:12px;">
-        <div class="miniTitle">Ticket Resolved</div>
+        <div class="miniTitle">Debrief</div>
         <div class="miniDesc">
-          <div style="margin-bottom:8px;"><strong>You selected:</strong></div>
-          ${picked ? `<ul class="bullets">${picked}</ul>` : `<span class="mini-muted">Selections not available.</span>`}
+          <div style="font-weight:900; margin-bottom:6px;">You successfully completed this ticket.</div>
+          <ul class="bullets">
+            <li><strong>Triage:</strong> ${escapeHtml(triagePick)}</li>
+            <li><strong>Diagnosis:</strong> ${escapeHtml(diagnosisPick)}</li>
+            <li><strong>Fix:</strong> ${escapeHtml(fixPick)}</li>
+          </ul>
+          <pre class="evidencePre" style="margin-top:10px;">${escapeHtml(body)}</pre>
         </div>
       </div>
-      ${insightHtml}
     `;
   }
+
+  /* ---------------------------- ticket detail render ---------------------------- */
 
   function renderTicketDetail(ticketId) {
     const t = tickets.find((x) => x.id === ticketId);
@@ -541,15 +627,19 @@
 
     let stageHtml = "";
     if (!gamified) {
-      stageHtml = `<div class="card"><div class="card-title">This ticket is not in MCQ format.</div><div class="card-desc">Update the lab JSON workflow to use q/options/correct objects.</div></div>`;
+      stageHtml = `
+        <div class="card">
+          <div class="card-title">This ticket is not in MCQ format.</div>
+          <div class="card-desc">Update the lab JSON workflow to use q/options/correct objects.</div>
+        </div>
+      `;
     } else {
       if (s.uiStage === "triage") stageHtml = renderMCQStage("triage", wf.triage, ticketId, s);
       else if (s.uiStage === "diagnosis") stageHtml = renderMCQStage("diagnosis", wf.diagnosis, ticketId, s);
       else if (s.uiStage === "fix") stageHtml = renderMCQStage("fix", wf.fix, ticketId, s);
-      else stageHtml = renderChangeNote(ticketId, s);
+      else stageHtml = renderChangeNote(ticketId, s, t.title);
     }
 
-    // NOTE: Suggested Validation Checks removed. Replaced by the post-resolution panel.
     $("#ticketDetail").innerHTML = `
       <div class="detailCard">
         <div class="detailTop">
@@ -562,8 +652,8 @@
         ${stageTabs}
         ${statusLine}
         ${stageHtml}
-
-        ${renderResolutionPanel(t, s)}
+        ${renderValidations(t)}
+        ${renderDebrief(t, s)}
       </div>
     `;
 
@@ -580,16 +670,63 @@
         if (count) count.textContent = `Characters: ${c}`;
 
         updateProgressAndHealth();
+        renderTicketList();
       });
     }
   }
 
+  function renderDashboard() {
+    const total = tickets.length;
+    const p = computeProgress();
+    const overallPct = total ? Math.round((p.done / total) * 100) : 0;
+
+    const byCat = computeCategoryHealth();
+    const catLines = Object.entries(byCat)
+      .map(([k, v]) => `<li><strong>${escapeHtml(k)}:</strong> ${v.done}/${v.total} (${v.pct}%)</li>`)
+      .join("");
+
+    $("#ticketDetail").innerHTML = `
+      <div class="detailCard">
+        <div class="detailTop">
+          <div class="detailKicker">Dashboard</div>
+          <div class="detailTitle">${escapeHtml(lab?.title || "Activity")}</div>
+          <div class="detailSummary">Select a ticket from the queue to begin. Your work saves locally in your browser.</div>
+        </div>
+
+        <div class="miniCard" style="margin-top:12px;">
+          <div class="miniTitle">Overview</div>
+          <div class="miniDesc">
+            <ul class="bullets">
+              <li><strong>Total tickets:</strong> ${total}</li>
+              <li><strong>Resolved:</strong> ${p.done}/${p.total} (${overallPct}%)</li>
+              ${catLines}
+            </ul>
+          </div>
+        </div>
+
+        <div class="evidenceBox" style="margin-top:12px;">
+          <div class="evidenceTitle">How to work a ticket</div>
+          <pre class="evidencePre">1) Open a ticket from the left queue.
+2) Complete Triage, then Diagnosis, then Fix.
+3) After all three are complete, write a Change Note (min ${CHANGE_NOTE_MIN} chars).
+4) Generate your PDF report when finished.</pre>
+        </div>
+      </div>
+    `;
+  }
+
   function selectTicket(ticketId) {
     selectedId = ticketId;
+
+    const s = ensureStateShape(ticketId, loadTicketState(ticketId));
+    saveTicketState(ticketId, s);
+
     renderTicketList();
     renderTicketDetail(ticketId);
     updateProgressAndHealth();
   }
+
+  /* ---------------------------- answers + navigation ---------------------------- */
 
   function handleAnswer(ticketId, stageKey, optionIdx) {
     const t = tickets.find((x) => x.id === ticketId);
@@ -606,7 +743,7 @@
     s.answers[stageKey] = idx;
     s.attempts.total += 1;
 
-    const correctNow = (idx === stageObj.correct);
+    const correctNow = idx === stageObj.correct;
     s.correct[stageKey] = correctNow;
     if (!correctNow) s.attempts.wrong += 1;
 
@@ -620,6 +757,7 @@
     saveTicketState(ticketId, s);
 
     renderTicketDetail(ticketId);
+    renderTicketList();
     updateProgressAndHealth();
   }
 
@@ -656,21 +794,22 @@
     renderTicketDetail(ticketId);
   }
 
-  function insertTemplate(ticketId) {
+  function insertTemplate(ticketId, ticketTitle) {
     const s = ensureStateShape(ticketId, loadTicketState(ticketId));
 
-    // Cleaner template aligned with task-based mindset (no fake "validation performed").
     const template =
-`Change implemented:
+`Ticket: ${ticketTitle}
+
+Change implemented:
 Root cause:
-Notes:`;
+Validation performed:
+Impact / downtime:`;
 
-    if (!s.changeNote.trim()) s.changeNote = template;
-    else s.changeNote = `${s.changeNote.trim()}\n\n${template}`;
-
+    s.changeNote = template;
     saveTicketState(ticketId, s);
     renderTicketDetail(ticketId);
     updateProgressAndHealth();
+    renderTicketList();
   }
 
   function submitNote(ticketId) {
@@ -683,9 +822,13 @@ Notes:`;
     s.doneNote = true;
     s.resolved = computeResolved(s);
     saveTicketState(ticketId, s);
+
     renderTicketDetail(ticketId);
+    renderTicketList();
     updateProgressAndHealth();
   }
+
+  /* ---------------------------- progress + health ---------------------------- */
 
   function computeProgress() {
     let done = 0;
@@ -699,6 +842,7 @@ Notes:`;
   function computeCategoryHealth() {
     const cats = Array.from(new Set(tickets.map((t) => t.category)));
     const byCat = {};
+
     for (const c of cats) {
       const subset = tickets.filter((t) => t.category === c);
       const total = subset.length;
@@ -706,6 +850,7 @@ Notes:`;
       const pct = total ? Math.round((done / total) * 100) : 0;
       byCat[c] = { done, total, pct };
     }
+
     return byCat;
   }
 
@@ -732,14 +877,19 @@ Notes:`;
     if (hb) hb.textContent = b ? `${b}: ${byCat[b].pct}%` : "—";
   }
 
+  /* ---------------------------- report modal ---------------------------- */
+
   function openReportModal() {
     const m = $("#reportModal");
     if (m) m.setAttribute("aria-hidden", "false");
   }
+
   function closeReportModal() {
     const m = $("#reportModal");
     if (m) m.setAttribute("aria-hidden", "true");
   }
+
+  /* ---------------------------- PDF + text export ---------------------------- */
 
   function buildTextReport() {
     const meta = getMeta();
@@ -757,6 +907,20 @@ Notes:`;
     lines.push("");
     lines.push(`Progress: ${p.done}/${p.total} (${p.total ? Math.round((p.done / p.total) * 100) : 0}%)`);
     Object.entries(byCat).forEach(([k, v]) => lines.push(`${k}: ${v.done}/${v.total} (${v.pct}%)`));
+    lines.push("");
+
+    tickets.forEach((t) => {
+      const s = ensureStateShape(t.id, loadTicketState(t.id));
+      lines.push(`${t.id} — ${t.title}`);
+      lines.push(`  Status: ${computeResolved(s) ? "Resolved" : (s.attempts.total ? "In progress" : "Not started")}`);
+      lines.push(`  Attempts: ${s.attempts.total} (wrong: ${s.attempts.wrong})`);
+      if ((s.changeNote || "").trim()) {
+        lines.push("  Change Note:");
+        lines.push(s.changeNote.trim().split("\n").map(x => `    ${x}`).join("\n"));
+      }
+      lines.push("");
+    });
+
     return lines.join("\n");
   }
 
@@ -773,7 +937,6 @@ Notes:`;
   }
 
   function buildPrintableHtml() {
-    // PDF logic unchanged (your PDF is already good per your last note)
     const meta = getMeta();
     const generated = new Date().toLocaleString();
 
@@ -785,58 +948,68 @@ Notes:`;
       .map(([k, v]) => `${escapeHtml(k)} ${v.pct}%`)
       .join(" • ");
 
-    const statusPill = (status) => {
-      const cls = status === "Complete" ? "good" : status === "Attempted" ? "bad" : "warn";
-      return `<span class="pill ${cls}">${escapeHtml(status)}</span>`;
-    };
-
-    const ticketStatus = (s) => {
-      if (computeResolved(s)) return "Complete";
-      const attempted = (s?.attempts?.total || 0) > 0 || (s?.changeNote || "").trim().length > 0;
-      return attempted ? "Attempted" : "Not started";
+    const statusText = (s) => {
+      if (computeResolved(s)) return "Resolved";
+      const touched = (s.attempts?.total || 0) > 0 || (s.changeNote || "").trim().length > 0;
+      return touched ? "In progress" : "Not started";
     };
 
     const rows = tickets
       .map((t) => {
         const s = ensureStateShape(t.id, loadTicketState(t.id));
-        const st = ticketStatus(s);
-        const attempts = s?.attempts?.total || 0;
-        const wrong = s?.attempts?.wrong || 0;
-        const type = escapeHtml(t.type || "—");
+        const st = statusText(s);
         return `
           <tr>
-            <td>${escapeHtml(t.id)}</td>
-            <td>${escapeHtml(t.category)}</td>
-            <td>${type}</td>
+            <td class="mono">${escapeHtml(t.id)}</td>
+            <td class="mono">${escapeHtml(t.category)}</td>
             <td>${escapeHtml(t.title)}</td>
-            <td>${statusPill(st)}</td>
-            <td class="c">${attempts}</td>
-            <td class="c">${wrong}</td>
+            <td class="status ${st === "Resolved" ? "good" : st === "In progress" ? "warn" : "bad"}">${escapeHtml(st)}</td>
+            <td class="c mono">${s.attempts?.total || 0}</td>
+            <td class="c mono">${s.attempts?.wrong || 0}</td>
           </tr>
         `;
       })
       .join("");
 
+    const notes = tickets
+      .map((t) => {
+        const s = ensureStateShape(t.id, loadTicketState(t.id));
+        const text = (s.changeNote || "").trim();
+        if (!text) return "";
+        return `
+          <div class="noteItem">
+            <div class="noteHead">
+              <span class="pill ${computeResolved(s) ? "good" : "warn"}">${computeResolved(s) ? "Resolved" : "In progress"}</span>
+              <span class="noteStrong">${escapeHtml(t.id)} — ${escapeHtml(t.title)}</span>
+            </div>
+            <div class="noteBody">${escapeHtml(text)}</div>
+          </div>
+        `;
+      })
+      .filter(Boolean)
+      .join("");
+
     const overviewText = (lab.reportOverview || lab.description || "").trim() || "—";
 
     const css = `
-      @page { size: letter portrait; margin: 12mm; }
+      @page { size: letter portrait; margin: 14mm; }
       * { box-sizing: border-box; }
       html, body { background:#fff; color:#0f172a; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-      .r-wrap { max-width: 100%; margin: 0 auto; }
-      .r-header { border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 16px; }
-      .r-top { display:flex; justify-content:space-between; align-items:flex-start; gap: 14px; }
-      .r-title { font-weight: 900; font-size: 16px; letter-spacing: .2px; }
-      .r-sub { font-size: 11px; color:#334155; font-weight: 700; margin-top: 2px; }
-      .r-meta { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; font-size: 11px; color:#0f172a; }
-      .r-meta b { font-weight: 800; }
-      .section { margin-top: 12px; }
-      h2 { font-size: 12px; margin: 0 0 6px 0; }
-      .note { font-size: 11px; color:#334155; line-height: 1.4; white-space: pre-wrap; }
+      .wrap { max-width: 100%; margin: 0 auto; }
 
-      table { width:100%; border-collapse: collapse; table-layout: fixed; }
+      .header { border:1px solid #e2e8f0; border-radius: 14px; padding: 14px 16px; }
+      .top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+      .title { font-weight: 900; font-size: 16px; }
+      .sub { margin-top: 4px; font-size: 11px; color:#334155; font-weight: 700; }
+      .meta { margin-top: 10px; display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:8px; font-size: 11px; }
+      .meta b { font-weight: 900; }
+
+      h2 { font-size: 12px; margin: 14px 0 6px 0; }
+      .p { font-size: 11px; color:#334155; line-height: 1.45; white-space: pre-wrap; }
+
+      table { width: 100%; border-collapse: collapse; table-layout: fixed; }
       thead th, tbody td {
-        border: 1px solid #e2e8f0;
+        border:1px solid #e2e8f0;
         padding: 6px;
         font-size: 10px;
         vertical-align: top;
@@ -845,25 +1018,36 @@ Notes:`;
       }
       thead th { background:#f1f5f9; font-weight: 900; }
       tbody tr:nth-child(even) td { background:#fbfdff; }
-      td.c { text-align:center; }
+      .c { text-align:center; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
 
-      .pill { display:inline-block; padding: 2px 7px; border-radius: 999px; font-size: 10px; font-weight: 900; border:1px solid #e2e8f0; white-space: nowrap; }
+      .pill { display:inline-block; padding:2px 7px; border-radius:999px; font-size:10px; font-weight:900; border:1px solid #e2e8f0; white-space:nowrap; }
       .pill.good { background: rgba(34,197,94,.10); border-color: rgba(34,197,94,.25); color:#166534; }
-      .pill.warn { background: rgba(251,191,36,.12); border-color: rgba(251,191,36,.30); color:#92400e; }
+      .pill.warn { background: rgba(234,179,8,.12); border-color: rgba(234,179,8,.30); color:#92400e; }
       .pill.bad  { background: rgba(239,68,68,.10); border-color: rgba(239,68,68,.25); color:#991b1b; }
 
-      .print-hint { margin-top: 8px; font-size: 10px; color:#64748b; }
-      @media print { .print-hint { display:none; } }
+      td.status { font-weight: 900; }
+      td.status.good { color:#166534; }
+      td.status.warn { color:#92400e; }
+      td.status.bad { color:#991b1b; }
+
+      .noteItem { border:1px solid #e2e8f0; border-radius: 12px; padding: 10px; margin-bottom: 8px; }
+      .noteHead { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+      .noteStrong { font-weight: 900; }
+      .noteBody { margin-top: 6px; font-size: 11px; white-space: pre-wrap; line-height: 1.45; }
+
+      .hint { margin-top: 10px; font-size: 10px; color:#64748b; }
+      @media print { .hint { display:none; } }
     `;
 
     const colgroup = `
       <colgroup>
+        <col style="width: 12%;" />
+        <col style="width: 10%;" />
+        <col style="width: 46%;" />
         <col style="width: 14%;" />
-        <col style="width: 12%;" />
-        <col style="width: 10%;" />
-        <col style="width: 42%;" />
-        <col style="width: 12%;" />
-        <col style="width: 10%;" />
+        <col style="width: 9%;" />
+        <col style="width: 9%;" />
       </colgroup>
     `;
 
@@ -877,12 +1061,12 @@ Notes:`;
         <style>${css}</style>
       </head>
       <body>
-        <div class="r-wrap">
-          <div class="r-header">
-            <div class="r-top">
+        <div class="wrap">
+          <div class="header">
+            <div class="top">
               <div>
-                <div class="r-title">${escapeHtml(lab.title)} — Report</div>
-                <div class="r-sub">${escapeHtml(meta.courseTitle || lab.title)} • ${escapeHtml(meta.courseSection || "—")}</div>
+                <div class="title">NewVue Health — ${escapeHtml(lab.title)} Incident Triage Report</div>
+                <div class="sub">${escapeHtml(meta.courseTitle || lab.title)} • ${escapeHtml(meta.courseSection || "—")}</div>
               </div>
               <div style="text-align:right; font-size:11px; color:#334155; font-weight:700;">
                 <div><b>Date:</b> ${escapeHtml(meta.activityDate || "—")}</div>
@@ -890,48 +1074,47 @@ Notes:`;
               </div>
             </div>
 
-            <div class="r-meta">
+            <div class="meta">
               <div><b>Analyst:</b> ${escapeHtml(meta.analystName || "—")}</div>
-              <div><b>Health:</b> Overall ${overallPct}%${catLine ? " • " + catLine : ""}</div>
-              <div><b>Progress:</b> ${p.done}/${p.total} solved</div>
               <div><b>Role:</b> ${escapeHtml(lab.rolePill || "Systems Administrator")}</div>
+              <div><b>Progress:</b> ${p.done}/${p.total} solved</div>
+              <div><b>Health:</b> Overall ${overallPct}%${catLine ? " • " + catLine : ""}</div>
             </div>
           </div>
 
-          <div class="section">
-            <h2>Report Overview</h2>
-            <div class="note">${escapeHtml(overviewText)}</div>
-          </div>
+          <h2>Report Overview</h2>
+          <div class="p">${escapeHtml(overviewText)}</div>
 
-          <div class="section">
-            <h2>Challenge Outcomes</h2>
-            <table>
-              ${colgroup}
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Category</th>
-                  <th>Type</th>
-                  <th>Challenge</th>
-                  <th>Status</th>
-                  <th style="text-align:center;">Attempts</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${rows || "<tr><td colspan='6'>No tickets found.</td></tr>"}
-              </tbody>
-            </table>
-          </div>
+          <h2>Challenge Outcomes</h2>
+          <table>
+            ${colgroup}
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Category</th>
+                <th>Challenge</th>
+                <th>Status</th>
+                <th class="c">Attempts</th>
+                <th class="c">Wrong</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows || "<tr><td colspan='6'>No tickets found.</td></tr>"}
+            </tbody>
+          </table>
 
-          <div class="print-hint">
-            When the print dialog opens, choose <b>Save as PDF</b>.
-          </div>
+          <h2>Change Notes</h2>
+          <div class="p">Notes are included for tickets where a change note was submitted (minimum ${CHANGE_NOTE_MIN} characters).</div>
+          ${notes || `<div class="p">No change notes were submitted.</div>`}
+
+          <h2>Integrity Note</h2>
+          <div class="p">This report reflects actions recorded in the offline simulation. Attach screenshots if your instructor requests additional evidence.</div>
+
+          <div class="hint">When the print dialog opens, choose <b>Save as PDF</b>.</div>
         </div>
 
         <script>
-          window.addEventListener('load', () => {
-            setTimeout(() => window.print(), 200);
-          });
+          window.addEventListener('load', () => setTimeout(() => window.print(), 200));
         </script>
       </body>
       </html>
@@ -965,24 +1148,28 @@ Notes:`;
 
     const btnPDF = $("#btnReportPDF");
     const btnTXT = $("#btnReportText");
+
     if (btnPDF) btnPDF.addEventListener("click", () => { closeReportModal(); downloadPDF(); });
     if (btnTXT) btnTXT.addEventListener("click", () => { closeReportModal(); downloadText(); });
   }
+
+  /* ---------------------------- reset ---------------------------- */
 
   function resetLab() {
     for (const t of tickets) clearTicketState(t.id);
     selectedId = null;
     applyFilters();
-    $("#ticketDetail").innerHTML =
-      `<div class="card"><div class="card-title">Select a ticket</div><div class="card-desc">Lab reset.</div></div>`;
+    renderDashboard();
     updateProgressAndHealth();
   }
+
+  /* ---------------------------- init + events ---------------------------- */
 
   async function init() {
     const labId = getLabId();
     if (!labId) {
       $("#labTitle").textContent = "Missing lab id";
-      $("#labDesc").textContent = "Open from the academy site or add ?lab=dns-dhcp to the URL.";
+      $("#labDesc").textContent = "Open from the academy site or add ?lab=dns to the URL.";
       return;
     }
 
@@ -990,6 +1177,7 @@ Notes:`;
     tickets = lab.tickets || [];
 
     document.title = `${lab.title} • Activity`;
+
     $("#labTitleTop").textContent = lab.title;
     $("#labSubTop").textContent = `${lab.track} • ${lab.subject} • ${tickets.length} tickets`;
     $("#labTitle").textContent = lab.title;
@@ -1003,11 +1191,13 @@ Notes:`;
     if (sIn) sIn.addEventListener("input", applyFilters);
 
     const rBtn = $("#btnRandom");
-    if (rBtn) rBtn.addEventListener("click", () => {
-      if (!filteredTickets.length) return;
-      const pick = filteredTickets[Math.floor(Math.random() * filteredTickets.length)];
-      selectTicket(pick.id);
-    });
+    if (rBtn) {
+      rBtn.addEventListener("click", () => {
+        if (!filteredTickets.length) return;
+        const pick = filteredTickets[Math.floor(Math.random() * filteredTickets.length)];
+        selectTicket(pick.id);
+      });
+    }
 
     const resetBtn = $("#btnResetLab");
     if (resetBtn) resetBtn.addEventListener("click", resetLab);
@@ -1064,7 +1254,8 @@ Notes:`;
 
       if (btn.dataset.insertTemplate === "true") {
         const ticketId = btn.getAttribute("data-ticket");
-        if (ticketId) insertTemplate(ticketId);
+        const title = btn.getAttribute("data-title") || "(ticket)";
+        if (ticketId) insertTemplate(ticketId, title);
         return;
       }
 
@@ -1078,8 +1269,7 @@ Notes:`;
     applyFilters();
     updateProgressAndHealth();
 
-    // Keep your current behavior (if you have dashboard logic elsewhere, it won't be affected).
-    if (filteredTickets[0]) selectTicket(filteredTickets[0].id);
+    renderDashboard();
   }
 
   init().catch((err) => {
