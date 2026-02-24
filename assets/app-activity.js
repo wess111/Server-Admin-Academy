@@ -130,10 +130,10 @@
     return s;
   }
 
-  function computeResolved(s) {
-    const allCorrect = !!(s.correct?.triage && s.correct?.diagnosis && s.correct?.fix);
-    const noteOk = !!(s.doneNote && (s.changeNote || "").trim().length >= CHANGE_NOTE_MIN);
-    return allCorrect && noteOk;
+function computeResolved(s) {
+  const allCorrect = !!(s.correct?.triage && s.correct?.diagnosis && s.correct?.fix);
+  const noteOk = (s.changeNote || "").trim().length >= CHANGE_NOTE_MIN;
+  return allCorrect && noteOk;
   }
 
   function getUnlockedStages(s) {
@@ -1278,3 +1278,4 @@ Impact / downtime:`;
     $("#labDesc").textContent = "Confirm ./data/labs/<lab>.json exists and matches the ?lab= value.";
   });
 })();
+
