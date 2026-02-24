@@ -120,7 +120,7 @@
       if (!(k in s.correct)) s.correct[k] = false;
     });
 
-    if (!['triage','diagnosis','fix','changeNote'].includes(s.uiStage)) s.uiStage = 'triage';
+    if (!["triage", "diagnosis", "fix", "changeNote"].includes(s.uiStage)) s.uiStage = "triage";
     if (typeof s.changeNote !== "string") s.changeNote = "";
     if (typeof s.doneNote !== "boolean") s.doneNote = false;
     if (typeof s.resolved !== "boolean") s.resolved = false;
@@ -249,7 +249,8 @@
       JSON.stringify(t.evidence || {}),
       JSON.stringify(t.artifact || {}),
       JSON.stringify(t.env || {}),
-      (t.validations || []).join(" ")
+      (t.validations || []).join(" "),
+      JSON.stringify(t.debrief || {}) // allow searching debrief content too
     ]
       .join(" ")
       .toLowerCase();
@@ -396,7 +397,7 @@
       "1) Read the observed problem and identify what you would verify first.\n" +
       "2) Use the evidence/artifact (logs, screenshot, command output) to confirm or rule out likely causes.\n" +
       "3) Select the best answer in each stage (Triage → Diagnosis → Fix).\n" +
-      "4) Write a short change note describing what changed and how you validated it." 
+      "4) Write a short change note describing what changed and how you validated it."
     );
   }
 
@@ -468,12 +469,13 @@
     const selectedIdx = s.answers?.[stageKey];
     const isCorrect = !!s.correct?.[stageKey];
 
+    // ✅ Changed wording to "Complete" (task mindset)
     const rightFlag =
       selectedIdx == null
         ? `<span class="mini-muted">Select an option</span>`
         : isCorrect
-          ? `<span class="mini-good">Correct ✓</span>`
-          : `<span class="mini-bad">Incorrect ✕</span>`;
+          ? `<span class="mini-good">Complete ✓</span>`
+          : `<span class="mini-bad">Needs Review ✕</span>`;
 
     const optionsHtml = stageObj.options
       .map((label, idx) => {
@@ -548,15 +550,62 @@
     `;
   }
 
-  function renderValidations(t) {
-    const v = t.validations || [];
-    return `
+  // ✅ NEW: Resolved summary + debrief (appears only when ticket is resolved)
+  function renderResolvedSummary(t, s) {
+    if (!computeResolved(s)) return "";
+
+    const wf = t.workflow || {};
+    const pickText = (stageKey) => {
+      const stage = wf[stageKey];
+      const idx = s.answers?.[stageKey];
+      if (!stage || !Array.isArray(stage.options) || idx == null) return null;
+      return stage.options[idx] ?? null;
+    };
+
+    const tri = pickText("triage");
+    const dia = pickText("diagnosis");
+    const fix = pickText("fix");
+
+    const pickedLines = [
+      tri ? `<li><strong>Triage:</strong> ${escapeHtml(tri)}</li>` : "",
+      dia ? `<li><strong>Diagnosis:</strong> ${escapeHtml(dia)}</li>` : "",
+      fix ? `<li><strong>Fix:</strong> ${escapeHtml(fix)}</li>` : ""
+    ].filter(Boolean).join("");
+
+    const d = t.debrief && typeof t.debrief === "object" ? t.debrief : null;
+
+    const bullets = (arr) =>
+      Array.isArray(arr) && arr.length
+        ? `<ul class="bullets">${arr.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`
+        : "";
+
+    const insightHtml = d ? `
       <div class="miniCard" style="margin-top:12px;">
-        <div class="miniTitle">Suggested Validation Checks</div>
+        <div class="miniTitle">${escapeHtml(d.title || "Resolution Insight")}</div>
         <div class="miniDesc">
-          ${v.length ? `<ul class="bullets">${v.map((x) => `<li>${escapeHtml(x)}</li>`).join("")}</ul>` : `<span class="mini-muted">None provided.</span>`}
+          ${d.summary ? `<div style="white-space:pre-wrap; line-height:1.5;">${escapeHtml(d.summary)}</div>` : ""}
+          ${Array.isArray(d.whatGoodLooksLike) && d.whatGoodLooksLike.length
+            ? `<div style="margin-top:10px;"><strong>What good looks like</strong>${bullets(d.whatGoodLooksLike)}</div>`
+            : ""
+          }
+          ${Array.isArray(d.validation) && d.validation.length
+            ? `<div style="margin-top:10px;"><strong>Validation mindset</strong>${bullets(d.validation)}</div>`
+            : ""
+          }
+          ${d.takeaway ? `<div style="margin-top:10px;"><strong>Takeaway:</strong> ${escapeHtml(d.takeaway)}</div>` : ""}
         </div>
       </div>
+    ` : "";
+
+    return `
+      <div class="miniCard" style="margin-top:12px;">
+        <div class="miniTitle">Ticket Resolved</div>
+        <div class="miniDesc">
+          <div style="margin-bottom:6px;"><strong>You selected:</strong></div>
+          ${pickedLines ? `<ul class="bullets">${pickedLines}</ul>` : `<span class="mini-muted">Selections not available.</span>`}
+        </div>
+      </div>
+      ${insightHtml}
     `;
   }
 
@@ -602,7 +651,8 @@
         ${stageTabs}
         ${statusLine}
         ${stageHtml}
-        ${renderValidations(t)}
+
+        ${renderResolvedSummary(t, s)}
       </div>
     `;
 
@@ -657,7 +707,7 @@
           <div class="evidenceTitle">How to work a ticket</div>
           <pre class="evidencePre">1) Open a ticket from the left queue.
 2) Complete Triage, then Diagnosis, then Fix.
-3) After all three are correct, write a Change Note (min ${CHANGE_NOTE_MIN} chars).
+3) After all three are complete, write a Change Note (min ${CHANGE_NOTE_MIN} chars).
 4) Generate your PDF report when finished.</pre>
         </div>
       </div>
@@ -748,14 +798,13 @@
   function insertTemplate(ticketId, ticketTitle) {
     const s = ensureStateShape(ticketId, loadTicketState(ticketId));
 
-    // Keep it simple + neat like the old one.
+    // ✅ Simplified template (no fake "validation performed" / "impact downtime")
     const template =
 `Ticket: ${ticketTitle}
 
 Change implemented:
 Root cause:
-Validation performed:
-Impact / downtime:`;
+Notes:`;
 
     s.changeNote = template;
     saveTicketState(ticketId, s);
