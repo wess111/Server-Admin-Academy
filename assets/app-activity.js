@@ -1,22 +1,21 @@
 (() => {
   "use strict";
 
+  /* ----------------------------- Helpers ----------------------------- */
+
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
-  const LS_PREFIX = "sa_academy_v2_ticket_";
-  const LS_META_PREFIX = "sa_academy_v2_meta_";
+  const CHANGE_NOTE_MIN = 40;
+
+  const LS_PREFIX = "sa_academy_v3_ticket_";
+  const LS_META_PREFIX = "sa_academy_v3_meta_";
 
   let lab = null;
   let tickets = [];
   let activeCategory = "ALL";
   let filteredTickets = [];
   let selectedId = null;
-
-  function getLabId() {
-    const params = new URLSearchParams(location.search);
-    return (params.get("lab") || "").trim();
-  }
 
   function escapeHtml(s) {
     return String(s ?? "")
@@ -25,6 +24,11 @@
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
+  }
+
+  function getLabId() {
+    const params = new URLSearchParams(location.search);
+    return (params.get("lab") || "").trim();
   }
 
   function lsKey(ticketId) {
@@ -42,36 +46,33 @@
       return fallback;
     }
   }
+
   function writeJSON(key, value) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch {}
   }
 
+  /* ----------------------------- State ----------------------------- */
+
   function defaultTicketState() {
-    // Backwards-compatible state: supports both legacy textarea workflow
-    // and the new gamified (MCQ) validation workflow.
     return {
-      // New gamified workflow state
+      // MCQ workflow
       answers: { triage: null, diagnosis: null, fix: null },
       correct: { triage: false, diagnosis: false, fix: false },
-      resolved: false,
 
-      // Optional reflection/change note (kept as a textarea step)
+      // Progressive UI
+      uiStage: "triage", // triage | diagnosis | fix | changeNote
+
+      // Attempts tracking
+      attempts: { total: 0, wrong: 0 },
+
+      // Change note
       changeNote: "",
       doneNote: false,
 
-      // UI state for progressive unlocking
-      uiStage: "triage", // triage | diagnosis | fix | changeNote
-      attempts: { total: 0, wrong: 0 },
-
-      // Legacy fields (kept so existing saved states don’t break)
-      triageNote: "",
-      diagnosisNote: "",
-      fixNote: "",
-      doneTriage: false,
-      doneDiagnosis: false,
-      doneFix: false,
+      // Final status
+      resolved: false,
 
       lastSavedAt: null
     };
@@ -87,14 +88,76 @@
   }
 
   function clearTicketState(ticketId) {
-    try { localStorage.removeItem(lsKey(ticketId)); } catch {}
+    try {
+      localStorage.removeItem(lsKey(ticketId));
+    } catch {}
   }
 
-  async function loadLabData(labId) {
-    const res = await fetch(`./data/labs/${encodeURIComponent(labId)}.json`, { cache: "no-store" });
-    if (!res.ok) throw new Error("Lab data not found");
-    return res.json();
+  function isStageObject(v) {
+    return (
+      v &&
+      typeof v === "object" &&
+      typeof v.q === "string" &&
+      Array.isArray(v.options) &&
+      v.options.length === 4 &&
+      Number.isInteger(v.correct) &&
+      v.correct >= 0 &&
+      v.correct <= 3
+    );
   }
+
+  function ensureStateShape(ticketId, s0) {
+    const s = s0 && typeof s0 === "object" ? s0 : defaultTicketState();
+
+    if (!s.answers || typeof s.answers !== "object") s.answers = { triage: null, diagnosis: null, fix: null };
+    if (!s.correct || typeof s.correct !== "object") s.correct = { triage: false, diagnosis: false, fix: false };
+    if (!s.attempts || typeof s.attempts !== "object") s.attempts = { total: 0, wrong: 0 };
+
+    ["triage", "diagnosis", "fix"].forEach((k) => {
+      if (!(k in s.answers)) s.answers[k] = null;
+      if (!(k in s.correct)) s.correct[k] = false;
+    });
+
+    if (!["triage", "diagnosis", "fix", "changeNote"].includes(s.uiStage)) s.uiStage = "triage";
+    if (typeof s.changeNote !== "string") s.changeNote = "";
+    if (typeof s.doneNote !== "boolean") s.doneNote = false;
+    if (typeof s.resolved !== "boolean") s.resolved = false;
+
+    saveTicketState(ticketId, s);
+    return s;
+  }
+
+  function computeResolved(s) {
+    const allCorrect = !!(s.correct.triage && s.correct.diagnosis && s.correct.fix);
+    const noteOk = !!(s.doneNote && (s.changeNote || "").trim().length >= CHANGE_NOTE_MIN);
+    return allCorrect && noteOk;
+  }
+
+  function getUnlockedStages(s) {
+    // Unlock is based on correctness, not simply visiting stages.
+    const unlocked = new Set(["triage"]);
+
+    if (s.correct.triage) unlocked.add("diagnosis");
+    if (s.correct.triage && s.correct.diagnosis) unlocked.add("fix");
+    if (s.correct.triage && s.correct.diagnosis && s.correct.fix) unlocked.add("changeNote");
+
+    return unlocked;
+  }
+
+  function normalizeUiStage(s) {
+    const unlocked = getUnlockedStages(s);
+    if (!unlocked.has(s.uiStage)) {
+      // Force them to the earliest unlocked stage
+      if (unlocked.has("triage")) s.uiStage = "triage";
+      if (unlocked.has("diagnosis")) s.uiStage = "diagnosis";
+      if (unlocked.has("fix")) s.uiStage = "fix";
+      if (unlocked.has("changeNote")) s.uiStage = "changeNote";
+      // Note: above logic moves to latest unlocked; that’s okay and friendly.
+    }
+    return s;
+  }
+
+  /* ----------------------------- Meta (Top Fields) ----------------------------- */
 
   function setTodayIfEmpty() {
     const el = $("#activityDate");
@@ -116,7 +179,7 @@
     set("courseSection", m.courseSection || "");
     set("courseTitle", m.courseTitle || "");
     set("activityDate", m.activityDate || "");
-        setTodayIfEmpty();
+    setTodayIfEmpty();
   }
 
   function saveMeta() {
@@ -125,8 +188,8 @@
       analystName: get("analystName"),
       courseSection: get("courseSection"),
       courseTitle: get("courseTitle"),
-      activityDate: get("activityDate"),
-          });
+      activityDate: get("activityDate")
+    });
   }
 
   function wireMeta() {
@@ -138,9 +201,20 @@
     loadMeta();
   }
 
+  /* ----------------------------- Data Load ----------------------------- */
+
+  async function loadLabData(labId) {
+    const res = await fetch(`./data/labs/${encodeURIComponent(labId)}.json`, { cache: "no-store" });
+    if (!res.ok) throw new Error("Lab data not found");
+    return res.json();
+  }
+
+  /* ----------------------------- UI: Tabs & Queue ----------------------------- */
+
   function buildTabs(categories) {
     const tabs = $("#tabs");
     tabs.innerHTML = "";
+
     const all = ["ALL", ...categories];
     for (const c of all) {
       const btn = document.createElement("button");
@@ -161,6 +235,8 @@
       t.id, t.category, t.title, t.summary,
       (t.tags || []).join(" "),
       JSON.stringify(t.env || {}),
+      JSON.stringify(t.evidence || {}),
+      JSON.stringify(t.artifact || {}),
       (t.validations || []).join(" ")
     ].join(" ").toLowerCase();
     return hay.includes(q.toLowerCase());
@@ -172,6 +248,7 @@
       const catOk = activeCategory === "ALL" ? true : t.category === activeCategory;
       return catOk && ticketMatches(t, q);
     });
+
     renderTicketList();
 
     if (selectedId && !filteredTickets.some((t) => t.id === selectedId)) {
@@ -191,6 +268,7 @@
   function renderTicketList() {
     const list = $("#ticketList");
     list.innerHTML = "";
+
     if (!filteredTickets.length) {
       list.innerHTML =
         `<div class="card"><div class="card-title">No tickets found</div><div class="card-desc">Try a different tab or search.</div></div>`;
@@ -198,8 +276,12 @@
     }
 
     for (const t of filteredTickets) {
+      const s = ensureStateShape(t.id, loadTicketState(t.id));
+      const status = computeResolved(s) ? "Done" : "To do";
+
       const card = document.createElement("div");
       card.className = "card" + (t.id === selectedId ? " selected" : "");
+
       const tags = (t.tags || [])
         .slice(0, 4)
         .map((x) => `<span class="tag">${escapeHtml(x)}</span>`)
@@ -214,7 +296,8 @@
           </div>
           <div class="rightCol">
             <div class="idText">${escapeHtml(t.id)}</div>
-            <div class="badge">${escapeHtml(t.category)}</div>
+            <span class="badge">${escapeHtml(t.category)}</span>
+            <span class="badge badgeStatus">${escapeHtml(status)}</span>
           </div>
         </div>
       `;
@@ -223,175 +306,163 @@
     }
   }
 
-  function stepEditor({ num, title, hint, fieldId, placeholder, checkedKey, checked }) {
+  /* ----------------------------- Evidence/Artifact Rendering ----------------------------- */
+
+  function renderEvidenceBlock(t) {
+    // Preferred fields: evidence / artifact. If absent, fall back to env.
+    // Supports string, array of strings, or object key/value.
+    const lines = [];
+
+    const pushLines = (val) => {
+      if (!val) return;
+      if (typeof val === "string") {
+        const parts = val.split("\n").map(x => x.trim()).filter(Boolean);
+        parts.forEach(p => lines.push(p));
+        return;
+      }
+      if (Array.isArray(val)) {
+        val.forEach(x => {
+          if (typeof x === "string" && x.trim()) lines.push(x.trim());
+        });
+        return;
+      }
+      if (typeof val === "object") {
+        Object.entries(val).forEach(([k, v]) => {
+          const txt = `${k}: ${String(v ?? "").trim()}`;
+          if (txt.trim()) lines.push(txt);
+        });
+      }
+    };
+
+    pushLines(t.artifact);
+    pushLines(t.evidence);
+
+    // Fallback to env if nothing exists
+    if (!lines.length) {
+      pushLines(t.env);
+    }
+
+    const content = lines.length
+      ? `<ul class="bullets">${lines.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`
+      : `<div class="miniDesc">(No evidence provided)</div>`;
+
+    return `
+      <div class="artifactCard">
+        <div class="artifactTitle">Evidence / Artifact</div>
+        <div class="artifactBody">
+          ${content}
+        </div>
+      </div>
+    `;
+  }
+
+  /* ----------------------------- Stage Rendering ----------------------------- */
+
+  function renderStageTabs(ticketId, s) {
+    const unlocked = getUnlockedStages(s);
+
+    const tabBtn = (key, label) => {
+      const active = s.uiStage === key ? " active" : "";
+      const disabled = unlocked.has(key) ? "" : " disabled";
+
+      return `
+        <button
+          type="button"
+          class="stageTab${active}${disabled}"
+          data-stage-tab="true"
+          data-ticket="${escapeHtml(ticketId)}"
+          data-stage="${escapeHtml(key)}"
+          ${unlocked.has(key) ? "" : "aria-disabled='true'"}
+        >${escapeHtml(label)}</button>
+      `;
+    };
+
+    return `
+      <div class="stageTabs">
+        ${tabBtn("triage", "Triage")}
+        ${tabBtn("diagnosis", "Diagnosis")}
+        ${tabBtn("fix", "Fix")}
+        ${tabBtn("changeNote", "Change Note")}
+      </div>
+    `;
+  }
+
+  function renderStatusLine(s) {
+    const status = computeResolved(s) ? "Resolved" : (s.correct.triage || s.correct.diagnosis || s.correct.fix || s.doneNote ? "In progress" : "Not started");
+    return `
+      <div class="statusLine">
+        <strong>Status:</strong> ${escapeHtml(status)}
+        <span class="sep">•</span>
+        <strong>Attempts:</strong> ${s.attempts.total} (wrong: ${s.attempts.wrong})
+        <div class="statusHint">Resolve by answering all three stages correctly + change note (min ${CHANGE_NOTE_MIN} chars).</div>
+      </div>
+    `;
+  }
+
+  function renderMCQStage(stageKey, stageObj, ticketId, s) {
+    const prettyName =
+      stageKey === "triage" ? "Triage" :
+      stageKey === "diagnosis" ? "Diagnosis" :
+      "Fix";
+
+    const selectedIdx = s.answers[stageKey];
+    const isCorrect = !!s.correct[stageKey];
+
+    // show small right-side status when they have selected something
+    const rightFlag =
+      selectedIdx == null ? `<span class="mini-muted">Select an option</span>` :
+      isCorrect ? `<span class="mini-good">Correct ✓</span>` :
+      `<span class="mini-bad">Incorrect ✕</span>`;
+
+    const optionsHtml = stageObj.options.map((label, idx) => {
+      const picked = selectedIdx === idx;
+      const cls = picked ? "btn option selected" : "btn option";
+      return `
+        <button
+          type="button"
+          class="${cls}"
+          data-answer="true"
+          data-ticket="${escapeHtml(ticketId)}"
+          data-stage="${escapeHtml(stageKey)}"
+          data-idx="${idx}"
+          aria-pressed="${picked ? "true" : "false"}"
+        >${escapeHtml(label)}</button>
+      `;
+    }).join("");
+
     return `
       <div class="step">
         <div class="step-head">
           <div class="step-left">
-            <div class="step-num">${num}</div>
+            <div class="step-num">${stageKey === "triage" ? 1 : stageKey === "diagnosis" ? 2 : 3}</div>
             <div>
-              <div class="step-title">${escapeHtml(title)}</div>
-              <div class="step-hint">${escapeHtml(hint)}</div>
+              <div class="step-title">${escapeHtml(prettyName)}</div>
+              <div class="step-hint">${escapeHtml(stageObj.q)}</div>
             </div>
           </div>
-          <label class="toggle">
-            <input type="checkbox" data-step="${checkedKey}" ${checked ? "checked" : ""}/> Done
-          </label>
+          ${rightFlag}
         </div>
+
         <div class="step-body">
-          <textarea class="stepText" id="${fieldId}" rows="7" placeholder="${escapeHtml(placeholder)}"></textarea>
+          <div class="optionsGrid">
+            ${optionsHtml}
+          </div>
+
           <div class="note-actions">
-            <button class="btn" type="button" data-save="${fieldId}">Save</button>
-            <button class="btn ghost" type="button" data-copy="${fieldId}">Copy</button>
-            <span class="mini-muted" id="${fieldId}Saved">Not saved yet.</span>
+            <button class="btn" type="button" data-next="true" data-ticket="${escapeHtml(ticketId)}">Next Stage</button>
+            <button class="btn ghost" type="button" data-goto-note="true" data-ticket="${escapeHtml(ticketId)}">Go to Change Note</button>
           </div>
         </div>
       </div>
     `;
   }
 
-  function envCards(envObj) {
-    const entries = Object.entries(envObj || {});
-    if (!entries.length) return "";
-    return entries
-      .map(
-        ([k, v]) => `
-        <div class="miniCard">
-          <div class="miniTitle">${escapeHtml(k)}</div>
-          <div class="miniDesc">${escapeHtml(v)}</div>
-        </div>
-      `
-      )
-      .join("");
-  }
-
-function isStageObject(v) {
-    return (
-      v &&
-      typeof v === "object" &&
-      typeof v.q === "string" &&
-      Array.isArray(v.options) &&
-      v.options.length === 4 &&
-      Number.isInteger(v.correct) &&
-      v.correct >= 0 &&
-      v.correct <= 3
-    );
-  }
-
-  function ensureGamifiedState(ticketId, state) {
-    // Ensure the state object has the MCQ answer/correct shape.
-    const next = state && typeof state === "object" ? state : defaultTicketState();
-    if (!next.answers || typeof next.answers !== "object") next.answers = { triage: null, diagnosis: null, fix: null };
-    if (!next.correct || typeof next.correct !== "object") next.correct = { triage: false, diagnosis: false, fix: false };
-    if (typeof next.resolved !== "boolean") next.resolved = false;
-
-    if (!next.attempts || typeof next.attempts !== "object") next.attempts = { total: 0, wrong: 0 };
-    if (!Number.isInteger(next.attempts.total)) next.attempts.total = 0;
-    if (!Number.isInteger(next.attempts.wrong)) next.attempts.wrong = 0;
-
-    if (typeof next.uiStage !== "string") next.uiStage = "triage";
-
-    // Normalize keys (avoid undefined)
-    ["triage", "diagnosis", "fix"].forEach((k) => {
-      if (!(k in next.answers)) next.answers[k] = null;
-      if (!(k in next.correct)) next.correct[k] = false;
-    });
-
-    // Persist normalization so the UI and progress meters stay consistent.
-    saveTicketState(ticketId, next);
-    return next;
-  }
-
-  const STAGES = ["triage", "diagnosis", "fix", "changeNote"];
-  const CHANGE_NOTE_MIN = 40;
-
-  function getUnlockedStages(s) {
-    // Sequential unlock based on correctness.
-    const tri = true;
-    const diag = !!s?.correct?.triage;
-    const fix = !!(s?.correct?.triage && s?.correct?.diagnosis);
-    const note = !!(s?.correct?.triage && s?.correct?.diagnosis && s?.correct?.fix);
-    return { triage: tri, diagnosis: diag, fix: fix, changeNote: note };
-  }
-
-  function computeDefaultStage(s) {
-    // First unmet stage in order.
-    if (!s?.correct?.triage) return "triage";
-    if (!s?.correct?.diagnosis) return "diagnosis";
-    if (!s?.correct?.fix) return "fix";
-    return "changeNote";
-  }
-
-  function normalizeUiStage(s) {
-    const unlocked = getUnlockedStages(s);
-    const desired = STAGES.includes(s.uiStage) ? s.uiStage : "triage";
-    if (unlocked[desired]) return desired;
-    // If current stage is locked (e.g., user cleared state), fall back.
-    return computeDefaultStage(s);
-  }
-
-  function statusLabel(s) {
-    if (s?.resolved) return "Resolved";
-    const anyAttempt = (s?.attempts?.total || 0) > 0;
-    if (!anyAttempt) return "Not started";
-    return "In progress";
-  }
-
-  function renderStageTabs(ticketId, s) {
-    const unlocked = getUnlockedStages(s);
-    const current = normalizeUiStage(s);
-
-    const label = (k) =>
-      k === "triage" ? "Triage" :
-      k === "diagnosis" ? "Diagnosis" :
-      k === "fix" ? "Fix" : "Change Note";
-
-    return `
-      <div class="tabs" style="margin-top:10px">
-        ${STAGES.map((k) => {
-          const isActive = k === current;
-          const isLocked = !unlocked[k];
-          return `
-            <button
-              type="button"
-              class="tab${isActive ? " active" : ""}"
-              data-stage-tab="true"
-              data-ticket="${escapeHtml(ticketId)}"
-              data-target-stage="${escapeHtml(k)}"
-              ${isLocked ? "disabled" : ""}
-              style="${isLocked ? "opacity:.45;cursor:not-allowed" : ""}"
-              aria-disabled="${isLocked ? "true" : "false"}"
-            >${escapeHtml(label(k))}</button>
-          `;
-        }).join("")}
-      </div>
-    `;
-  }
-
-  function changeNoteTemplate(ticket) {
-    const title = ticket?.title ? `Ticket: ${ticket.title}` : "Ticket";
-    return [
-      `${title}`,
-      "Change Summary:",
-      "- What changed:",
-      "- Why (root cause):",
-      "Impact / Risk:",
-      "- User impact:",
-      "- Risk level:",
-      "Validation:",
-      "- Tests performed:",
-      "Rollback:",
-      "- Backout steps if needed:"
-    ].join("\n");
-  }
-
-  function renderChangeNote(ticketId, ticket, s) {
+  function renderChangeNote(ticketId, s) {
     const chars = (s.changeNote || "").length;
-    const okLen = chars >= CHANGE_NOTE_MIN;
-    const canSubmit = okLen;
+    const ready = chars >= CHANGE_NOTE_MIN;
 
     return `
-      <div class="step" id="stage-changeNote">
+      <div class="step">
         <div class="step-head">
           <div class="step-left">
             <div class="step-num">4</div>
@@ -400,82 +471,106 @@ function isStageObject(v) {
               <div class="step-hint">Write a short change note (minimum ${CHANGE_NOTE_MIN} characters). Use the template if helpful.</div>
             </div>
           </div>
-          <div class="mini-muted" aria-live="polite">
-            ${s.doneNote ? "Submitted ✅" : (okLen ? "Ready to submit" : `Min ${CHANGE_NOTE_MIN} chars`)}
-          </div>
+          <div class="mini-muted">${ready ? "Ready to submit" : `Need ${CHANGE_NOTE_MIN - chars} more chars`}</div>
         </div>
 
         <div class="step-body">
-          <div class="note-actions" style="gap:10px;flex-wrap:wrap">
+          <div class="note-actions">
             <button class="btn ghost" type="button" data-insert-template="true" data-ticket="${escapeHtml(ticketId)}">Insert Template</button>
-            <button class="btn" type="button" data-submit-note="true" data-ticket="${escapeHtml(ticketId)}" ${canSubmit ? "" : "disabled"} style="${canSubmit ? "" : "opacity:.45;cursor:not-allowed"}">Submit Note</button>
-            <button class="btn ghost" type="button" data-prev-stage="true" data-ticket="${escapeHtml(ticketId)}">Back to Fix</button>
+            <button class="btn" type="button" data-submit-note="true" data-ticket="${escapeHtml(ticketId)}">Submit Note</button>
+            <button class="btn ghost" type="button" data-back-fix="true" data-ticket="${escapeHtml(ticketId)}">Back to Fix</button>
           </div>
 
-          <div style="margin-top:10px">
-            <div class="mini-muted" style="margin-bottom:6px">Change note</div>
-            <textarea class="stepText" id="changeNote" rows="7" placeholder="Write your change note here..."></textarea>
-            <div class="mini-muted" id="changeNoteChars" style="margin-top:8px">Characters: ${chars}</div>
-          </div>
+          <label class="smallLabel" for="changeNoteBox">Change note</label>
+          <textarea id="changeNoteBox" class="stepText" rows="8" placeholder="Write your change note here...">${escapeHtml(s.changeNote || "")}</textarea>
+
+          <div class="mini-muted" id="changeNoteCount">Characters: ${chars}</div>
         </div>
       </div>
     `;
   }
 
-  function renderStage(stageKey, stageObj, ticketId, ticketState) {
-    const selectedIdx = ticketState?.answers?.[stageKey];
-    const isCorrect = !!ticketState?.correct?.[stageKey];
-
-    const prettyName =
-      stageKey === "triage" ? "Triage (Symptom)" :
-      stageKey === "diagnosis" ? "Diagnosis (Root Cause)" :
-      "Fix (GUI Action)";
-
-    const stepNum = stageKey === "triage" ? 1 : stageKey === "diagnosis" ? 2 : 3;
-
-    // Keep the existing layout/classes (step, step-head, step-body, btn, ghost, etc.)
+  function renderValidations(t) {
+    const v = t.validations || [];
     return `
-      <div class="step" id="stage-${escapeHtml(stageKey)}">
-        <div class="step-head">
-          <div class="step-left">
-            <div class="step-num">${stepNum}</div>
-            <div>
-              <div class="step-title">${escapeHtml(prettyName)}</div>
-              <div class="step-hint">${escapeHtml(stageObj.q || "")}</div>
-            </div>
-          </div>
-
-          <div class="mini-muted" aria-live="polite">
-            ${selectedIdx == null ? "Select an option" : (isCorrect ? "Correct ✅" : "Incorrect ❌")}
-          </div>
-        </div>
-
-        <div class="step-body">
-          <div class="note-actions" style="gap:8px; flex-wrap:wrap;">
-            ${(stageObj.options || []).map((label, idx) => {
-              const picked = selectedIdx === idx;
-              const cls = picked ? "btn" : "btn ghost";
-              return `
-                <button
-                  type="button"
-                  class="${cls}"
-                  data-answer="true"
-                  data-ticket="${escapeHtml(ticketId)}"
-                  data-stage="${escapeHtml(stageKey)}"
-                  data-idx="${idx}"
-                  aria-pressed="${picked ? "true" : "false"}"
-                >${escapeHtml(label)}</button>
-              `;
-            }).join("")}
-          </div>
-
-          <div class="note-actions" style="margin-top:10px;gap:10px;flex-wrap:wrap">
-            <button class="btn" type="button" data-next-stage="true" data-ticket="${escapeHtml(ticketId)}">Next Stage</button>
-            <button class="btn ghost" type="button" data-goto-note="true" data-ticket="${escapeHtml(ticketId)}">Go to Change Note</button>
-          </div>
+      <div class="miniCard" style="margin-top:12px;">
+        <div class="miniTitle">Suggested Validation Checks</div>
+        <div class="miniDesc">
+          ${v.length ? `<ul class="bullets">${v.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>` : `<span class="mini-muted">None provided.</span>`}
         </div>
       </div>
     `;
+  }
+
+  function renderTicketDetail(ticketId) {
+    const t = tickets.find((x) => x.id === ticketId);
+    if (!t) return;
+
+    const wf = t.workflow || {};
+    const gamified = isStageObject(wf.triage) && isStageObject(wf.diagnosis) && isStageObject(wf.fix);
+
+    let s = ensureStateShape(ticketId, loadTicketState(ticketId));
+    s = normalizeUiStage(s);
+    s.resolved = computeResolved(s);
+    saveTicketState(ticketId, s);
+
+    const stageTabs = renderStageTabs(ticketId, s);
+    const statusLine = renderStatusLine(s);
+
+    let stageHtml = "";
+    if (!gamified) {
+      stageHtml = `<div class="card"><div class="card-title">This ticket is not in MCQ format.</div><div class="card-desc">Update the lab JSON workflow to use q/options/correct objects.</div></div>`;
+    } else {
+      if (s.uiStage === "triage") stageHtml = renderMCQStage("triage", wf.triage, ticketId, s);
+      else if (s.uiStage === "diagnosis") stageHtml = renderMCQStage("diagnosis", wf.diagnosis, ticketId, s);
+      else if (s.uiStage === "fix") stageHtml = renderMCQStage("fix", wf.fix, ticketId, s);
+      else stageHtml = renderChangeNote(ticketId, s);
+    }
+
+    $("#ticketDetail").innerHTML = `
+      <div class="detailCard">
+        <div class="detailTop">
+          <div class="detailKicker">${escapeHtml(t.id)} • ${escapeHtml(t.category)}</div>
+          <div class="detailTitle">${escapeHtml(t.title)}</div>
+          <div class="detailSummary">${escapeHtml(t.summary)}</div>
+        </div>
+
+        ${renderEvidenceBlock(t)}
+
+        ${stageTabs}
+        ${statusLine}
+
+        ${stageHtml}
+
+        ${renderValidations(t)}
+      </div>
+    `;
+
+    // Wire change-note live count + persistence
+    const box = $("#changeNoteBox");
+    if (box) {
+      box.addEventListener("input", () => {
+        const ns = ensureStateShape(ticketId, loadTicketState(ticketId));
+        ns.changeNote = box.value || "";
+        ns.resolved = computeResolved(ns);
+        saveTicketState(ticketId, ns);
+
+        const c = (ns.changeNote || "").length;
+        const count = $("#changeNoteCount");
+        if (count) count.textContent = `Characters: ${c}`;
+
+        updateProgressAndHealth();
+      });
+    }
+  }
+
+  /* ----------------------------- Actions ----------------------------- */
+
+  function selectTicket(ticketId) {
+    selectedId = ticketId;
+    renderTicketList();
+    renderTicketDetail(ticketId);
+    updateProgressAndHealth();
   }
 
   function handleAnswer(ticketId, stageKey, optionIdx) {
@@ -489,254 +584,120 @@ function isStageObject(v) {
     if (!Number.isInteger(idx) || idx < 0 || idx > 3) return;
 
     const s0 = loadTicketState(ticketId);
-    const s = ensureGamifiedState(ticketId, s0);
+    const s = ensureStateShape(ticketId, s0);
 
     s.answers[stageKey] = idx;
-
-    // Attempt tracking
     s.attempts.total += 1;
 
-    const wasCorrect = (idx === stageObj.correct);
-    s.correct[stageKey] = wasCorrect;
-    if (!wasCorrect) s.attempts.wrong += 1;
+    const correctNow = (idx === stageObj.correct);
+    s.correct[stageKey] = correctNow;
+    if (!correctNow) s.attempts.wrong += 1;
 
-    // Unlock flow: if correct, advance to next stage automatically.
-    if (wasCorrect) {
-      const nextStage =
-        stageKey === "triage" ? "diagnosis" :
-        stageKey === "diagnosis" ? "fix" :
-        stageKey === "fix" ? "changeNote" : "changeNote";
-      s.uiStage = nextStage;
+    // Unlock progression only if correct
+    if (correctNow) {
+      if (stageKey === "triage") s.uiStage = "diagnosis";
+      else if (stageKey === "diagnosis") s.uiStage = "fix";
+      else if (stageKey === "fix") s.uiStage = "changeNote";
     }
 
-    const allCorrect = !!(s.correct.triage && s.correct.diagnosis && s.correct.fix);
-    const noteOk = !!(s.doneNote && (s.changeNote || "").trim().length >= CHANGE_NOTE_MIN);
-    s.resolved = allCorrect && noteOk;
-
+    s.resolved = computeResolved(s);
     saveTicketState(ticketId, s);
-
-    // Re-render the ticket panel (unlock state + tabs may change)
-    renderTicketDetail(ticketId);
-
-    updateProgressAndHealth();
-  }
-
-  function renderTicketDetail(ticketId) {
-    const t = tickets.find((x) => x.id === ticketId);
-    if (!t) return;
-
-    let s = loadTicketState(ticketId);
-
-    const wf = t.workflow || {};
-    const gamified = isStageObject(wf.triage) && isStageObject(wf.diagnosis) && isStageObject(wf.fix);
-    if (gamified) s = ensureGamifiedState(ticketId, s);
-
-    const currentStage = gamified ? normalizeUiStage(s) : "triage";
-    s.uiStage = currentStage;
-    saveTicketState(ticketId, s);
-
-    const noteHint =
-      (wf.changeNote && typeof wf.changeNote === "string" ? wf.changeNote : "") ||
-      "Write a change record: what changed, why, impact, and validation.";
-
-    const status = statusLabel(s);
-    const attemptsText = `Attempts: ${s.attempts?.total || 0} (wrong: ${s.attempts?.wrong || 0})`;
-    const resolveHint = `Resolve by answering all three stages correctly + change note (min ${CHANGE_NOTE_MIN} chars).`;
-
-    const stageBlock = (() => {
-      if (!gamified) {
-        const triageHint = wf.triage || "Capture symptoms, scope, urgency, and exact error text.";
-        const diagHint = wf.diagnosis || "State a likely root cause and what evidence confirms it.";
-        const fixHint = wf.fix || "Document the GUI steps you would take, plus verification.";
-        return (
-          stepEditor({
-            num: 1,
-            title: "Triage (Symptom)",
-            hint: triageHint,
-            fieldId: "triageNote",
-            placeholder: "What is failing? Who is impacted? How urgent is it? Include exact messages and scope.",
-            checkedKey: "doneTriage",
-            checked: s.doneTriage
-          }) +
-          stepEditor({
-            num: 2,
-            title: "Diagnosis (Root Cause)",
-            hint: diagHint,
-            fieldId: "diagnosisNote",
-            placeholder: "Likely root cause + what evidence you will collect (logs, checks, commands, config).",
-            checkedKey: "doneDiagnosis",
-            checked: s.doneDiagnosis
-          }) +
-          stepEditor({
-            num: 3,
-            title: "Fix (GUI Action)",
-            hint: fixHint,
-            fieldId: "fixNote",
-            placeholder: "GUI steps to remediate + what you will verify afterward.",
-            checkedKey: "doneFix",
-            checked: s.doneFix
-          }) +
-          stepEditor({
-            num: 4,
-            title: "Change Note",
-            hint: noteHint,
-            fieldId: "changeNote",
-            placeholder: "Change record: what changed, why, impact/risk, rollback notes (if any), validation performed.",
-            checkedKey: "doneNote",
-            checked: s.doneNote
-          })
-        );
-      }
-
-      if (currentStage === "triage") return renderStage("triage", wf.triage, ticketId, s);
-      if (currentStage === "diagnosis") return renderStage("diagnosis", wf.diagnosis, ticketId, s);
-      if (currentStage === "fix") return renderStage("fix", wf.fix, ticketId, s);
-      return renderChangeNote(ticketId, t, s);
-    })();
-
-    $("#ticketDetail").innerHTML = `
-      <div class="detailCard">
-        <div class="detailTop">
-          <div class="detailKicker">${escapeHtml(t.id)} • ${escapeHtml(t.category)}</div>
-          <div class="detailTitle">${escapeHtml(t.title)}</div>
-          <div class="detailSummary">${escapeHtml(t.summary)}</div>
-        </div>
-
-        <div class="envGrid">
-          ${envCards(t.env)}
-        </div>
-
-        ${gamified ? renderStageTabs(ticketId, s) : ""}
-
-        <div class="hint" style="margin-top:10px">
-          <strong>Status:</strong> ${escapeHtml(status)} &nbsp;•&nbsp; <strong>${escapeHtml(attemptsText)}</strong><br/>
-          ${escapeHtml(resolveHint)}
-        </div>
-
-        ${stageBlock}
-
-        <div class="miniCard" style="margin-top:12px;">
-          <div class="miniTitle">Suggested Validation Checks</div>
-          <div class="miniDesc">
-            <ul class="bullets">
-              ${(t.validations || []).map((v) => `<li>${escapeHtml(v)}</li>`).join("")}
-            </ul>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Populate legacy textareas if present
-    const triEl = $("#triageNote");
-    const diEl = $("#diagnosisNote");
-    const fiEl = $("#fixNote");
-    if (triEl) triEl.value = s.triageNote || "";
-    if (diEl) diEl.value = s.diagnosisNote || "";
-    if (fiEl) fiEl.value = s.fixNote || "";
-
-    // Fill change note textarea if present.
-    const chEl = $("#changeNote");
-    if (chEl) chEl.value = s.changeNote || "";
-
-    // Live character count for change note
-    if (chEl) {
-      chEl.addEventListener("input", () => {
-        const next = ensureGamifiedState(ticketId, loadTicketState(ticketId));
-        next.changeNote = chEl.value || "";
-        const allCorrect = !!(next.correct.triage && next.correct.diagnosis && next.correct.fix);
-        const noteOk = !!(next.doneNote && (next.changeNote || "").trim().length >= CHANGE_NOTE_MIN);
-        next.resolved = allCorrect && noteOk;
-        saveTicketState(ticketId, next);
-        const charsEl = document.getElementById("changeNoteChars");
-        if (charsEl) charsEl.textContent = `Characters: ${(next.changeNote || "").length}`;
-        updateProgressAndHealth();
-      });
-    }
-
-    // Legacy wiring (checkbox toggles + save/copy) — no UI changes, just keep old behavior working.
-    $$("#ticketDetail input[type='checkbox'][data-step]").forEach((cb) => {
-      cb.addEventListener("change", () => {
-        const key = cb.getAttribute("data-step");
-        const next = loadTicketState(ticketId);
-        next[key] = cb.checked;
-        saveTicketState(ticketId, next);
-        updateProgressAndHealth();
-      });
-    });
-
-    $$("#ticketDetail [data-save]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const fieldId = btn.getAttribute("data-save");
-        const next = loadTicketState(ticketId);
-        const el = document.getElementById(fieldId);
-        next[fieldId] = el ? el.value : "";
-        saveTicketState(ticketId, next);
-        const savedEl = document.getElementById(fieldId + "Saved");
-        if (savedEl) savedEl.textContent = "Saved locally.";
-        updateProgressAndHealth();
-      });
-    });
-
-    $$("#ticketDetail [data-copy]").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        const fieldId = btn.getAttribute("data-copy");
-        const el = document.getElementById(fieldId);
-        const txt = el ? (el.value || "") : "";
-        if (!txt.trim()) return;
-        try {
-          await navigator.clipboard.writeText(txt);
-        } catch {
-          if (el) {
-            el.select();
-            document.execCommand("copy");
-          }
-        }
-      });
-    });
-  }
-
-  function selectTicket(ticketId) {
-    const t = tickets.find((x) => x.id === ticketId);
-    if (!t) return;
-    selectedId = ticketId;
-    renderTicketList();
 
     renderTicketDetail(ticketId);
     updateProgressAndHealth();
   }
+
+  function goNextStage(ticketId) {
+    const s = ensureStateShape(ticketId, loadTicketState(ticketId));
+    const unlocked = getUnlockedStages(s);
+
+    const order = ["triage", "diagnosis", "fix", "changeNote"];
+    const i = order.indexOf(s.uiStage);
+    const next = order[Math.min(i + 1, order.length - 1)];
+
+    if (unlocked.has(next)) {
+      s.uiStage = next;
+      saveTicketState(ticketId, s);
+      renderTicketDetail(ticketId);
+    }
+  }
+
+  function goChangeNote(ticketId) {
+    const s = ensureStateShape(ticketId, loadTicketState(ticketId));
+    const unlocked = getUnlockedStages(s);
+    if (!unlocked.has("changeNote")) return; // locked until fix is correct
+    s.uiStage = "changeNote";
+    saveTicketState(ticketId, s);
+    renderTicketDetail(ticketId);
+  }
+
+  function backToFix(ticketId) {
+    const s = ensureStateShape(ticketId, loadTicketState(ticketId));
+    const unlocked = getUnlockedStages(s);
+    if (!unlocked.has("fix")) return;
+    s.uiStage = "fix";
+    saveTicketState(ticketId, s);
+    renderTicketDetail(ticketId);
+  }
+
+  function insertTemplate(ticketId) {
+    const t = tickets.find((x) => x.id === ticketId);
+    if (!t) return;
+
+    const s = ensureStateShape(ticketId, loadTicketState(ticketId));
+
+    // SIMPLE + NEAT template (like your older screenshot)
+    const template =
+`Change implemented:
+Root cause:
+Validation performed:
+Impact / downtime:`;
+
+    // If empty, insert. If not empty, append with spacing.
+    if (!s.changeNote.trim()) s.changeNote = template;
+    else s.changeNote = `${s.changeNote.trim()}\n\n${template}`;
+
+    saveTicketState(ticketId, s);
+    renderTicketDetail(ticketId);
+    updateProgressAndHealth();
+  }
+
+  function submitNote(ticketId) {
+    const s = ensureStateShape(ticketId, loadTicketState(ticketId));
+    const note = (s.changeNote || "").trim();
+    if (note.length < CHANGE_NOTE_MIN) {
+      alert(`Change note must be at least ${CHANGE_NOTE_MIN} characters.`);
+      return;
+    }
+    s.doneNote = true;
+    s.resolved = computeResolved(s);
+    saveTicketState(ticketId, s);
+    renderTicketDetail(ticketId);
+    updateProgressAndHealth();
+  }
+
+  /* ----------------------------- Progress / Health ----------------------------- */
 
   function computeTicketComplete(s) {
-    // New logic: ticket is “Resolved” only when triage + diagnosis + fix are correct.
-    // Backwards compatible: if the ticket has no MCQ state, fall back to legacy checkboxes.
-    const hasGamified =
-      s && typeof s === "object" &&
-      s.correct && typeof s.correct === "object" &&
-      ("triage" in s.correct) && ("diagnosis" in s.correct) && ("fix" in s.correct);
-
-    if (hasGamified) {
-      const allCorrect = !!(s.correct.triage && s.correct.diagnosis && s.correct.fix);
-      const noteOk = !!(s.doneNote && (s.changeNote || "").trim().length >= CHANGE_NOTE_MIN);
-      return allCorrect && noteOk;
-    }
-    return !!(s.doneTriage && s.doneDiagnosis && s.doneFix && s.doneNote);
+    return computeResolved(s);
   }
 
   function computeProgress() {
     let done = 0;
     for (const t of tickets) {
-      const s = loadTicketState(t.id);
+      const s = ensureStateShape(t.id, loadTicketState(t.id));
       if (computeTicketComplete(s)) done++;
     }
     return { done, total: tickets.length };
   }
 
   function computeCategoryHealth() {
-    const cats = Array.from(new Set(tickets.map(t => t.category)));
+    const cats = Array.from(new Set(tickets.map((t) => t.category)));
     const byCat = {};
     for (const c of cats) {
-      const subset = tickets.filter(t => t.category === c);
+      const subset = tickets.filter((t) => t.category === c);
       const total = subset.length;
-      const done = subset.reduce((acc, t) => acc + (computeTicketComplete(loadTicketState(t.id)) ? 1 : 0), 0);
+      const done = subset.reduce((acc, t) => acc + (computeTicketComplete(ensureStateShape(t.id, loadTicketState(t.id))) ? 1 : 0), 0);
       const pct = total ? Math.round((done / total) * 100) : 0;
       byCat[c] = { done, total, pct };
     }
@@ -745,35 +706,28 @@ function isStageObject(v) {
 
   function updateProgressAndHealth() {
     const p = computeProgress();
-    $("#labProgress").textContent = `Progress: ${p.done}/${p.total}`;
-
     const overallPct = p.total ? Math.round((p.done / p.total) * 100) : 0;
-    $("#healthOverall").textContent = `Overall Health: ${overallPct}%`;
+
+    const lp = $("#labProgress");
+    if (lp) lp.textContent = `Progress: ${p.done}/${p.total}`;
+
+    const ho = $("#healthOverall");
+    if (ho) ho.textContent = `Overall Health: ${overallPct}%`;
 
     const byCat = computeCategoryHealth();
     const catNames = Object.keys(byCat);
 
-    // Show first two categories in the pills (DNS/DHCP or first two)
     const a = catNames[0];
     const b = catNames[1];
 
-    if (a) $("#healthA").textContent = `${a}: ${byCat[a].pct}%`;
-    else $("#healthA").textContent = "—";
+    const ha = $("#healthA");
+    const hb = $("#healthB");
 
-    if (b) $("#healthB").textContent = `${b}: ${byCat[b].pct}%`;
-    else $("#healthB").textContent = "—";
+    if (ha) ha.textContent = a ? `${a}: ${byCat[a].pct}%` : "—";
+    if (hb) hb.textContent = b ? `${b}: ${byCat[b].pct}%` : "—";
   }
 
-  function resetLab() {
-    for (const t of tickets) clearTicketState(t.id);
-    selectedId = null;
-    applyFilters();
-    $("#ticketDetail").innerHTML =
-      `<div class="card"><div class="card-title">Select a ticket</div><div class="card-desc">Lab reset.</div></div>`;
-    updateProgressAndHealth();
-  }
-
-  /* ---------------- Report Generator ---------------- */
+  /* ----------------------------- Report (existing buttons) ----------------------------- */
 
   function openReportModal() {
     const m = $("#reportModal");
@@ -808,57 +762,67 @@ function isStageObject(v) {
     if (meta.courseTitle) lines.push(`Course: ${meta.courseTitle}`);
     if (meta.activityDate) lines.push(`Date: ${meta.activityDate}`);
     lines.push("");
-    lines.push(`Progress: ${p.done}/${p.total} (${p.total ? Math.round((p.done/p.total)*100) : 0}%)`);
-    Object.entries(byCat).forEach(([k,v]) => lines.push(`${k}: ${v.done}/${v.total} (${v.pct}%)`));
+    lines.push(`Progress: ${p.done}/${p.total} (${p.total ? Math.round((p.done / p.total) * 100) : 0}%)`);
+    Object.entries(byCat).forEach(([k, v]) => lines.push(`${k}: ${v.done}/${v.total} (${v.pct}%)`));
     lines.push("");
     lines.push("----- Ticket Work -----");
 
     for (const t of tickets) {
-      const s = loadTicketState(t.id);
+      const wf = t.workflow || {};
+      const gamified = isStageObject(wf.triage) && isStageObject(wf.diagnosis) && isStageObject(wf.fix);
+      const s = ensureStateShape(t.id, loadTicketState(t.id));
+
       lines.push("");
       lines.push(`${t.id} — ${t.title}`);
       lines.push(`Category: ${t.category}`);
       lines.push(`Status: ${computeTicketComplete(s) ? "Complete" : "In Progress"}`);
       lines.push("");
-      // If the lab uses gamified MCQ stages, export the selected option + correctness.
-      const wf = t.workflow || {};
-      const gamified = isStageObject(wf.triage) && isStageObject(wf.diagnosis) && isStageObject(wf.fix);
+
+      // Include evidence/artifact
+      lines.push("Evidence / Artifact:");
+      const evLines = [];
+      const addEv = (val) => {
+        if (!val) return;
+        if (typeof val === "string") {
+          val.split("\n").map(x => x.trim()).filter(Boolean).forEach(x => evLines.push(x));
+        } else if (Array.isArray(val)) {
+          val.forEach(x => typeof x === "string" && x.trim() && evLines.push(x.trim()));
+        } else if (typeof val === "object") {
+          Object.entries(val).forEach(([k, v]) => evLines.push(`${k}: ${String(v ?? "").trim()}`));
+        }
+      };
+      addEv(t.artifact);
+      addEv(t.evidence);
+      if (!evLines.length) addEv(t.env);
+      lines.push(evLines.length ? evLines.map(x => `- ${x}`).join("\n") : "(none)");
+      lines.push("");
 
       if (gamified) {
-        const stageLine = (k) => {
-          const picked = s.answers?.[k];
+        const pickLine = (k) => {
+          const picked = s.answers[k];
           const label =
             Number.isInteger(picked) && wf[k].options && wf[k].options[picked]
               ? wf[k].options[picked]
               : "(no selection)";
-          const mark = s.correct?.[k] ? "✅" : "❌";
+          const mark = s.correct[k] ? "✅" : "❌";
           return `${mark} ${label}`;
         };
 
         lines.push("Triage:");
-        lines.push(stageLine("triage"));
+        lines.push(pickLine("triage"));
         lines.push("");
         lines.push("Diagnosis:");
-        lines.push(stageLine("diagnosis"));
+        lines.push(pickLine("diagnosis"));
         lines.push("");
         lines.push("Fix:");
-        lines.push(stageLine("fix"));
+        lines.push(pickLine("fix"));
         lines.push("");
-        lines.push("Change Note:");
-      } else {
-        lines.push("Triage:");
-        lines.push(s.triageNote?.trim() ? s.triageNote.trim() : "(blank)");
-        lines.push("");
-        lines.push("Diagnosis:");
-        lines.push(s.diagnosisNote?.trim() ? s.diagnosisNote.trim() : "(blank)");
-        lines.push("");
-        lines.push("Fix:");
-        lines.push(s.fixNote?.trim() ? s.fixNote.trim() : "(blank)");
-        lines.push("");
-        lines.push("Change Note:");
       }
-      lines.push(s.changeNote?.trim() ? s.changeNote.trim() : "(blank)");
+
+      lines.push("Change Note:");
+      lines.push((s.changeNote || "").trim() || "(blank)");
     }
+
     return lines.join("\n");
   }
 
@@ -875,134 +839,17 @@ function isStageObject(v) {
   }
 
   function downloadPDF() {
+    // Keep your existing PDF generator dependency; basic export is enough for now.
     const meta = getMeta();
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: "pt", format: "letter" });
 
-    const p = computeProgress();
-    const overallPct = p.total ? Math.round((p.done / p.total) * 100) : 0;
-    const byCat = computeCategoryHealth();
-
-    // Header
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("Server Admin Academy", 44, 54);
-
-    doc.setFontSize(13);
-    doc.text(`${lab.title} — Report`, 44, 74);
+    const txt = buildTextReport();
+    const lines = doc.splitTextToSize(txt, 520);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(10.5);
-
-    const metaRows = [
-      ["Analyst", meta.analystName],
-      ["Section", meta.courseSection || "—"],
-      ["Course", meta.courseTitle || lab.title],
-      ["Date", meta.activityDate || "—"],
-      ["Progress", `${p.done}/${p.total} (${overallPct}%)`]
-    ];
-
-    doc.autoTable({
-      startY: 92,
-      head: [["Field", "Value"]],
-      body: metaRows,
-      theme: "grid",
-      styles: { font: "helvetica", fontSize: 10, cellPadding: 6 },
-      headStyles: { fontStyle: "bold" }
-    });
-
-    // Health table
-    const healthBody = Object.entries(byCat).map(([k, v]) => [
-      k,
-      `${v.done}/${v.total}`,
-      `${v.pct}%`
-    ]);
-
-    doc.autoTable({
-      startY: doc.lastAutoTable.finalY + 14,
-      head: [["Category", "Completed", "Health"]],
-      body: healthBody.length ? healthBody : [["—", "—", "—"]],
-      theme: "grid",
-      styles: { font: "helvetica", fontSize: 10, cellPadding: 6 },
-      headStyles: { fontStyle: "bold" }
-    });
-
-// Ticket summary table
-    const ticketRows = tickets.map((t) => {
-      const s = loadTicketState(t.id);
-      const status = computeTicketComplete(s) ? "Complete" : "In Progress";
-      return [t.id, t.category, t.title, status];
-    });
-
-    doc.autoTable({
-      startY: doc.lastAutoTable.finalY + 14,
-      head: [["Ticket", "Category", "Title", "Status"]],
-      body: ticketRows,
-      theme: "grid",
-      styles: { font: "helvetica", fontSize: 9.5, cellPadding: 6, overflow: "linebreak" },
-      headStyles: { fontStyle: "bold" },
-      columnStyles: {
-        0: { cellWidth: 70 },
-        1: { cellWidth: 70 },
-        2: { cellWidth: 290 },
-        3: { cellWidth: 94 }
-      }
-    });
-
-    // Per-ticket response tables
-    for (const t of tickets) {
-      const s = loadTicketState(t.id);
-
-      doc.autoTable({
-        startY: doc.lastAutoTable.finalY + 14,
-        head: [[`${t.id} — ${t.title}`]],
-        body: [[t.summary || "—"]],
-        theme: "grid",
-        styles: { font: "helvetica", fontSize: 10, cellPadding: 8, overflow: "linebreak" },
-        headStyles: { fontStyle: "bold" },
-        columnStyles: { 0: { cellWidth: 524 } }
-      });
-
-      const wf = t.workflow || {};
-      const gamified = isStageObject(wf.triage) && isStageObject(wf.diagnosis) && isStageObject(wf.fix);
-
-      const mcqVal = (k) => {
-        const picked = s.answers?.[k];
-        const label =
-          Number.isInteger(picked) && wf[k].options && wf[k].options[picked]
-            ? wf[k].options[picked]
-            : "(no selection)";
-        const mark = s.correct?.[k] ? "✅" : "❌";
-        return `${mark} ${label}`;
-      };
-
-      const responseRows = gamified
-        ? [
-            ["Triage", mcqVal("triage")],
-            ["Diagnosis", mcqVal("diagnosis")],
-            ["Fix", mcqVal("fix")],
-            ["Change Note", (s.changeNote || "").trim() || "(blank)"]
-          ]
-        : [
-            ["Triage", (s.triageNote || "").trim() || "(blank)"],
-            ["Diagnosis", (s.diagnosisNote || "").trim() || "(blank)"],
-            ["Fix", (s.fixNote || "").trim() || "(blank)"],
-            ["Change Note", (s.changeNote || "").trim() || "(blank)"]
-          ];
-
-      doc.autoTable({
-        startY: doc.lastAutoTable.finalY + 6,
-        head: [["Step", "Response"]],
-        body: responseRows,
-        theme: "grid",
-        styles: { font: "helvetica", fontSize: 9.5, cellPadding: 6, overflow: "linebreak" },
-        headStyles: { fontStyle: "bold" },
-        columnStyles: {
-          0: { cellWidth: 110 },
-          1: { cellWidth: 414 }
-        }
-      });
-    }
+    doc.setFontSize(10);
+    doc.text(lines, 44, 54);
 
     doc.save(`${lab.id}-${meta.analystName.replace(/\s+/g, "-").toLowerCase()}.pdf`);
   }
@@ -1025,6 +872,19 @@ function isStageObject(v) {
     if (btnTXT) btnTXT.addEventListener("click", () => { closeReportModal(); downloadText(); });
   }
 
+  /* ----------------------------- Reset ----------------------------- */
+
+  function resetLab() {
+    for (const t of tickets) clearTicketState(t.id);
+    selectedId = null;
+    applyFilters();
+    $("#ticketDetail").innerHTML =
+      `<div class="card"><div class="card-title">Select a ticket</div><div class="card-desc">Lab reset.</div></div>`;
+    updateProgressAndHealth();
+  }
+
+  /* ----------------------------- Init ----------------------------- */
+
   async function init() {
     const labId = getLabId();
     if (!labId) {
@@ -1046,123 +906,84 @@ function isStageObject(v) {
 
     buildTabs(lab.categories || []);
 
-    $("#searchInput").addEventListener("input", applyFilters);
-    $("#btnRandom").addEventListener("click", () => {
+    const sIn = $("#searchInput");
+    if (sIn) sIn.addEventListener("input", applyFilters);
+
+    const rBtn = $("#btnRandom");
+    if (rBtn) rBtn.addEventListener("click", () => {
       if (!filteredTickets.length) return;
       const pick = filteredTickets[Math.floor(Math.random() * filteredTickets.length)];
       selectTicket(pick.id);
     });
-    $("#btnResetLab").addEventListener("click", resetLab);
+
+    const resetBtn = $("#btnResetLab");
+    if (resetBtn) resetBtn.addEventListener("click", resetLab);
 
     wireMeta();
     wireReport();
 
-    // Delegated handler for gamified MCQ buttons (triage/diagnosis/fix).
+    // Delegated click handlers
     document.addEventListener("click", (e) => {
-      const btn = e.target && e.target.closest ? e.target.closest("button[data-answer='true']") : null;
+      const btn = e.target && e.target.closest ? e.target.closest("button") : null;
       if (!btn) return;
 
-      const ticketId = btn.getAttribute("data-ticket");
-      const stageKey = btn.getAttribute("data-stage");
-      const idx = btn.getAttribute("data-idx");
-      if (!ticketId || !stageKey) return;
+      // Answer buttons
+      if (btn.dataset.answer === "true") {
+        const ticketId = btn.getAttribute("data-ticket");
+        const stageKey = btn.getAttribute("data-stage");
+        const idx = btn.getAttribute("data-idx");
+        if (ticketId && stageKey) handleAnswer(ticketId, stageKey, idx);
+        return;
+      }
 
-      handleAnswer(ticketId, stageKey, idx);
-    });
+      // Stage tabs
+      if (btn.dataset.stageTab === "true") {
+        const ticketId = btn.getAttribute("data-ticket");
+        const stage = btn.getAttribute("data-stage");
+        if (!ticketId || !stage) return;
 
-    // Delegated handlers for progressive workflow UI (tabs, next/back, change note).
-    document.addEventListener("click", (e) => {
-      const stageTab = e.target && e.target.closest ? e.target.closest("button[data-stage-tab='true']") : null;
-      if (stageTab) {
-        const ticketId = stageTab.getAttribute("data-ticket");
-        const target = stageTab.getAttribute("data-target-stage");
-        if (!ticketId || !target) return;
-        const s = ensureGamifiedState(ticketId, loadTicketState(ticketId));
+        const s = ensureStateShape(ticketId, loadTicketState(ticketId));
         const unlocked = getUnlockedStages(s);
-        if (!unlocked[target]) return;
-        s.uiStage = target;
+        if (!unlocked.has(stage)) return;
+
+        s.uiStage = stage;
         saveTicketState(ticketId, s);
         renderTicketDetail(ticketId);
         return;
       }
 
-      const nextBtn = e.target && e.target.closest ? e.target.closest("button[data-next-stage='true']") : null;
-      if (nextBtn) {
-        const ticketId = nextBtn.getAttribute("data-ticket");
-        if (!ticketId) return;
-        const s = ensureGamifiedState(ticketId, loadTicketState(ticketId));
-        const current = normalizeUiStage(s);
-
-        // Only advance if the current stage is already correct.
-        const canAdvance =
-          current === "triage" ? !!s.correct.triage :
-          current === "diagnosis" ? !!s.correct.diagnosis :
-          current === "fix" ? !!s.correct.fix : true;
-        if (!canAdvance) return;
-
-        const target =
-          current === "triage" ? "diagnosis" :
-          current === "diagnosis" ? "fix" :
-          current === "fix" ? "changeNote" : "changeNote";
-        s.uiStage = target;
-        saveTicketState(ticketId, s);
-        renderTicketDetail(ticketId);
+      // Next stage
+      if (btn.dataset.next === "true") {
+        const ticketId = btn.getAttribute("data-ticket");
+        if (ticketId) goNextStage(ticketId);
         return;
       }
 
-      const gotoNote = e.target && e.target.closest ? e.target.closest("button[data-goto-note='true']") : null;
-      if (gotoNote) {
-        const ticketId = gotoNote.getAttribute("data-ticket");
-        if (!ticketId) return;
-        const s = ensureGamifiedState(ticketId, loadTicketState(ticketId));
-        const unlocked = getUnlockedStages(s);
-        if (!unlocked.changeNote) return;
-        s.uiStage = "changeNote";
-        saveTicketState(ticketId, s);
-        renderTicketDetail(ticketId);
+      // Go to Change Note
+      if (btn.dataset.gotoNote === "true") {
+        const ticketId = btn.getAttribute("data-ticket");
+        if (ticketId) goChangeNote(ticketId);
         return;
       }
 
-      const prevStage = e.target && e.target.closest ? e.target.closest("button[data-prev-stage='true']") : null;
-      if (prevStage) {
-        const ticketId = prevStage.getAttribute("data-ticket");
-        if (!ticketId) return;
-        const s = ensureGamifiedState(ticketId, loadTicketState(ticketId));
-        s.uiStage = "fix";
-        saveTicketState(ticketId, s);
-        renderTicketDetail(ticketId);
+      // Back to Fix
+      if (btn.dataset.backFix === "true") {
+        const ticketId = btn.getAttribute("data-ticket");
+        if (ticketId) backToFix(ticketId);
         return;
       }
 
-      const insertTpl = e.target && e.target.closest ? e.target.closest("button[data-insert-template='true']") : null;
-      if (insertTpl) {
-        const ticketId = insertTpl.getAttribute("data-ticket");
-        if (!ticketId) return;
-        const t = tickets.find((x) => x.id === ticketId);
-        const s = ensureGamifiedState(ticketId, loadTicketState(ticketId));
-        const tpl = changeNoteTemplate(t);
-        const existing = (s.changeNote || "");
-        s.changeNote = existing.trim() ? (existing.trim() + "\n\n" + tpl) : tpl;
-        saveTicketState(ticketId, s);
-        renderTicketDetail(ticketId);
+      // Insert Template
+      if (btn.dataset.insertTemplate === "true") {
+        const ticketId = btn.getAttribute("data-ticket");
+        if (ticketId) insertTemplate(ticketId);
         return;
       }
 
-      const submitNote = e.target && e.target.closest ? e.target.closest("button[data-submit-note='true']") : null;
-      if (submitNote) {
-        const ticketId = submitNote.getAttribute("data-ticket");
-        if (!ticketId) return;
-        const s = ensureGamifiedState(ticketId, loadTicketState(ticketId));
-        const txt = (document.getElementById("changeNote")?.value || s.changeNote || "");
-        s.changeNote = txt;
-        if ((txt || "").trim().length < CHANGE_NOTE_MIN) return;
-        s.doneNote = true;
-        const allCorrect = !!(s.correct.triage && s.correct.diagnosis && s.correct.fix);
-        const noteOk = (s.changeNote || "").trim().length >= CHANGE_NOTE_MIN;
-        s.resolved = allCorrect && noteOk;
-        saveTicketState(ticketId, s);
-        renderTicketDetail(ticketId);
-        updateProgressAndHealth();
+      // Submit Note
+      if (btn.dataset.submitNote === "true") {
+        const ticketId = btn.getAttribute("data-ticket");
+        if (ticketId) submitNote(ticketId);
         return;
       }
     });
