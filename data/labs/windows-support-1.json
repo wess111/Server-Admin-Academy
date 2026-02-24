@@ -65,7 +65,11 @@
       "validations": [
         "Confirm the file transfers successfully",
         "Verify the solution matches user constraints (data retention, tool limitations)"
-      ]
+      ],
+      "debrief": {
+        "summary": "You recognized that large-file copy failures to USB often trace back to filesystem limitations (e.g., FAT32 max file size) rather than Windows permissions or \"broken\" USB media.",
+        "takeaway": "Match the storage format to the workload\u2014use exFAT/NTFS when file sizes exceed FAT32 limits."
+      }
     },
     {
       "id": "WS-002",
@@ -118,7 +122,11 @@
       "validations": [
         "Disk becomes selectable in Setup",
         "Installation proceeds successfully"
-      ]
+      ],
+      "debrief": {
+        "summary": "You tied Windows Setup disk selection failures to storage configuration (wrong partition style, missing storage driver, or disk offline/uninitialized) instead of assuming the installer is corrupt.",
+        "takeaway": "When Setup can\u2019t see a disk, validate BIOS/UEFI mode, disk partition style (GPT/MBR), and storage drivers first."
+      }
     },
     {
       "id": "WS-003",
@@ -171,7 +179,11 @@
       "validations": [
         "Drive appears in File Explorer",
         "Read/write test succeeds"
-      ]
+      ],
+      "debrief": {
+        "summary": "You identified that a newly attached disk won\u2019t appear in File Explorer until it\u2019s initialized, partitioned, and formatted. Disk Management is the first stop for visibility issues.",
+        "takeaway": "Windows requires a volume (partition + filesystem + drive letter) before a disk shows up to users."
+      }
     },
     {
       "id": "WS-004",
@@ -223,7 +235,11 @@
         "Disk is Online",
         "Volume accessible",
         "No new disk errors after fix"
-      ]
+      ],
+      "debrief": {
+        "summary": "You mapped slow logons to profile processing and dependency checks (domain connectivity, DNS, GPO processing, script drives) rather than treating it as a generic \"slow PC\" problem.",
+        "takeaway": "For domain logon delays, validate DNS and GPO processing (gpresult/Event Viewer) before changing hardware."
+      }
     },
     {
       "id": "WS-005",
@@ -275,7 +291,11 @@
       "validations": [
         "User can complete approved install via correct method",
         "No unnecessary privileges remain"
-      ]
+      ],
+      "debrief": {
+        "summary": "You treated frequent password prompts as an authentication/session issue (cached creds, account lockouts, time skew, or credential manager) rather than a random application glitch.",
+        "takeaway": "Authentication problems are often systemic\u2014check account status and time sync before reinstalling apps."
+      }
     },
     {
       "id": "WS-006",
@@ -328,7 +348,11 @@
         "User can access required files",
         "User cannot access outside scope",
         "Effective access matches intent"
-      ]
+      ],
+      "debrief": {
+        "summary": "You connected update failures to servicing prerequisites (storage, Windows Update components, policy/WSUS settings) instead of repeatedly retrying updates with no change.",
+        "takeaway": "Reset update components and verify policy/WSUS configuration when updates fail consistently."
+      }
     },
     {
       "id": "WS-007",
@@ -380,7 +404,11 @@
       "validations": [
         "Disk state matches intended outcome",
         "Setup can proceed / volume mounts correctly"
-      ]
+      ],
+      "debrief": {
+        "summary": "You used evidence-first troubleshooting for network issues (IP config, gateway/DNS reachability, adapter state) rather than immediately replacing hardware.",
+        "takeaway": "Start with ipconfig/ping path testing\u2014local IP \u2192 gateway \u2192 DNS \u2192 internet\u2014to isolate where the break occurs."
+      }
     },
     {
       "id": "WS-008",
@@ -432,7 +460,11 @@
         "USB appears as boot option",
         "Boot proceeds to Windows Setup",
         "Correct edition/architecture is used"
-      ]
+      ],
+      "debrief": {
+        "summary": "You framed bootable USB creation as a standards-based process (correct ISO, partition scheme, UEFI vs legacy compatibility) rather than trial-and-error formatting.",
+        "takeaway": "Boot media must match the target firmware mode\u2014ensure the USB is created for UEFI/GPT when needed."
+      }
     }
   ]
 }
