@@ -351,7 +351,7 @@ a{color:inherit;text-decoration:none}
 .stepText:focus{border-color:rgba(167,139,250,.45);box-shadow:0 0 0 4px rgba(167,139,250,.12)}
 
 .note-actions{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
-.mini-muted{color:rgba(238,245,255,.70);font-size:12px;font-weight:400}
+.mini-muted{color:rgba(238,245,255,.70);font-size:13px;font-weight:400}
 
 /* Footer */
 .footer{margin-top:14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 2px}
