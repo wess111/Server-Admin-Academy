@@ -1,93 +1,91 @@
 {
-  "id": "dhcp-advanced",
-  "title": "DHCP Professional Triage Lab",
+  "id": "dhcp-pro-lab",
+  "title": "Enterprise DHCP: Advanced Triage",
   "track": "System Engineering",
   "tickets": [
     {
       "id": "DHCP-ADV-01",
-      "title": "Service Status: Running / Status: Unknown",
-      "summary": "You've installed the DHCP role on a new Domain Controller. The 'DHCP Server' service is started, but the management console shows a red down arrow on the IPv4 node. Clients are getting nothing.",
+      "title": "Red Icon: Service Running but Inactive",
+      "summary": "DHCP is installed on DC-02. The service is 'Started' in Windows, but the console shows a red down arrow. Clients cannot get leases.",
       "artifact": [
-        "Server: DC-02 (Member of contoso.com)",
-        "Service Manager: DHCP Server Service is 'Running'",
-        "Console: IPv4 node shows a red down arrow icon.",
-        "Clients: Receiving 169.254.x.x addresses."
+        "Console: IPv4 Node has a Red Down Arrow.",
+        "Services.msc: DHCP Server is 'Running'.",
+        "Event Viewer: System Log contains Event 1046."
       ],
-      "debrief": "Triage in Windows often requires looking past the 'Running' service status. Because DHCP is integrated with Active Directory, the service performs an 'environment check.' If it doesn't find itself in the Authorized Servers list, it will refuse to hand out IPs to prevent rogue server behavior. You successfully navigated from 'Service Status' to 'Security Authorization.'",
       "workflow": {
         "triage": {
-          "q": "The service is 'Running' but the console is 'Red'. What is the most professional next step to identify the block?",
+          "q": "The service is started, yet the console indicates the server is not responding. What is your first investigative move?",
           "options": [
-            "Check the DHCP Audit Logs or the System Event Log for authorization errors",
-            "Restart the server to see if the icon turns green",
-            "Delete the scope and recreate it to reset the console status",
-            "Ping the gateway to check for network connectivity"
+            "Restart the DHCP Service to clear the red icon",
+            "Examine the System Event Log for Event ID 1046 or 1044",
+            "Reinstall the DHCP Role using PowerShell",
+            "Ping the local loopback (127.0.0.1) to check the IP stack"
           ],
-          "correct": 0
+          "correct": 1
         },
         "diagnosis": {
-          "q": "You find Event ID 1046: 'The DHCP service is not authorized to start'. What is the root cause?",
+          "q": "Event 1046 is found: 'The DHCP service is not authorized to start.' What does this mean in a Domain environment?",
           "options": [
-            "The DHCP service account has been locked out in AD",
-            "The server has not been granted permission to issue leases within the Active Directory forest",
-            "A rogue DHCP server has already claimed the subnet",
-            "The server's IP address is not static, which is required for authorization"
+            "The server's license has expired",
+            "The DHCP server must be authorized in Active Directory to prevent rogue servers",
+            "The DHCP service account password has expired",
+            "The Scope has reached its maximum lease capacity"
           ],
           "correct": 1
         },
         "fix": {
-          "q": "How do you resolve this 'Unauthorized' state?",
+          "q": "How do you authorize this server?",
           "options": [
-            "Add the DHCP Server's computer account to the 'Domain Admins' group",
-            "Right-click 'DHCP' in the console and select 'Manage Authorized Servers' to add this node",
-            "Run 'netsh dhcp server initiate authorization'",
-            "Promote the server to a Global Catalog"
+            "Add the server IP to the 'Domain Admins' group",
+            "Right-click 'DHCP' in the console and select 'Manage Authorized Servers'",
+            "Run 'ipconfig /registerdns' on the server",
+            "Disable the Windows Firewall on the Domain Controller"
           ],
-          "correct": 1
+          "correct": 1,
+          "feedback": "Correct! **Debrief:** In an AD environment, the DHCP service performs a security check. It looks for its own GUID in the 'CN=NetServices,CN=Services,CN=Configuration' container in Active Directory. If it isn't there, it enters a dormant state. This prevents a random employee from plugging in a server and taking over IP addressing for the whole company."
         }
       }
     },
     {
       "id": "DHCP-ADV-07",
-      "title": "The 'One-Way' Subnet",
-      "summary": "A new satellite office (VLAN 20) was brought online. Users there can't get IPs. However, users in the HQ (VLAN 10), where the DHCP server sits, have no issues.",
+      "title": "The 'VLAN Gap' Connectivity Issue",
+      "summary": "Clients on VLAN 20 are failing to get IPs, but clients on the same VLAN as the server (VLAN 10) are working perfectly.",
       "artifact": [
-        "VLAN 10 (HQ): 10.10.10.0/24 (Working)",
-        "VLAN 20 (Branch): 10.10.20.0/24 (Failing)",
-        "DHCP Server: 10.10.10.5",
-        "Router: Inter-VLAN routing is confirmed working for static IPs."
+        "VLAN 10: 10.10.10.0/24 (Working)",
+        "VLAN 20: 10.10.20.0/24 (Failing - APIPA 169.254.x.x)",
+        "Router: Inter-VLAN routing is enabled and tested."
       ],
-      "debrief": "This illustrates the 'Broadcast Boundary' problem. DHCP 'Discovers' are broadcasts; routers kill broadcasts. By verifying that the server never saw the request, you correctly identified that the 'Request' never left the subnet. Configuring the IP Helper (Relay) on the router is the standard enterprise fix for this Layer 2 limitation.",
       "workflow": {
         "triage": {
-          "q": "The DHCP server is healthy for HQ. What should you check to see if the Branch requests are even reaching the server?",
+          "q": "To see if the server is even receiving requests from the remote subnet, where do you look?",
           "options": [
-            "Check the DHCP Server Statistics or a Packet Capture for 'DHCP Discovers' from the 10.10.20.x range",
-            "Check the Branch scope to see if it is 100% full",
-            "Check if the Branch users have the correct DNS settings",
-            "Check the DHCP 'Deny' filter list"
+            "The DHCP Server Statistics and Packet Capture (Wireshark) for 'Discovers'",
+            "The Scope Options for Option 003 (Router)",
+            "The 'Address Leases' of the working VLAN 10",
+            "The Active Directory Sites and Services console"
           ],
           "correct": 0
         },
         "diagnosis": {
-          "q": "The Packet Capture shows zero incoming traffic from the 10.10.20.0 subnet. What is the most likely architectural failure?",
+          "q": "The Packet Capture shows NO incoming traffic from VLAN 20. Why are the broadcasts not reaching the server?",
           "options": [
-            "The DHCP server is too slow to respond to the remote subnet",
-            "The Branch Scope is deactivated",
-            "The Router/Switch is not configured to relay DHCP broadcasts across VLAN boundaries",
-            "The DHCP server doesn't have a NIC physically plugged into the Branch VLAN"
-          ],
-          "correct": 2
-        },
-        "fix": {
-          "q": "What is the industry-standard remediation for this?",
-          "options": [
-            "Install a local DHCP server at the Branch office",
-            "Configure an 'IP Helper-Address' (DHCP Relay) on the Branch VLAN's gateway interface",
-            "Create a Superscope that combines VLAN 10 and VLAN 20",
-            "Change the subnet mask of the HQ scope to include the Branch range"
+            "The server's Firewall is blocking VLAN 20 specifically",
+            "Standard routers do not forward Layer 2 DHCP broadcasts across VLAN boundaries",
+            "The DHCP service only listens on one network interface at a time",
+            "The subnet mask on the client is too restrictive"
           ],
           "correct": 1
+        },
+        "fix": {
+          "q": "What is the industry-standard fix for this multi-VLAN issue?",
+          "options": [
+            "Move the DHCP server to VLAN 20",
+            "Configure an 'IP Helper-Address' (DHCP Relay) on the VLAN 20 gateway interface",
+            "Enable 'Promiscuous Mode' on the server's NIC",
+            "Create a Superscope including both VLANs"
+          ],
+          "correct": 1,
+          "feedback": "Correct! **Debrief:** DHCP starts with a broadcast (the 'D' in DORA). Since routers are designed to stop broadcast storms, they kill these packets. The 'IP Helper' acts as a proxy: it catches the broadcast, changes the 'destination' to the specific IP of your DHCP server, and forwards it as a unicast packet."
         }
       }
     }
