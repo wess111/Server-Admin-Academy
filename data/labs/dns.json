@@ -1,215 +1,108 @@
 {
-  "id": "dns-resolution-pro",
+  "id": "dns",
   "title": "DNS Systems: Name Resolution",
-  "track": "System Engineering",
+  "track": "Systems Engineering",
   "subject": "DNS Architecture",
   "rolePill": "Systems Engineer",
-  "description": "The 'Phonebook of the Internet' is broken. Resolve complex resolution failures, service record gaps, and cache poisoning symptoms using forensic evidence.",
-  "reportOverview": "This module tests deep DNS logic. Key skills: SRV record registration for Active Directory, CNAME vs A-record efficiency, Scavenging/Aging mechanics, and Root Hint failover.",
-  "categories": ["Name Resolution", "AD Integration", "Zone Management"],
-  "evidenceInstructions": "Instructions:\n1) Analyze the 'Artifact' for Red Herrings (clues that look relevant but aren't).\n2) Use Triage to narrow the scope.\n3) Diagnose the architectural failure.\n4) Review the Resolution Insight for the 'Professional Standard' fix.",
+  "description": "Resolve complex resolution failures and service record gaps in an enterprise environment.",
+  "reportOverview": "This module tests your ability to distinguish between network connectivity and name resolution service health.",
+  "categories": ["AD Integration", "Name Resolution", "Zone Management"],
   "tickets": [
     {
       "id": "DNS-01",
-      "category": "Name Resolution",
-      "title": "\"Intranet is down, but only for some people\"",
-      "summary": "The 'Portal' site moved to a new IP. Half the staff sees the new site, the other half gets a '404' or the old site.",
-      "tags": ["stale-records", "scavenging"],
+      "category": "AD Integration",
+      "title": "Workstation: 'The Trust Relationship Failed'",
+      "summary": "A user cannot log in. Ping to the DC works via IP, but the computer cannot find the Domain Controller by name during login.",
+      "tags": ["SRV-Records", "Netlogon"],
       "artifact": [
-        "Server A: portal.local -> 10.0.0.50 (New)",
-        "Server B: portal.local -> 10.0.0.20 (Old)",
-        "Red Herring: Web server CPU is at 10%"
+        "Ping 10.0.0.10: Success",
+        "DNS Manager: _msdcs.local folder is empty",
+        "Event Viewer: 'No DNS servers could be reached to locate the DC'",
+        "Red Herring: The 'Workstation' service is running on the client"
       ],
       "workflow": {
-        "triage": { "q": "What happens when a name has two different 'A' records pointing to different IPs?", "options": ["It crashes", "DNS uses 'Round Robin' to alternate between them", "It picks the newest", "It asks the user"], "correct": 1 },
-        "diagnosis": { "q": "Why is the old IP still in the system?", "options": ["Scavenging is disabled, so the 'stale' record wasn't removed when the server moved", "Virus", "Browser error", "RAM failure"], "correct": 0 },
-        "fix": { "q": "How do you ensure this doesn't happen again?", "options": ["Delete old record and enable Scavenging/Aging", "Reinstall DNS", "Reboot the Web Server", "Rename the site"], "correct": 0 }
+        "triage": {
+          "q": "Since the IP is reachable but the service is not, which DNS record type is likely missing for AD discovery?",
+          "options": [
+            "A (Address) Record",
+            "SRV (Service) Record",
+            "MX (Mail) Record",
+            "CNAME (Alias) Record"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Why is the _msdcs folder empty in the DNS console?",
+          "options": [
+            "The Domain Controller failed to register its SRV records",
+            "The client has a corrupt HOSTS file",
+            "The zone is configured as Secondary (Read-Only)",
+            "Active Directory is in 'Safe Mode'"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "What command or action forces the DC to re-publish its service records to DNS?",
+          "options": [
+            "Restart the 'Netlogon' service on the Domain Controller",
+            "Run 'ipconfig /flushdns' on all client workstations",
+            "Reinstall the DNS role on the server",
+            "Rejoin the DC to the domain"
+          ],
+          "correct": 0
+        }
       },
       "debrief": {
-        "summary": "DNS is only as good as its maintenance.",
-        "takeaway": "Resolution Insight: You caught the 'Ghost' record. Without Scavenging, DNS is a phonebook that never crosses out people who move away. By enabling Scavenging, the server now 'audits' itself to ensure every record is still valid."
+        "summary": "Active Directory lives and dies by SRV records.",
+        "takeaway": "Connectivity (Ping) is just the foundation; Service Discovery (SRV) is the application layer that allows AD to function."
       }
     },
-    
     {
       "id": "DNS-02",
-      "category": "AD Integration",
-      "title": "\"Domain logins are failing with 'No DC Found'\"",
-      "summary": "Computers can ping the Domain Controller's IP, but they cannot join the domain or log users in.",
-      "artifact": [
-        "Ping DC-01: Success",
-        "DNS Console: '_msdcs' folder is empty",
-        "Red Herring: The 'Workstation' service is running"
-      ],
-      "workflow": {
-        "triage": { "q": "Which record type is the 'GPS' that tells a PC where the Domain Controller service is located?", "options": ["A-Record", "SRV Record", "MX Record", "PTR Record"], "correct": 1 },
-        "diagnosis": { "q": "Why is the computer unable to find the DC despite a successful ping?", "options": ["The 'A' record is missing", "The Service (SRV) records are missing from DNS", "Cable is loose", "Wrong time zone"], "correct": 1 },
-        "fix": { "q": "How do you force the DC to re-register its 'GPS' coordinates?", "options": ["Restart the 'Netlogon' service on the DC", "Reinstall Windows on the client", "Flush DNS on the client", "Change the DC's IP"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "Active Directory relies entirely on SRV records to function.",
-        "takeaway": "Resolution Insight: You realized that 'knowing the server is there' (IP) isn't the same as 'knowing what the server does' (Service). Restarting Netlogon forces the DC to write its resume back into DNS so clients can find it."
-      }
-    },
-    {
-      "id": "DNS-03",
       "category": "Name Resolution",
-      "title": "\"External sites load slow, then fail\"",
-      "summary": "Browsing Google or Microsoft works for 10 minutes after a server reboot, then stops completely.",
+      "title": "Stale Records: 'Old' IP causing 404s",
+      "summary": "The FileServer was moved to 10.0.0.50, but half the users are still being directed to the old IP 10.0.0.20.",
+      "tags": ["Scavenging", "Stale-Records"],
       "artifact": [
-        "Forwarders: 8.8.8.8 (Google)",
-        "Root Hints: Disabled",
-        "Red Herring: ISP Gateway is pingable"
+        "Lookup fileserver.local: Returns 10.0.0.20 and 10.0.0.50",
+        "DNS Console: 'Aging/Scavenging' is currently disabled",
+        "Red Herring: The server's NIC has 'Register this connection in DNS' checked"
       ],
       "workflow": {
-        "triage": { "q": "If your Forwarders (8.8.8.8) stop responding, what is the 'backup' method for internet resolution?", "options": ["Recycle Bin", "Root Hints", "Secondary Subnet", "DHCP"], "correct": 1 },
-        "diagnosis": { "q": "Why is resolution failing completely when the forwarder is sluggish?", "options": ["The server isn't allowed to 'ask the 13 masters' (Root Hints) for help", "CPU bottleneck", "No RAM", "Wrong DNS version"], "correct": 0 },
-        "fix": { "q": "What is the fix?", "options": ["Enable 'Use root hints if no forwarders are available'", "Delete all forwarders", "Restart the Router", "Change the local IP"], "correct": 0 }
+        "triage": {
+          "q": "What happens when a single name has two 'A' records with different IP addresses in DNS?",
+          "options": [
+            "DNS uses Round Robin to alternate between them",
+            "DNS always picks the first one in the list",
+            "The server crashes",
+            "The client chooses the fastest IP"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "Why is the old record (10.0.0.20) still present after the server changed IPs?",
+          "options": [
+            "The server didn't send a delete command",
+            "Scavenging is disabled, preventing 'stale' records from being auto-deleted",
+            "The ISP is caching the old record",
+            "The TTL is set to 0"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "How do you ensure stale records are cleaned up automatically in the future?",
+          "options": [
+            "Manually delete the old record and enable Scavenging/Aging on the zone",
+            "Restart the DNS service every 24 hours",
+            "Delete the Forward Lookup Zone and recreate it",
+            "Change the subnet mask"
+          ],
+          "correct": 0
+        }
       },
       "debrief": {
-        "summary": "Root Hints are the 'Safety Net' of the global internet.",
-        "takeaway": "Resolution Insight: Forwarders are like calling a smart friend. Root Hints are like going to the library yourself. By enabling Root Hints, you ensured that even if Google's DNS is down, your server can still find its own way around the web."
-      }
-    },
-    
-    {
-      "id": "DNS-04",
-      "category": "Zone Management",
-      "title": "\"I need the name of the PC at 10.0.0.45\"",
-      "summary": "The Firewall shows an attack from 10.0.0.45. You need to identify the machine name immediately.",
-      "artifact": [
-        "Command: nslookup 10.0.0.45",
-        "Result: Can't find 10.0.0.45: Non-existent domain",
-        "Red Herring: The Forward Lookup Zone is healthy"
-      ],
-      "workflow": {
-        "triage": { "q": "Which zone type is responsible for 'Reverse' lookups (IP to Name)?", "options": ["Forward Zone", "Reverse Lookup Zone", "Stub Zone", "Conditional Forwarder"], "correct": 1 },
-        "diagnosis": { "q": "Why did the nslookup fail?", "options": ["The PC is off", "The Reverse Lookup Zone hasn't been created for this subnet", "The IP is fake", "Wrong password"], "correct": 1 },
-        "fix": { "q": "Action required?", "options": ["Create a Reverse Lookup Zone (PTR records)", "Ping the IP", "Add an A-record", "Check the user's desk"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "Reverse Lookups are 'Caller ID' for the network.",
-        "takeaway": "Resolution Insight: Most DNS is set up to find names. Security requires the opposite. By creating the Reverse Zone, you enabled the server to provide 'Caller ID,' allowing you to track down the infected device by its IP."
-      }
-    },
-    {
-      "id": "DNS-05",
-      "category": "Name Resolution",
-      "title": "\"The 'Shop' link breaks whenever we change servers\"",
-      "summary": "Marketing uses 'shop.local'. Every time you upgrade the web server hardware (new IP), you have to update 5 different records and 200 bookmarks break.",
-      "artifact": [
-        "Current Setup: 5 A-records for 'shop' pointing to .50",
-        "Goal: Simplify management",
-        "Red Herring: The server is a Virtual Machine"
-      ],
-      "workflow": {
-        "triage": { "q": "What record type acts as a 'nickname' for another name?", "options": ["A", "CNAME", "MX", "NS"], "correct": 1 },
-        "diagnosis": { "q": "Why is the current setup inefficient?", "options": ["It's hard to manage multiple A-records for one service", "A-records are slower", "IPs can't be changed", "Security risk"], "correct": 0 },
-        "fix": { "q": "What is the professional recommendation?", "options": ["Create one A-record for the server, then CNAMEs for the services", "Use static IPs only", "Delete DNS", "Rename the server"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "CNAMEs abstract the service from the hardware.",
-        "takeaway": "Resolution Insight: You decoupled the 'service' from the 'server.' Now, if the hardware changes, you update one single A-record, and the CNAME 'nickname' automatically points to the new location without marketing changing a thing."
-      }
-    },
-    {
-      "id": "DNS-06",
-      "category": "Zone Management",
-      "title": "\"Secondary server isn't getting updates\"",
-      "summary": "You added a record to DC-01. DC-02 doesn't see it, even after 'Reload'.",
-      "artifact": [
-        "DC-01: Primary",
-        "DC-02: Secondary",
-        "Red Herring: Ping between DCs is 1ms"
-      ],
-      "workflow": {
-        "triage": { "q": "What process syncs the DNS database between two servers?", "options": ["Zone Transfer", "File Copy", "Email sync", "DHCP"], "correct": 0 },
-        "diagnosis": { "q": "Why is DC-02 out of sync?", "options": ["DC-01 hasn't 'allowed' zone transfers to DC-02's IP", "The database is too big", "DC-02 is Read-Only", "No internet"], "correct": 0 },
-        "fix": { "q": "How do you 'unlock' the sync?", "options": ["Properties -> Zone Transfers -> Allow", "Restart DC-02", "Reinstall DNS", "Change DC-01 IP"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "DNS sync is a security-gated process.",
-        "takeaway": "Resolution Insight: DNS servers don't just give their data to anyone who asks. You had to 'whitelist' the secondary server to allow it to pull the records, ensuring consistency across the office."
-      }
-    },
-    {
-      "id": "DNS-07",
-      "category": "Name Resolution",
-      "title": "\"I fixed the IP, but it's still pinging the old one\"",
-      "summary": "You updated the record on the server. The user's PC still goes to the wrong IP.",
-      "artifact": [
-        "Server: record.local -> .100 (Correct)",
-        "User PC: ping record.local -> .50 (Wrong)",
-        "Red Herring: The user rebooted their router"
-      ],
-      "workflow": {
-        "triage": { "q": "Where does a PC store DNS answers locally to save time?", "options": ["DNS Cache", "RAM", "Hard Drive", "Cookies"], "correct": 0 },
-        "diagnosis": { "q": "Why is the PC ignoring the server's update?", "options": ["The PC is using its 'cached' memory of the old answer", "The server is lying", "Cable error", "Virus"], "correct": 0 },
-        "fix": { "q": "How do you empty the PC's memory?", "options": ["ipconfig /flushdns", "Restart PC", "Delete Chrome", "Unplug network"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "The local cache can lead to 'stale' behavior on the client.",
-        "takeaway": "Resolution Insight: Speed can be a downside. The PC was trying to be fast by not asking the server. Flushing the cache forces it to see the 'new truth' you created on the DNS server."
-      }
-    },
-    {
-      "id": "DNS-08",
-      "category": "Zone Management",
-      "title": "\"External mail is bouncing with 'Domain not found'\"",
-      "summary": "We can send emails to clients, but when they reply, they get an error saying our domain doesn't exist.",
-      "artifact": [
-        "Internal Mail: Working",
-        "Public DNS: A-record for mail exists",
-        "Missing: MX Record"
-      ],
-      "workflow": {
-        "triage": { "q": "Which record type identifies the 'Mail Server' for a domain?", "options": ["A", "MX", "CNAME", "TXT"], "correct": 1 },
-        "diagnosis": { "q": "Why is the internet rejecting the mail?", "options": ["There is no 'Post Office' sign (MX record) telling the internet where to drop the mail", "Firewall", "Password error", "Inbox full"], "correct": 0 },
-        "fix": { "q": "Resolution?", "options": ["Add an MX record pointing to your mail server's A-record", "Restart Mail", "Change Domain name", "Add more RAM"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "MX records are essential for global mail routing.",
-        "takeaway": "Resolution Insight: An A-record tells the world 'I exist.' An MX record tells the world 'Send my mail here.' Without the MX record, other mail servers simply didn't know which of your servers was the 'official' receiver."
-      }
-    },
-    {
-      "id": "DNS-09",
-      "category": "Name Resolution",
-      "title": "\"Resolution is slow for only one specific website\"",
-      "summary": "Everything is fast except for 'partner-portal.com', which takes 30 seconds to load every time.",
-      "artifact": [
-        "Forwarders: 8.8.8.8",
-        "Specific Setting: A 'Conditional Forwarder' exists for 'partner-portal.com' pointing to an old IP",
-        "Red Herring: Latency is 20ms"
-      ],
-      "workflow": {
-        "triage": { "q": "If a server has a 'Conditional Forwarder' and a 'General Forwarder', which does it use first?", "options": ["Conditional (Specific)", "General (Global)", "Random", "The faster one"], "correct": 0 },
-        "diagnosis": { "q": "Why is the load time so high?", "options": ["It's trying the dead IP in the Conditional Forwarder first, timing out, then falling back", "Partner site is slow", "Browser issue", "No RAM"], "correct": 0 },
-        "fix": { "q": "Fix?", "options": ["Delete or update the Conditional Forwarder", "Clear Cache", "Restart DNS", "Buy more bandwidth"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "Specific rules always override general rules in DNS.",
-        "takeaway": "Resolution Insight: You found a 'forgotten' rule. Because you told the server to 'always ask THIS specific IP' for that partner site, it was dutifully waiting for a response that never came before trying the regular internet."
-      }
-    },
-    {
-      "id": "DNS-10",
-      "category": "Zone Management",
-      "title": "\"DNS Service won't start - Error 2\"",
-      "summary": "After a power outage, the DNS role stays stopped. Attempting to start it results in a 'File not found' error.",
-      "artifact": [
-        "Path: C:\\Windows\\System32\\dns",
-        "Status: Folder is empty",
-        "Red Herring: Registry shows the service is enabled"
-      ],
-      "workflow": {
-        "triage": { "q": "Where does a non-Active Directory integrated zone store its data?", "options": ["A .dns text file", "Active Directory database", "The Registry", "The cloud"], "correct": 0 },
-        "diagnosis": { "q": "Why is the service failing to start?", "options": ["The physical zone files are missing or corrupted", "No RAM", "Wrong OS version", "User logged out"], "correct": 0 },
-        "fix": { "q": "How do you recover?", "options": ["Restore .dns files from backup to the DNS folder", "Reinstall Windows", "Reboot", "Change IP"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "Standard DNS zones are just text files on the disk.",
-        "takeaway": "Resolution Insight: You went 'under the hood.' If the zone isn't in Active Directory, it's just a file. If that file is gone, the 'brain' of the DNS server is empty. Restoring the file from backup restores the entire configuration."
+        "summary": "DNS hygiene requires Scavenging.",
+        "takeaway": "Without an automated cleanup process, DNS becomes cluttered with 'ghost' records that cause intermittent failures."
       }
     }
   ]
