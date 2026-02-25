@@ -1,193 +1,209 @@
 {
-  "id": "dns-expert-infrastructure",
-  "title": "DNS Systems Engineering: Infrastructure Triage",
+  "id": "dns-core-10-complete",
+  "title": "DNS Systems: Name Resolution",
   "track": "System Engineering",
   "subject": "DNS",
   "rolePill": "Systems Administrator",
-  "description": "In a modern enterprise, 'The Network is Down' is almost always a DNS failure. In this activity, you will step into the role of a Systems Administrator managing a complex Windows Server environment. You'll move past simple 'pings' to analyze SRV records, recursion logic, and Active Directory replication health to restore critical services.",
-  "reportOverview": "This report summarizes your diagnostic accuracy across enterprise DNS scenarios. Use it to identify gaps in your understanding of name resolution hierarchy and zone synchronization.",
-  "categories": [
-    "DNS"
-  ],
-  "evidenceInstructions": "Instructions:\n1) Analyze the symptom and examine the provided artifacts (nslookup, ipconfig, event logs).\n2) Choose the Triage step that provides the most actionable data.\n3) Identify the Diagnosis based on the technical evidence.\n4) Select the professional remediation (Fix) that aligns with best practices.\n5) Document your change note for the ticketing system.",
+  "description": "Troubleshoot the backbone of the network. Resolve issues with record types, stale data, and external resolution using an evidence-first approach.",
   "tickets": [
     {
       "id": "DNS-01",
       "category": "DNS",
-      "title": "Workstation: 'The specified domain could not be contacted'",
-      "summary": "A workstation in the Accounting department cannot join the domain. It has full internet access, but the NetSetup log indicates a failure to locate the Domain Controller.",
-      "tags": [
-        "domain join",
-        "srv",
-        "client dns"
-      ],
+      "title": "\"Internal site loads by IP, but not by name\"",
+      "summary": "Users can reach 'http://172.18.2.50' but get a 'Site Not Found' error when they type 'http://portal.local'.",
       "artifact": [
-        "Client (WS-ACC01):",
-        "nslookup _ldap._tcp.dc._msdcs.contoso.com",
-        "*** dc01.contoso.com can't find _ldap._tcp.dc._msdcs.contoso.com: NXDOMAIN",
-        "",
-        "ipconfig /all (snippet):",
-        "DNS Servers . . . . . . . . . . . : 8.8.8.8",
-        "                                    1.1.1.1"
+        "Ping 172.18.2.50: Success",
+        "Ping portal.local: 'Request could not find host'",
+        "DNS Console: No record exists for 'portal'"
       ],
-      "validations": [
-        "Confirm client is using internal DNS (DCs).",
-        "Confirm SRV lookup resolves after change.",
-        "Retry domain join."
-      ],
-      "debrief": {
-        "summary": "Active Directory is entirely dependent on Service (SRV) records to locate resources. By using public resolvers (8.8.8.8), the workstation was asking the internet for internal LDAP records that don't exist in the public namespace.",
-        "takeaway": "Domain joins are DNS-dependent: point clients to internal DC DNS to ensure AD-specific SRV records can be discovered."
-      },
       "workflow": {
-        "triage": {
-          "q": "The client has internet access but cannot find the domain. What is the first configuration you must examine on the client?",
-          "options": [
-            "Check the 'Domain Admins' group membership",
-            "Verify the assigned DNS servers in the IPv4 properties to ensure they point to local Domain Controllers",
-            "Disable the Windows Firewall to see if LDAP traffic is being filtered",
-            "Check if the Netlogon service is running on the local workstation"
-          ],
-          "correct": 1
-        },
-        "diagnosis": {
-          "q": "The nslookup shows NXDOMAIN for the _msdcs record, and ipconfig shows Google DNS. Why is the join failing?",
-          "options": [
-            "The Domain Controller is offline",
-            "Public DNS servers (8.8.8.8) are not authoritative for the internal AD namespace and cannot resolve SRV records",
-            "The workstation is on a different VLAN than the Domain Controller",
-            "The workstation's clock is out of sync with the DC by more than 5 minutes"
-          ],
-          "correct": 1
-        },
-        "fix": {
-          "q": "What is the most professional way to remediate this across the department?",
-          "options": [
-            "Manually add the DC's IP to the 'hosts' file on every machine",
-            "Configure DHCP Scope Option 006 to provide the IP addresses of the internal DNS servers to all clients",
-            "Set the DNS servers to 'Obtain Automatically' and hope for the best",
-            "Run 'ipconfig /registerdns' on the workstation"
-          ],
-          "correct": 1
-        }
+        "triage": { "q": "If the IP works but the name doesn't, which system is failing?", "options": ["Web Server", "DNS", "Firewall"], "correct": 1 },
+        "diagnosis": { "q": "What is missing in the DNS Forward Lookup Zone?", "options": ["An 'A' (Host) record for 'portal'", "An MX record", "The server's serial number"], "correct": 0 },
+        "fix": { "q": "How do you fix the translation?", "options": ["Create an 'A' record pointing 'portal' to 172.18.2.50", "Restart the server", "Flush DNS"], "correct": 0 }
+      },
+      "debrief": {
+        "summary": "DNS is the translator for the network.",
+        "takeaway": "Your ping test proved the website was healthy, which narrowed the problem down to a language issue. Adding the 'A' record provided the missing dictionary entry that allows computers to translate the human name into the numerical IP they actually use to talk."
+      }
+    },
+    {
+      "id": "DNS-02",
+      "category": "DNS",
+      "title": "\"External websites won't load, but internal ones do\"",
+      "summary": "Users can access the company intranet, but cannot reach Google or any public websites.",
+      "artifact": [
+        "Internal DNS: Resolving 'intranet.local'",
+        "Forwarders: Empty",
+        "Root Hints: Disabled"
+      ],
+      "workflow": {
+        "triage": { "q": "If internal sites work but external ones don't, what is the server missing?", "options": ["Forwarders", "More RAM", "A faster CPU"], "correct": 0 },
+        "diagnosis": { "q": "Why is the server 'blind' to external names?", "options": ["It only knows its own local database and doesn't know where to send unknown queries", "The internet is down", "The users are blocked"], "correct": 0 },
+        "fix": { "q": "How do you give the server an 'outside' contact?", "options": ["Add a public DNS (8.8.8.8) to the Forwarders tab", "Delete the local zone", "Restart DNS"], "correct": 0 }
+      },
+      "debrief": {
+        "summary": "Forwarders bridge the gap between private and public.",
+        "takeaway": "You identified that your server was an expert on your office but had no 'lifeline' to the outside world. By adding a Forwarder, you gave your server a 'phone number' to call whenever it gets a question it can't answer from its own internal list."
+      }
+    },
+    {
+      "id": "DNS-03",
+      "category": "DNS",
+      "title": "\"The security log shows 10.0.0.25 is scanning the network\"",
+      "summary": "You have an IP from a security alert, but you need to find the computer name to identify the owner.",
+      "artifact": [
+        "IP: 10.0.0.25",
+        "Command: nslookup 10.0.0.25",
+        "Result: 'Non-existent domain'"
+      ],
+      "workflow": {
+        "triage": { "q": "Which zone type turns an IP back into a Name?", "options": ["Reverse Lookup Zone", "Forward Lookup Zone", "Stub Zone"], "correct": 0 },
+        "diagnosis": { "q": "Why did the nslookup command fail?", "options": ["There is no 'PTR' record created for this IP subnet", "The computer is turned off", "The IP is wrong"], "correct": 0 },
+        "fix": { "q": "How do you enable 'Caller ID' for these IPs?", "options": ["Create a Reverse Lookup Zone for the 10.0.0.x subnet", "Check the Forward zone", "Ping the IP"], "correct": 0 }
+      },
+      "debrief": {
+        "summary": "Reverse zones allow for identification.",
+        "takeaway": "You realized that DNS is usually a one-way street (Name to IP). By creating the Reverse Zone, you enabled 'PTR' records. These act like a reverse-phonebook, allowing you to identify 'who' is on your network based on their IP address alone."
+      }
+    },
+    {
+      "id": "DNS-04",
+      "category": "DNS",
+      "title": "\"Intermittent errors after moving the web server\"",
+      "summary": "The web server moved from .20 to .50. Some users see the new site, others see 'Page cannot be displayed'.",
+      "artifact": [
+        "DNS Record 1: web.local -> 10.0.0.20",
+        "DNS Record 2: web.local -> 10.0.0.50",
+        "Scavenging: Disabled"
+      ],
+      "workflow": {
+        "triage": { "q": "What happens when a single name has two different 'A' records?", "options": ["DNS uses 'Round Robin' to switch between them", "It crashes", "It picks the fastest"], "correct": 0 },
+        "diagnosis": { "q": "Why is the old IP still showing up?", "options": ["The 'stale' record wasn't deleted automatically", "The server is slow", "The cable is bad"], "correct": 0 },
+        "fix": { "q": "What is the fix?", "options": ["Delete the old record and enable Scavenging", "Rename the server", "Restart the router"], "correct": 0 }
+      },
+      "debrief": {
+        "summary": "Stale records create 'ghost' destinations.",
+        "takeaway": "You found the 'ghost' record. Because the old address wasn't removed, DNS was essentially flipping a coin—sending some users to the right place and others to a dead end. Cleaning up 'stale' records ensures the phonebook only has one correct answer."
       }
     },
     {
       "id": "DNS-05",
       "category": "DNS",
-      "title": "Global External Resolution Failure",
-      "summary": "Internal resources (File shares, Intranet) are working perfectly, but no users in the company can access external websites or resolve public hostnames.",
-      "tags": [
-        "forwarders",
-        "external resolution"
-      ],
+      "title": "\"Marketing wants 'shop.local' to load the web server\"",
+      "summary": "The team wants users to type 'shop.local' instead of 'web-srv-cluster-01.local'.",
       "artifact": [
-        "From DC-01:",
-        "nslookup google.com",
-        "*** Request to dc01.contoso.com timed-out",
-        "",
-        "DNS Manager -> Forwarders: (empty)",
-        "DNS Manager -> Root Hints: (populated)"
+        "Primary Server: web-srv-cluster-01.local",
+        "IP Address: 172.16.10.25",
+        "Requirement: Keep the original name for management."
       ],
-      "validations": [
-        "Confirm external nslookup succeeds after change.",
-        "Confirm internal resolution remains healthy.",
-        "Check DNS event logs for timeouts."
-      ],
-      "debrief": {
-        "summary": "In many locked-down enterprise environments, root hints are blocked by firewalls to prevent unauthorized DNS traffic. Configuring explicit Forwarders to a trusted resolver (like an ISP or public DNS) is the standard way to bridge internal and external resolution.",
-        "takeaway": "When internal works but external fails, recursion is likely broken. Check Forwarders and verify that the firewall allows Port 53 outbound from the DNS server."
-      },
       "workflow": {
-        "triage": {
-          "q": "Users can reach internal sites but not external. What is the primary setting to check on the internal DNS server to see how it handles unknown queries?",
-          "options": [
-            "The 'Forwarders' tab in the DNS Server properties",
-            "The 'Reverse Lookup Zones' for external IP ranges",
-            "The 'Scavenging' settings for stale records",
-            "The 'Trust Anchors' for DNSSEC validation"
-          ],
-          "correct": 0
-        },
-        "diagnosis": {
-          "q": "The Forwarders list is empty. Why is the server not successfully using its Root Hints to resolve external names?",
-          "options": [
-            "Root Hints only work for .com domains",
-            "The corporate firewall is likely blocking outbound UDP 53 from the DC to the internet root servers",
-            "The server's NIC is set to 'Public' profile",
-            "The DNS server is not authorized in Active Directory"
-          ],
-          "correct": 1
-        },
-        "fix": {
-          "q": "What is the recommended fix to restore external resolution safely?",
-          "options": [
-            "Configure the DNS server to forward queries to a reliable upstream resolver (e.g., 9.9.9.9 or 1.1.1.1)",
-            "Delete the internal zone and allow the server to become a caching-only server",
-            "Direct users to use 8.8.8.8 as their secondary DNS on their local machines",
-            "Disable the 'Recursion' property on the DNS server"
-          ],
-          "correct": 0
-        }
+        "triage": { "q": "Which record type creates an 'Alias' for an existing A-record?", "options": ["CNAME", "MX", "PTR"], "correct": 0 },
+        "diagnosis": { "q": "Why is a CNAME better than a second A-record?", "options": ["If the server's IP changes, you only update the A-record once", "It uses less RAM", "It is more secure"], "correct": 0 },
+        "fix": { "q": "What is the configuration?", "options": ["Alias: shop.local -> FQDN: web-srv-cluster-01.local", "Alias: 172.16.10.25 -> Name: shop", "Delete the old record"], "correct": 0 }
+      },
+      "debrief": {
+        "summary": "Aliases separate technical names from user names.",
+        "takeaway": "You gave the server a nickname. This makes the network flexible; if you ever replace the server hardware, the marketing link won't break—you just point the nickname to the new machine in the background."
+      }
+    },
+    {
+      "id": "DNS-06",
+      "category": "DNS",
+      "title": "\"We can't receive any emails from external clients\"",
+      "summary": "Employees can send email out, but no external mail is reaching the company's inbox.",
+      "artifact": [
+        "Public DNS: A-record for 'mail.newvue.com' exists",
+        "Test: Sending from Gmail results in 'Domain not found'",
+        "DNS Console: MX Record is missing"
+      ],
+      "workflow": {
+        "triage": { "q": "Which record tells the world where to deliver your domain's mail?", "options": ["MX (Mail Exchanger)", "A (Host)", "NS (Name Server)"], "correct": 0 },
+        "diagnosis": { "q": "Why is incoming mail bouncing?", "options": ["The internet knows your server's name but not its role", "Firewall is off", "Passwords expired"], "correct": 0 },
+        "fix": { "q": "What is the resolution?", "options": ["Add an MX record pointing to mail.newvue.com", "Restart mail service", "Create a new A-record"], "correct": 0 }
+      },
+      "debrief": {
+        "summary": "MX records are the 'Post Office' sign for your domain.",
+        "takeaway": "You identified that the 'Mailing Address' was missing. An A-record tells people where a building is, but an MX record tells them it's a Post Office. Without it, the internet didn't know which server was supposed to catch the mail."
+      }
+    },
+    {
+      "id": "DNS-07",
+      "category": "DNS",
+      "title": "\"Laptops are taking 5+ minutes to log in at the office\"",
+      "summary": "Workstations can ping the Domain Controller, but the login screen hangs indefinitely.",
+      "artifact": [
+        "DNS Zone: newvue.local",
+        "Health Check: The '_msdcs' folder is empty",
+        "Error: 'No domain controller could be contacted' (delayed)"
+      ],
+      "workflow": {
+        "triage": { "q": "What record type does Windows use to 'find' AD services?", "options": ["SRV (Service) records", "TXT records", "SOA records"], "correct": 0 },
+        "diagnosis": { "q": "Why are logins delayed?", "options": ["The 'GPS' records for the Login service are missing", "Laptops are too old", "User is slow"], "correct": 0 },
+        "fix": { "q": "How do you re-register these records?", "options": ["Restart 'Netlogon' service on the Domain Controller", "Reinstall Windows", "Flush client DNS"], "correct": 0 }
+      },
+      "debrief": {
+        "summary": "SRV records are the 'GPS' for Windows services.",
+        "takeaway": "You realized that 'knowing the server exists' isn't enough; the laptops needed to know which server was the 'Login Expert.' Restarting Netlogon causes the DC to re-announce its location and fill in those missing coordinates in DNS."
+      }
+    },
+    {
+      "id": "DNS-08",
+      "category": "DNS",
+      "title": "\"The backup DNS server is missing all the new records\"",
+      "summary": "Records added to DC-01 are not appearing on DC-02, even after 24 hours.",
+      "artifact": [
+        "DC-01: Primary Zone",
+        "DC-02: Secondary Zone",
+        "Zone Properties: 'Allow Zone Transfers' is unchecked"
+      ],
+      "workflow": {
+        "triage": { "q": "What is the process called when a secondary server syncs from a primary?", "options": ["Zone Transfer", "Copy/Paste", "DHCP Replication"], "correct": 0 },
+        "diagnosis": { "q": "Why is the sync failing?", "options": ["The primary server is 'locking' the data for security", "Cable is broken", "DC-02 is full"], "correct": 0 },
+        "fix": { "q": "How do you unlock the sync?", "options": ["Check 'Allow Zone Transfers' for DC-02's IP", "Restart servers", "Delete secondary zone"], "correct": 0 }
+      },
+      "debrief": {
+        "summary": "Zone transfers require explicit permission.",
+        "takeaway": "You identified a security gate. DNS servers don't just hand out their entire database to anyone. By enabling the transfer, you 'whitelisted' DC-02, allowing it to pull a fresh copy of the phonebook to stay in sync."
       }
     },
     {
       "id": "DNS-09",
       "category": "DNS",
-      "title": "Site-to-Site Record Inconsistency",
-      "summary": "An A-record for a new server was created at the HQ office (DC-01). Two hours later, users at the Branch office (DC-02) still cannot resolve the name.",
-      "tags": [
-        "ad replication",
-        "dns replication"
-      ],
+      "title": "\"I'm still pinging the old IP after you said it's fixed\"",
+      "summary": "You updated 'Server-A' to .100, but the tech at their desk still sees .55.",
       "artifact": [
-        "Record 'app01.contoso.com' exists on DC-01",
-        "Record 'app01.contoso.com' is missing on DC-02",
-        "",
-        "DC-02 Command Prompt:",
-        "repadmin /showrepl",
-        "Last attempt @ [Time] failed, result 1722 (The RPC server is unavailable)"
+        "DNS Server: Server-A -> 10.0.0.100",
+        "Technician PC: ping Server-A -> 10.0.0.55",
+        "Time since change: 5 minutes"
       ],
-      "validations": [
-        "Confirm replication is healthy after remediation.",
-        "Confirm DNS record appears on DC2.",
-        "Validate SRV and host records are consistent."
-      ],
-      "debrief": {
-        "summary": "AD-Integrated DNS zones store their data inside the Active Directory database. If the underlying AD replication is failing (due to network, RPC, or Kerberos issues), the DNS records will never reach the other Domain Controllers.",
-        "takeaway": "DNS data is only as fresh as your AD replication. Use 'repadmin' to diagnose sync issues before troubleshooting the DNS service itself."
-      },
       "workflow": {
-        "triage": {
-          "q": "Records are inconsistent across servers. What command-line tool provides the best insight into the health of the data transport between these servers?",
-          "options": [
-            "nslookup -type=all",
-            "repadmin /showrepl",
-            "dcdiag /test:dns",
-            "ipconfig /flushdns"
-          ],
-          "correct": 1
-        },
-        "diagnosis": {
-          "q": "Repadmin reports an RPC failure (1722). What does this imply about the DNS inconsistency?",
-          "options": [
-            "The DNS zone is set to 'Primary' on one and 'Secondary' on the other",
-            "An underlying network or service failure is preventing Active Directory (and thus DNS) from synchronizing",
-            "The record's TTL is too high",
-            "The Branch office DNS server is out of disk space"
-          ],
-          "correct": 1
-        },
-        "fix": {
-          "q": "What is the correct troubleshooting path?",
-          "options": [
-            "Manually recreate the record on DC-02 to bypass the error",
-            "Resolve the RPC/connectivity issues between DCs to restore AD replication, which will automatically sync the DNS records",
-            "Convert the zone to a Secondary zone on DC-02",
-            "Reboot DC-01 to force a push of the DNS database"
-          ],
-          "correct": 1
-        }
+        "triage": { "q": "Where does a PC store 'old' DNS answers locally?", "options": ["Local DNS Cache", "The Registry", "Browser history"], "correct": 0 },
+        "diagnosis": { "q": "Why is the tech seeing the wrong IP?", "options": ["Their PC is 'remembering' the old answer", "Server is lying", "Cable is bad"], "correct": 0 },
+        "fix": { "q": "How do you force the PC to ask again?", "options": ["ipconfig /flushdns", "ipconfig /release", "Restart router"], "correct": 0 }
+      },
+      "debrief": {
+        "summary": "Local cache can hide server-side updates.",
+        "takeaway": "You learned that the 'server' isn't the only one with a memory. The technician's PC was trying to be fast by using an old answer it already had. Flushing the DNS cleared its mind, forcing it to look at the real, updated phonebook."
+      }
+    },
+    {
+      "id": "DNS-10",
+      "category": "DNS",
+      "title": "\"External resolution died when our ISP's DNS failed\"",
+      "summary": "The ISP DNS is down, and now no one can browse the web.",
+      "artifact": [
+        "Forwarders: ISP IP (Down)",
+        "Root Hints: Populated",
+        "Setting: 'Use root hints if no forwarders are available' is unchecked"
+      ],
+      "workflow": {
+        "triage": { "q": "What is the 'last resort' method a DNS server uses to find a website?", "options": ["Root Hints", "Recycle Bin", "Pinging gateway"], "correct": 0 },
+        "diagnosis": { "q": "Why is the internet 'out'?", "options": ["The server isn't allowed to use its backup 'Root Hints'", "ISP cut the fiber", "Server too hot"], "correct": 0 },
+        "fix": { "q": "How do you enable the fail-safe?", "options": ["Enable 'Use root hints if no forwarders are available'", "Delete forwarders", "Restart server"], "correct": 0 }
+      },
+      "debrief": {
+        "summary": "Root Hints are the safety net of the internet.",
+        "takeaway": "You found the fail-safe. Using forwarders is like calling a friend for an answer, but Root Hints are like looking it up in the library yourself. Enabling this ensured that even if your ISP fails, your server can still find its own way around the web."
       }
     }
   ]
