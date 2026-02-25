@@ -1,54 +1,109 @@
 {
-  "id": "dns-dhcp-v3",
-  "title": "Network Services Advanced",
-  "track": "ServerAdmin",
+  "id": "dhcp",
+  "title": "DHCP Systems: Address Management",
+  "track": "Systems Engineering",
+  "subject": "Network Infrastructure",
+  "rolePill": "Systems Engineer",
+  "description": "Manage IP allocation, solve scope exhaustion, and configure relay agents in a routed environment.",
+  "reportOverview": "This module validates your ability to manage the IPv4 lifecycle and troubleshoot delivery failures across VLAN boundaries.",
+  "categories": ["Scope Management", "Routing & Relays", "Security"],
   "tickets": [
     {
-      "id": "DHCP-NEW-01",
+      "id": "DHCP-01",
       "category": "Scope Management",
-      "title": "Scope Exhaustion: The 'Silent' Failure",
-      "summary": "Users in the Sales VLAN are intermittently failing to connect. Some have 169.254.x.x addresses.",
-      "tags": ["DHCP", "Scoping"],
+      "title": "Intermittent Connectivity in the Cafe",
+      "summary": "Users in the guest cafe are getting 169.254.x.x addresses. Some users can connect, but new arrivals cannot.",
+      "tags": ["Exhaustion", "APIPA", "Leases"],
       "artifact": [
-        "Scope 10.10.20.0/24: 253 of 254 addresses in use",
-        "Lease Duration: 8 Days",
-        "Red Herring: DNS Server is pingable and healthy"
+        "Cafe Subnet: 10.0.5.0/24",
+        "Scope Statistics: 253 of 254 addresses in use",
+        "Current Lease Duration: 8 Days",
+        "Red Herring: DHCP Service Status is 'Running'"
       ],
       "workflow": {
         "triage": {
-          "q": "What is the first metric to check when users receive APIPA (169.254) addresses on a specific subnet?",
+          "q": "What does a 169.254.x.x address indicate about the client's attempt to get an IP?",
           "options": [
-            "Check if the DHCP Service is running on the DC",
-            "Verify the Scope Statistics for available address percentage",
-            "Restart the local switch for the Sales VLAN",
-            "Ping the default gateway from a working machine"
+            "The client has a static IP conflict",
+            "The client failed to receive a DHCP Offer/Ack (APIPA)",
+            "The DHCP server is assigning 'Emergency' IPs",
+            "The wireless access point is encrypted"
           ],
           "correct": 1
         },
         "diagnosis": {
-          "q": "The scope is 100% full with an 8-day lease. Why are new users failing even if old users have left for the day?",
+          "q": "The scope is 100% full. Why are addresses not being freed up when users leave the cafe?",
           "options": [
-            "The addresses are still reserved by the server until the 8-day lease expires",
-            "The DHCP database is corrupted",
-            "The subnet mask is too long",
-            "The scope is deactivated"
+            "The lease duration is too long (8 days), keeping IPs reserved for inactive clients",
+            "The DHCP database is full and cannot delete records",
+            "The router is blocking the DHCP Release packets",
+            "The users are not logging out of the captive portal"
           ],
           "correct": 0
         },
         "fix": {
-          "q": "What is the best remediation to prevent this in a high-turnover environment?",
+          "q": "What is the best configuration change to ensure high-turnover areas like a cafe always have available IPs?",
           "options": [
-            "Delete the scope and recreate it",
-            "Decrease the Lease Duration to 4 or 8 hours",
-            "Tell users to set static IP addresses",
-            "Disable the DHCP 'Allow' filter"
+            "Shorten the Lease Duration to 2 or 4 hours",
+            "Expand the subnet to a /16 immediately",
+            "Disable the DHCP scope and restart it daily",
+            "Tell users to release their IP manually"
           ],
-          "correct": 1
+          "correct": 0
         }
       },
       "debrief": {
-        "summary": "Scope exhaustion is often caused by long lease times in mobile environments.",
-        "takeaway": "Shortening leases allows the server to reclaim and reuse IPs more aggressively."
+        "summary": "Scope exhaustion is common in 'transient' environments.",
+        "takeaway": "Matching lease duration to user behavior (short stay = short lease) prevents 'ghost' reservations from blocking new users."
+      }
+    },
+    {
+      "id": "DHCP-02",
+      "category": "Routing & Relays",
+      "title": "New VLAN 20 Cannot Reach DHCP",
+      "summary": "A new department has been moved to VLAN 20. They are physically connected but cannot get an IP from the central DHCP server on VLAN 10.",
+      "tags": ["IP-Helper", "Relay-Agent", "VLAN"],
+      "artifact": [
+        "DHCP Server: 10.0.10.5",
+        "Client Subnet: 10.0.20.0/24",
+        "Router: Routing is enabled between VLAN 10 and 20",
+        "Red Herring: Firewall logs show no blocked traffic"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "Why do DHCP Discover packets fail to reach a server on a different VLAN by default?",
+          "options": [
+            "DHCP uses broadcasts, which do not cross router boundaries",
+            "The server doesn't know the route back to the client",
+            "VLAN 20 is inherently less secure than VLAN 10",
+            "The DHCP server is restricted to a single NIC"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "What component is missing on the VLAN 20 gateway to allow it to 'forward' these requests?",
+          "options": [
+            "A static route to the DHCP server",
+            "A DHCP Relay Agent or 'IP Helper-Address'",
+            "An Access Control List (ACL)",
+            "A DNS Forwarder"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "How should you configure the Router/Switch to fix the delivery issue?",
+          "options": [
+            "Add 'ip helper-address 10.0.10.5' to the VLAN 20 interface",
+            "Move the DHCP server into VLAN 20",
+            "Enable 'Promiscuous Mode' on the client NICs",
+            "Create a Superscope on the DHCP Server"
+          ],
+          "correct": 0
+        }
+      },
+      "debrief": {
+        "summary": "DHCP Relay (IP Helper) is the bridge between broadcast and unicast.",
+        "takeaway": "The relay agent catches the local broadcast and sends it directly to the server, allowing centralized DHCP for the whole enterprise."
       }
     }
   ]
