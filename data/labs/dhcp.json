@@ -2,6 +2,18 @@
   "id": "dhcp-core",
   "title": "DHCP Systems: Enterprise Connectivity",
   "track": "Systems Engineering",
+  "description": "Welcome to the DHCP Core Lab. As a Systems Administrator, your goal is to maintain the 'Invisible Infrastructure.' When DHCP works, no one notices; when it fails, the entire network grinds to a halt.",
+  "rolePill": "Role: Systems Administrator",
+  "reportOverview": "This report documents your ability to identify common DHCP failure points including scope exhaustion, unauthorized servers, and incorrect option delivery.",
+  "intro": {
+    "objective": "To master the DORA process (Discover, Offer, Request, Acknowledge) and manage the specialized configuration options that modern enterprise devices require to function.",
+    "scenario": "You are managing the network for 'Global-Tech Inc.' The environment consists of several VLANs, a mix of Windows and Linux clients, and an aging VOIP phone system. Your task is to resolve the daily influx of connectivity tickets using an evidence-first approach.",
+    "workflow_tips": [
+      "Check the 'Artifacts' first—look for APIPA addresses (169.254.x.x) which indicate a total failure to reach a server.",
+      "Pay attention to Subnet Masks and Gateways; an IP address alone isn't enough for internet access.",
+      "Remember that routers block broadcasts; if a new wing is offline, the 'Helper' might be missing."
+    ]
+  },
   "tickets": [
     {
       "id": "DHCP-001",
