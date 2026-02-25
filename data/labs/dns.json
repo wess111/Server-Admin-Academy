@@ -5,98 +5,208 @@
   "tickets": [
     {
       "id": "DNS-01",
-      "category": "Resolution",
-      "title": "Local Resolution Override",
-      "summary": "A developer cannot reach 'webapp.local' (10.0.0.50). Pinging the name returns 127.0.0.1, even though DNS is correct on the server.",
-      "tags": ["Hosts File", "Resolution Priority"],
+      "category": "Resolution Priority",
+      "title": "The 'Ghost' Website",
+      "summary": "A marketing user says 'site-beta.local' is showing an old version of the page. You updated the DNS record to 10.0.0.100, but their machine keeps hitting 10.0.0.20.",
+      "tags": [
+        "Hosts File",
+        "Caching"
+      ],
       "artifact": [
-        "DNS Server Record: webapp.local -> 10.0.0.50",
-        "Client Command: ping webapp.local returns 127.0.0.1",
-        "Nslookup: webapp.local returns 10.0.0.50"
+        "DNS Server: site-beta.local -> 10.0.0.100",
+        "User Terminal: 'ping site-beta.local' returns 10.0.0.20",
+        "User Terminal: 'nslookup site-beta.local' returns 10.0.0.100"
       ],
       "workflow": {
         "triage": {
-          "q": "If Nslookup is correct but Ping is wrong, what does this indicate about the resolution process?",
+          "q": "If Nslookup (direct query) is correct, but Ping (OS resolution) is wrong, where is the false information likely coming from?",
           "options": [
-            "The DNS server is down",
-            "The client is using a local override (Hosts file)",
-            "The web server is offline",
-            "The router is blocking ICMP"
+            "The DNS Server's cache",
+            "A local override on the client machine",
+            "The Router's routing table",
+            "The Web Server itself"
           ],
           "correct": 1
         },
         "diagnosis": {
-          "q": "Which file on a Windows system takes priority over DNS server queries for name resolution?",
+          "q": "Which local file or cache is checked by the OS before it even asks the DNS server?",
           "options": [
-            "C:\\Windows\\System32\\drivers\\etc\\hosts",
-            "C:\\Windows\\System32\\config\\software",
-            "C:\\Users\\Public\\desktop.ini",
-            "C:\\Windows\\System32\\dns.log"
-          ],
-          "correct": 0
-        },
-        "fix": {
-          "q": "How do you restore correct network resolution for this client?",
-          "options": [
-            "Flush the DNS Cache",
-            "Remove the 'webapp.local' entry from the local Hosts file",
-            "Reboot the DNS Server",
-            "Change the client's IP address"
+            "The Pagefile.sys",
+            "The local 'Hosts' file",
+            "The Registry",
+            "The Chrome browser history"
           ],
           "correct": 1
+        },
+        "fix": {
+          "q": "How do you ensure the client uses the global DNS record instead of the local override?",
+          "options": [
+            "Clear the Hosts file and run 'ipconfig /flushdns'",
+            "Reboot the DNS server",
+            "Change the site's IP to 10.0.0.20",
+            "Reinstall the Network Adapter"
+          ],
+          "correct": 0
         }
       },
       "debrief": {
-        "summary": "The 'Hosts' file is checked before DNS. If an entry exists there, the client will never ask the DNS server.",
-        "takeaway": "Always compare Nslookup (direct DNS query) vs Ping (standard OS resolution) to find local overrides."
+        "summary": "The 'Hosts' file has absolute priority. If a developer or tech left an entry there, the PC will ignore the real DNS server.",
+        "takeaway": "Compare nslookup results against ping results to detect local resolution overrides."
       }
     },
     {
       "id": "DNS-02",
-      "category": "AD Integration",
-      "title": "SRV Record Registration Failure",
-      "summary": "A secondary Domain Controller (DC-02) was added, but clients cannot authenticate against it. It is missing from the _msdcs zone.",
-      "tags": ["SRV Records", "Netlogon"],
+      "category": "Stale Records",
+      "title": "Intermittent App Failures",
+      "summary": "An internal app works for some users but fails for others. You find that the hostname 'app-srv' resolves to two different IPs, but one of those servers was decommissioned months ago.",
+      "tags": [
+        "Scavenging",
+        "Stale Records",
+        "Aging"
+      ],
       "artifact": [
-        "DNS Zone: _msdcs.contoso.com",
-        "Evidence: DC-02 is missing from the _ldap._tcp records",
-        "DC-02 Status: Server is online and reachable by IP"
+        "nslookup app-srv: Returns 10.10.1.50 and 10.10.1.22",
+        "Server Inventory: 10.10.1.22 was retired in November",
+        "DNS Console: Record for 10.10.1.22 has a timestamp from 4 months ago"
       ],
       "workflow": {
         "triage": {
-          "q": "Which DNS record type is used by Active Directory to locate Domain Controllers?",
+          "q": "Why are some users failing while others succeed?",
           "options": [
-            "A Records",
-            "MX Records",
-            "SRV Records",
-            "TXT Records"
+            "The DNS server is load balancing (Round Robin) between a working and a non-existent IP",
+            "The retired server is still partially online",
+            "Users are on different subnets",
+            "The app requires a specific MAC address"
           ],
-          "correct": 2
+          "correct": 0
         },
         "diagnosis": {
-          "q": "What service is responsible for registering these SRV records on a Domain Controller?",
+          "q": "Why did the DNS record for the retired server stay in the database after the server was shut down?",
           "options": [
-            "Print Spooler",
-            "Netlogon",
-            "Workstation",
-            "DHCP Client"
+            "The server didn't have 'Register in DNS' checked",
+            "Aging and Scavenging is likely disabled or not configured correctly",
+            "The TTL was set to 'Infinite'",
+            "The zone is Read-Only"
           ],
           "correct": 1
         },
         "fix": {
-          "q": "How can you force a Domain Controller to re-register its missing SRV records in DNS?",
+          "q": "How do you clean up this record and prevent similar 'ghost' records in the future?",
           "options": [
-            "Restart the Netlogon service",
-            "Delete the DNS zone and recreate it",
-            "Run 'ipconfig /release'",
-            "Disable the Windows Firewall"
+            "Delete the record manually and enable 'Scavenging' on the server and zone",
+            "Restart the DNS service daily",
+            "Decrease the TTL to 1 second",
+            "Recreate the Forward Lookup Zone"
           ],
           "correct": 0
         }
       },
       "debrief": {
-        "summary": "Active Directory relies on Service (SRV) records to point clients to available Domain Controllers.",
-        "takeaway": "Restarting the Netlogon service triggers a dynamic update that re-registers all required AD service records."
+        "summary": "DNS records for dynamically assigned IPs or decommissioned servers will persist forever unless Scavenging is enabled.",
+        "takeaway": "Scavenging automates the deletion of 'stale' records based on their timestamp."
+      }
+    },
+    {
+      "id": "DNS-03",
+      "category": "Service Records",
+      "title": "Domain Login Delay",
+      "summary": "Users report that logging into their computers takes 5 minutes. They can ping the Domain Controller by name, but AD-specific tools are failing.",
+      "tags": [
+        "SRV Records",
+        "Active Directory"
+      ],
+      "artifact": [
+        "Ping DC01: Success (10.0.0.10)",
+        "Command: 'nslookup -type=srv _ldap._tcp.dc._msdcs.contoso.com' returns NXDOMAIN",
+        "DNS Manager: The '_msdcs' folder is missing or empty"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "Since ping works but AD discovery fails, what specific type of DNS record is missing?",
+          "options": [
+            "A (Address) Record",
+            "MX (Mail) Record",
+            "SRV (Service) Record",
+            "CNAME (Alias) Record"
+          ],
+          "correct": 2
+        },
+        "diagnosis": {
+          "q": "Which service on the Domain Controller is responsible for registering these vital SRV records into DNS?",
+          "options": [
+            "DNS Client",
+            "Netlogon",
+            "Print Spooler",
+            "Workstation"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "What is the fastest way to force the Domain Controller to re-register its missing service records?",
+          "options": [
+            "Restart the 'Netlogon' service on the Domain Controller",
+            "Rejoin the client to the domain",
+            "Run 'ipconfig /flushdns' on the client",
+            "Reinstall the Active Directory role"
+          ],
+          "correct": 0
+        }
+      },
+      "debrief": {
+        "summary": "Active Directory cannot function without SRV records. They tell clients exactly which servers handle LDAP, Kerberos, and GC requests.",
+        "takeaway": "Ping only proves the 'A' record exists. SRV records are the 'map' for AD services."
+      }
+    },
+    {
+      "id": "DNS-04",
+      "category": "Recursion",
+      "title": "Local Resolution Only",
+      "summary": "Users can reach internal servers (filesrv, intranet), but they cannot reach google.com or any external websites.",
+      "tags": [
+        "Forwarders",
+        "Recursion",
+        "Root Hints"
+      ],
+      "artifact": [
+        "nslookup filesrv: Success (10.0.0.5)",
+        "nslookup google.com: Returns 'Server Failure' (SERVFAIL)",
+        "DNS Console: 'Forwarders' list is empty"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "If internal names work but external names fail, where is the breakdown in the DNS search process?",
+          "options": [
+            "The client NIC is misconfigured",
+            "The DNS server doesn't know where to send queries for zones it doesn't host",
+            "The ISP is blocking all DNS traffic",
+            "The browser cache is full"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "What configuration tells a local DNS server to 'ask' an external server (like 8.8.8.8) if it cannot find the answer locally?",
+          "options": [
+            "Secondary Zones",
+            "Forwarders",
+            "Reverse Lookup Zones",
+            "CNAME records"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "How do you enable the DNS server to resolve external internet addresses?",
+          "options": [
+            "Add a public DNS IP (e.g., 8.8.8.8) to the 'Forwarders' tab in Server Properties",
+            "Enable 'Dynamic Updates' on the internal zone",
+            "Create an 'A' record for google.com manually",
+            "Add a new NIC to the server"
+          ],
+          "correct": 0
+        }
+      },
+      "debrief": {
+        "summary": "DNS Forwarders are a speed and security optimization. They send all non-local queries to a trusted external resolver.",
+        "takeaway": "Without Forwarders or working Root Hints, an internal DNS server is an island."
       }
     }
   ]
