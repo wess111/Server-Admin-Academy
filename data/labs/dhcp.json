@@ -1,221 +1,54 @@
 {
-  "id": "dhcp-infra-pro",
-  "title": "DHCP Systems: Infrastructure & Leasing",
-  "track": "System Engineering",
-  "subject": "DHCP Core Services",
-  "rolePill": "Systems Administrator",
-  "description": "Master the logic of dynamic addressing. Resolve issues with broadcast boundaries, lease exhaustion, and failover synchronization using an evidence-first workflow.",
-  "reportOverview": "This report evaluates your ability to manage IP distribution. Key skills tested: DHCP Relay (IP Helpers), Scope management, Failover MCLT logic, and Authorization.",
-  "categories": ["Infrastructure", "Leasing", "Failover"],
-  "evidenceInstructions": "Instructions:\n1) Read the user's complaint.\n2) Use the initial step to gather evidence.\n3) Diagnose the logic error.\n4) Apply the Fix and review the Resolution Insight to see why your solution worked.",
+  "id": "dns-dhcp-v3",
+  "title": "Network Services Advanced",
+  "track": "ServerAdmin",
   "tickets": [
     {
-      "id": "DHCP-01",
-      "category": "Infrastructure",
-      "title": "New DHCP Server Inactive",
-      "summary": "You've installed DHCP on the new Domain Controller. The service is running, but the console shows a red down arrow and no IPs are being handed out.",
-      "tags": ["authorization", "ad"],
+      "id": "DHCP-NEW-01",
+      "category": "Scope Management",
+      "title": "Scope Exhaustion: The 'Silent' Failure",
+      "summary": "Users in the Sales VLAN are intermittently failing to connect. Some have 169.254.x.x addresses.",
+      "tags": ["DHCP", "Scoping"],
       "artifact": [
-        "Service Status: Running",
-        "Console Icon: Red Down Arrow",
-        "Event ID: 1046 (Not Authorized)"
-      ],
-      "workflow": {
-        "triage": { "q": "What is the first thing to check in the console for a new domain-joined DHCP server?", "options": ["CPU Usage", "Authorization Status", "Firewall Rules", "Scope Name"], "correct": 1 },
-        "diagnosis": { "q": "Why is the server 'Running' but inactive?", "options": ["Disk full", "The server must be Authorized in AD to prevent 'Rogue' DHCP servers", "Wrong IP", "No Scope"], "correct": 1 },
-        "fix": { "q": "How do you activate the server?", "options": ["Right-click server -> Authorize", "Reinstall Role", "Restart PC", "Change Password"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "DHCP servers need 'permission' to work in a Windows domain.",
-        "takeaway": "Resolution Insight: Just because a service is 'On' doesn't mean it's 'Active.' In a domain, DHCP servers must be authorized to prevent someone from accidentally plugging in a personal router and breaking the network's IP scheme. Authorization ensures only trusted servers talk to clients."
-      }
-    },
-    {
-      "id": "DHCP-02",
-      "category": "Infrastructure",
-      "title": "Cross-Subnet Connectivity Failure",
-      "summary": "Users on Floor 2 (different VLAN) are getting 169.254.x.x addresses, while Floor 1 (where the server is) works fine.",
-      "tags": ["relay-agent", "vlan"],
-      "artifact": [
-        "Server Subnet: 10.10.1.0/24",
-        "Client Subnet: 10.10.2.0/24",
-        "Router: No IP Helper configured"
-      ],
-      "workflow": {
-        "triage": { "q": "DHCP Discover packets are broadcasts. What does a router do with them by default?", "options": ["Forwards them", "Drops them", "Logs them", "Speeds them up"], "correct": 1 },
-        "diagnosis": { "q": "Why is Floor 2 failing to reach the server?", "options": ["Server is down", "The router is blocking the broadcast from crossing to the other subnet", "Cable failure", "Scope is full"], "correct": 1 },
-        "fix": { "q": "What is the industry-standard fix on the router?", "options": ["Configure an IP Helper-Address", "Static IPs", "Add more RAM", "Disable VLANs"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "Routers act as barriers for DHCP traffic.",
-        "takeaway": "Resolution Insight: You identified that the server was working, but the request couldn't reach it. Since broadcasts can't cross routers, the IP Helper acts as a relay, picking up the request on Floor 2 and delivering it directly to the server on Floor 1."
-      }
-    },
-    
-    {
-      "id": "DHCP-03",
-      "category": "Leasing",
-      "title": "Address Conflict Warnings",
-      "summary": "Users are reporting 'IP Address Conflict' popups. The console shows several 'BAD_ADDRESS' entries.",
-      "tags": ["exclusions", "bad_address"],
-      "artifact": [
-        "Scope: .10 to .100",
-        "Conflicts: .15, .16 (Static Printers)",
-        "Status: BAD_ADDRESS"
-      ],
-      "workflow": {
-        "triage": { "q": "What does a 'BAD_ADDRESS' status actually mean?", "options": ["Database corrupt", "The server detected the IP was already in use before offering it", "Wrong MAC", "User logged out"], "correct": 1 },
-        "diagnosis": { "q": "Why is the server finding conflicts?", "options": ["Printers have static IPs that overlap with the dynamic DHCP pool", "Server too fast", "Lease too long", "Bad cable"], "correct": 0 },
-        "fix": { "q": "How do you stop the conflicts?", "options": ["Create an 'Exclusion Range' for the static IPs", "Reboot printers", "Change DNS", "Delete Scope"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "Conflict detection protects the network from IP collisions.",
-        "takeaway": "Resolution Insight: The server did its job by 'checking the door' (pinging) before offering the IP. By creating an Exclusion, you told the server to stop trying to use those specific IPs for laptops, giving the printers the space they need."
-      }
-    },
-    {
-      "id": "DHCP-04",
-      "category": "Leasing",
-      "title": "Guest Wi-Fi Pool Exhaustion",
-      "summary": "Visitors cannot connect. The DHCP console shows the scope is 100% utilized, even though the lobby is empty.",
-      "tags": ["lease-duration", "recycling"],
-      "artifact": [
-        "Pool Size: 254 IPs",
+        "Scope 10.10.20.0/24: 253 of 254 addresses in use",
         "Lease Duration: 8 Days",
-        "Average Guest Stay: 1 Hour"
+        "Red Herring: DNS Server is pingable and healthy"
       ],
       "workflow": {
-        "triage": { "q": "If a scope is 100% full, what happens to the next person who joins?", "options": ["They get an APIPA (169.254) address", "They get an old IP", "Server crashes", "DNS fails"], "correct": 0 },
-        "diagnosis": { "q": "Why is the scope full?", "options": ["Too many guests", "The 8-day lease is holding onto IPs long after guests have left", "Small subnet", "Virus"], "correct": 1 },
-        "fix": { "q": "What is the best adjustment?", "options": ["Shorten the lease duration (e.g., 2 hours)", "Delete scope daily", "Make subnet smaller", "Static IPs"], "correct": 0 }
+        "triage": {
+          "q": "What is the first metric to check when users receive APIPA (169.254) addresses on a specific subnet?",
+          "options": [
+            "Check if the DHCP Service is running on the DC",
+            "Verify the Scope Statistics for available address percentage",
+            "Restart the local switch for the Sales VLAN",
+            "Ping the default gateway from a working machine"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "The scope is 100% full with an 8-day lease. Why are new users failing even if old users have left for the day?",
+          "options": [
+            "The addresses are still reserved by the server until the 8-day lease expires",
+            "The DHCP database is corrupted",
+            "The subnet mask is too long",
+            "The scope is deactivated"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "What is the best remediation to prevent this in a high-turnover environment?",
+          "options": [
+            "Delete the scope and recreate it",
+            "Decrease the Lease Duration to 4 or 8 hours",
+            "Tell users to set static IP addresses",
+            "Disable the DHCP 'Allow' filter"
+          ],
+          "correct": 1
+        }
       },
       "debrief": {
-        "summary": "Lease duration controls how fast IPs are recycled.",
-        "takeaway": "Resolution Insight: You realized the IPs weren't gone; they were just 'reserved' for people who were no longer in the building. Shortening the lease allows the server to reclaim and recycle those IPs much faster for the next guest."
-      }
-    },
-    {
-      "id": "DHCP-05",
-      "category": "Failover",
-      "title": "Failover Mismatch Error",
-      "summary": "You updated the DNS settings on the Primary DHCP server, but the Secondary server is still giving out old info.",
-      "tags": ["replication", "failover"],
-      "artifact": [
-        "Primary: DNS=10.0.0.1",
-        "Secondary: DNS=8.8.8.8",
-        "Status: Out of Sync"
-      ],
-      "workflow": {
-        "triage": { "q": "Do configuration changes sync automatically in a failover pair?", "options": ["Yes", "No, they must be manually replicated", "Only on reboot", "Only weekly"], "correct": 1 },
-        "diagnosis": { "q": "Why does the secondary have stale info?", "options": ["It is broken", "The change hasn't been 'replicated' to the partner", "Firewall block", "Disk full"], "correct": 1 },
-        "fix": { "q": "How do you push the new settings?", "options": ["Right-click scope -> Replicate Scope", "Restart both", "Delete secondary", "Rename scope"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "Failover keeps leases in sync, but settings require replication.",
-        "takeaway": "Resolution Insight: While the servers share the 'list of who has what IP' automatically, they don't share 'rule changes' instantly. Manually replicating ensures both servers are telling the clients the exact same information."
-      }
-    },
-    {
-      "id": "DHCP-06",
-      "category": "Infrastructure",
-      "title": "Missing Default Gateway",
-      "summary": "Users have an IP but cannot reach the internet. `ipconfig /all` shows no Default Gateway.",
-      "tags": ["options", "routing"],
-      "artifact": [
-        "IP: 192.168.1.50",
-        "Gateway: (Blank)",
-        "DNS: 192.168.1.10"
-      ],
-      "workflow": {
-        "triage": { "q": "Which DHCP option tells the client how to reach the internet?", "options": ["Option 003 Router", "Option 006 DNS", "Option 015 Domain", "Option 044"], "correct": 0 },
-        "diagnosis": { "q": "Why is the gateway blank?", "options": ["Router is off", "The DHCP server isn't configured to send Option 003", "Static IP issue", "No network"], "correct": 1 },
-        "fix": { "q": "What is the fix?", "options": ["Add Option 003 to the Scope Options", "Restart server", "Change mask", "Reinstall OS"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "DHCP provides the 'map' to the exit.",
-        "takeaway": "Resolution Insight: An IP address tells a computer 'who it is,' but the Gateway tells it 'how to leave.' By adding Option 003, you provided the exit route, proving DHCP is about more than just the address."
-      }
-    },
-    {
-      "id": "DHCP-07",
-      "category": "Leasing",
-      "title": "NAS Reservation Failure",
-      "summary": "A storage device is supposed to be at .200, but it keeps appearing at .105.",
-      "tags": ["reservations", "mac-address"],
-      "artifact": [
-        "Reserved MAC: 00-11-22-33-44-55",
-        "Actual Device MAC: 00-11-22-33-44-56"
-      ],
-      "workflow": {
-        "triage": { "q": "What does DHCP use to identify a device for a reservation?", "options": ["Name", "MAC Address", "Serial Number", "OS Version"], "correct": 1 },
-        "diagnosis": { "q": "Why is the reservation failing?", "options": ["MAC address typo in the reservation entry", "Server full", "Device too old", "Wrong VLAN"], "correct": 0 },
-        "fix": { "q": "How do you fix it?", "options": ["Update reservation with correct MAC", "Delete it", "Reboot", "Change IP"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "Reservations are hardware-specific rules.",
-        "takeaway": "Resolution Insight: You found the typo! DHCP logic is strict: if the ID doesn't match perfectly, the server treats the device like a random guest. Correcting the MAC restores the 'VIP' status of the device."
-      }
-    },
-    {
-      "id": "DHCP-08",
-      "category": "Failover",
-      "title": "Short Leases During Outage",
-      "summary": "Primary server is down. Users are getting IPs from the backup, but they expire in 1 hour instead of 8 days.",
-      "tags": ["mclt", "failover"],
-      "artifact": [
-        "MCLT: 1 Hour",
-        "Mode: Hot Standby",
-        "Primary: Down"
-      ],
-      "workflow": {
-        "triage": { "q": "What is the 'MCLT' setting?", "options": ["Max Client Lead Time", "Manual Lease Timer", "Min Connection Limit", "Main Link"], "correct": 0 },
-        "diagnosis": { "q": "Why are leases so short?", "options": ["Backup is broken", "The backup uses the MCLT 'safety' duration until the primary returns", "Disk full", "High traffic"], "correct": 1 },
-        "fix": { "q": "Is this an error?", "options": ["No, it is normal behavior during failover", "Yes, reinstall role", "Scope is corrupt", "Fix time"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "MCLT is a safety timer for server transitions.",
-        "takeaway": "Resolution Insight: You discovered the 'fail-safe.' The secondary server only gives out short leases so that if the primary server wakes up, they don't have overlapping long-term promises. It’s a standard safety feature."
-      }
-    },
-    {
-      "id": "DHCP-09",
-      "category": "Infrastructure",
-      "title": "DNS Record Discrepancy",
-      "summary": "New devices get IPs, but you can't ping them by name. DNS isn't updating.",
-      "tags": ["dns-integration", "dynamic-updates"],
-      "artifact": [
-        "DHCP Settings: DNS dynamic updates disabled",
-        "DNS: Records missing for new leases"
-      ],
-      "workflow": {
-        "triage": { "q": "Where is the integration between DHCP and DNS managed?", "options": ["DNS Tab in DHCP Properties", "Active Directory Users", "Router Config", "GPO"], "correct": 0 },
-        "diagnosis": { "q": "Why are names missing?", "options": ["DNS is down", "DHCP isn't configured to update DNS records for the clients", "Names too long", "Wrong domain"], "correct": 1 },
-        "fix": { "q": "How do you automate this?", "options": ["Enable 'Dynamically update DNS records' in DHCP", "Manual entry", "Reinstall DNS", "Flush DNS"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "DHCP acts as a 'secretary' for DNS.",
-        "takeaway": "Resolution Insight: You bridged the gap. When DHCP hands out an IP, it should 'call' DNS and update the record. Turning this on ensures your network 'phonebook' stays accurate without manual typing."
-      }
-    },
-    {
-      "id": "DHCP-10",
-      "category": "Infrastructure",
-      "title": "Service Startup Error 1067",
-      "summary": "DHCP service crashes on startup. Event logs suggest a database error.",
-      "tags": ["jet-database", "restoration"],
-      "artifact": [
-        "Path: System32\\dhcp",
-        "Log: 'Failed to initialize database'",
-        "File: dhcp.mdb corrupt"
-      ],
-      "workflow": {
-        "triage": { "q": "Where is the physical DHCP database stored?", "options": ["System32\\dhcp", "The Registry", "C:\\Users", "BIOS"], "correct": 0 },
-        "diagnosis": { "q": "Why is it crashing?", "options": ["The database file is corrupted", "Not enough RAM", "Wrong Windows version", "License error"], "correct": 0 },
-        "fix": { "q": "What is the quickest recovery?", "options": ["Restore from the 'backup' subfolder", "Reinstall Windows", "Delete scopes", "Reboot router"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "DHCP relies on a local Jet database file.",
-        "takeaway": "Resolution Insight: You treated DHCP like a database app. When the file gets corrupted, the service can't read its 'to-do list.' Using the backup folder is the fastest way to get back online without losing data."
+        "summary": "Scope exhaustion is often caused by long lease times in mobile environments.",
+        "takeaway": "Shortening leases allows the server to reclaim and reuse IPs more aggressively."
       }
     }
   ]
