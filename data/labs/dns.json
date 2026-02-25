@@ -2,107 +2,101 @@
   "id": "dns",
   "title": "DNS Systems: Name Resolution",
   "track": "Systems Engineering",
-  "subject": "DNS Architecture",
-  "rolePill": "Systems Engineer",
-  "description": "Resolve complex resolution failures and service record gaps in an enterprise environment.",
-  "reportOverview": "This module tests your ability to distinguish between network connectivity and name resolution service health.",
-  "categories": ["AD Integration", "Name Resolution", "Zone Management"],
   "tickets": [
     {
       "id": "DNS-01",
-      "category": "AD Integration",
-      "title": "Workstation: 'The Trust Relationship Failed'",
-      "summary": "A user cannot log in. Ping to the DC works via IP, but the computer cannot find the Domain Controller by name during login.",
-      "tags": ["SRV-Records", "Netlogon"],
+      "category": "Resolution",
+      "title": "Local Resolution Override",
+      "summary": "A developer cannot reach 'webapp.local' (10.0.0.50). Pinging the name returns 127.0.0.1, even though DNS is correct on the server.",
+      "tags": ["Hosts File", "Resolution Priority"],
       "artifact": [
-        "Ping 10.0.0.10: Success",
-        "DNS Manager: _msdcs.local folder is empty",
-        "Event Viewer: 'No DNS servers could be reached to locate the DC'",
-        "Red Herring: The 'Workstation' service is running on the client"
+        "DNS Server Record: webapp.local -> 10.0.0.50",
+        "Client Command: ping webapp.local returns 127.0.0.1",
+        "Nslookup: webapp.local returns 10.0.0.50"
       ],
       "workflow": {
         "triage": {
-          "q": "Since the IP is reachable but the service is not, which DNS record type is likely missing for AD discovery?",
+          "q": "If Nslookup is correct but Ping is wrong, what does this indicate about the resolution process?",
           "options": [
-            "A (Address) Record",
-            "SRV (Service) Record",
-            "MX (Mail) Record",
-            "CNAME (Alias) Record"
+            "The DNS server is down",
+            "The client is using a local override (Hosts file)",
+            "The web server is offline",
+            "The router is blocking ICMP"
           ],
           "correct": 1
         },
         "diagnosis": {
-          "q": "Why is the _msdcs folder empty in the DNS console?",
+          "q": "Which file on a Windows system takes priority over DNS server queries for name resolution?",
           "options": [
-            "The Domain Controller failed to register its SRV records",
-            "The client has a corrupt HOSTS file",
-            "The zone is configured as Secondary (Read-Only)",
-            "Active Directory is in 'Safe Mode'"
+            "C:\\Windows\\System32\\drivers\\etc\\hosts",
+            "C:\\Windows\\System32\\config\\software",
+            "C:\\Users\\Public\\desktop.ini",
+            "C:\\Windows\\System32\\dns.log"
           ],
           "correct": 0
         },
         "fix": {
-          "q": "What command or action forces the DC to re-publish its service records to DNS?",
+          "q": "How do you restore correct network resolution for this client?",
           "options": [
-            "Restart the 'Netlogon' service on the Domain Controller",
-            "Run 'ipconfig /flushdns' on all client workstations",
-            "Reinstall the DNS role on the server",
-            "Rejoin the DC to the domain"
+            "Flush the DNS Cache",
+            "Remove the 'webapp.local' entry from the local Hosts file",
+            "Reboot the DNS Server",
+            "Change the client's IP address"
           ],
-          "correct": 0
+          "correct": 1
         }
       },
       "debrief": {
-        "summary": "Active Directory lives and dies by SRV records.",
-        "takeaway": "Connectivity (Ping) is just the foundation; Service Discovery (SRV) is the application layer that allows AD to function."
+        "summary": "The 'Hosts' file is checked before DNS. If an entry exists there, the client will never ask the DNS server.",
+        "takeaway": "Always compare Nslookup (direct DNS query) vs Ping (standard OS resolution) to find local overrides."
       }
     },
     {
       "id": "DNS-02",
-      "category": "Name Resolution",
-      "title": "Stale Records: 'Old' IP causing 404s",
-      "summary": "The FileServer was moved to 10.0.0.50, but half the users are still being directed to the old IP 10.0.0.20.",
-      "tags": ["Scavenging", "Stale-Records"],
+      "category": "AD Integration",
+      "title": "SRV Record Registration Failure",
+      "summary": "A secondary Domain Controller (DC-02) was added, but clients cannot authenticate against it. It is missing from the _msdcs zone.",
+      "tags": ["SRV Records", "Netlogon"],
       "artifact": [
-        "Lookup fileserver.local: Returns 10.0.0.20 and 10.0.0.50",
-        "DNS Console: 'Aging/Scavenging' is currently disabled",
-        "Red Herring: The server's NIC has 'Register this connection in DNS' checked"
+        "DNS Zone: _msdcs.contoso.com",
+        "Evidence: DC-02 is missing from the _ldap._tcp records",
+        "DC-02 Status: Server is online and reachable by IP"
       ],
       "workflow": {
         "triage": {
-          "q": "What happens when a single name has two 'A' records with different IP addresses in DNS?",
+          "q": "Which DNS record type is used by Active Directory to locate Domain Controllers?",
           "options": [
-            "DNS uses Round Robin to alternate between them",
-            "DNS always picks the first one in the list",
-            "The server crashes",
-            "The client chooses the fastest IP"
+            "A Records",
+            "MX Records",
+            "SRV Records",
+            "TXT Records"
           ],
-          "correct": 0
+          "correct": 2
         },
         "diagnosis": {
-          "q": "Why is the old record (10.0.0.20) still present after the server changed IPs?",
+          "q": "What service is responsible for registering these SRV records on a Domain Controller?",
           "options": [
-            "The server didn't send a delete command",
-            "Scavenging is disabled, preventing 'stale' records from being auto-deleted",
-            "The ISP is caching the old record",
-            "The TTL is set to 0"
+            "Print Spooler",
+            "Netlogon",
+            "Workstation",
+            "DHCP Client"
           ],
           "correct": 1
         },
         "fix": {
-          "q": "How do you ensure stale records are cleaned up automatically in the future?",
+          "q": "How can you force a Domain Controller to re-register its missing SRV records in DNS?",
           "options": [
-            "Manually delete the old record and enable Scavenging/Aging on the zone",
-            "Restart the DNS service every 24 hours",
-            "Delete the Forward Lookup Zone and recreate it",
-            "Change the subnet mask"
+            "Restart the Netlogon service",
+            "Delete the DNS zone and recreate it",
+            "Run 'ipconfig /release'",
+            "Disable the Windows Firewall"
           ],
           "correct": 0
         }
       },
       "debrief": {
-        "summary": "DNS hygiene requires Scavenging.",
-        "takeaway": "Without an automated cleanup process, DNS becomes cluttered with 'ghost' records that cause intermittent failures."
+        "summary": "Active Directory relies on Service (SRV) records to point clients to available Domain Controllers.",
+        "takeaway": "Restarting the Netlogon service triggers a dynamic update that re-registers all required AD service records."
       }
     }
   ]
