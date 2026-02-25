@@ -4,267 +4,219 @@
   "track": "Windows Support",
   "subject": "File Permissions & Client Management",
   "rolePill": "Help Desk Technician",
-  "description": "Step into the shoes of a Tier 1 Support Tech. You'll solve everyday tickets involving NTFS permissions, Group Policy, file system limitations, and domain connectivity using an evidence-first workflow.",
+  "description": "Step into the shoes of a Tier 1 Support Tech. Solve everyday tickets involving NTFS, file systems, and domain connectivity using an evidence-first workflow.",
   "reportOverview": "This report evaluates your ability to troubleshoot user-facing issues. Key skills tested: NTFS vs Share permissions, Active Directory group membership, and file system architecture.",
   "categories": ["Permissions", "File Systems", "Domain Support"],
-  "evidenceInstructions": "Instructions:\n1) Read the user's complaint and examine the artifacts.\n2) Use the initial step to gather evidence (Effective Access, ipconfig, or Disk Management).\n3) Diagnose the logic error (Deny vs Allow, FAT32 vs NTFS).\n4) Apply the Fix and review the Resolution Insight to master the concept.",
+  "evidenceInstructions": "Instructions:\n1) Read the user's complaint.\n2) Use the initial step to gather evidence.\n3) Diagnose the logic error.\n4) Apply the Fix and review the Resolution Insight to see why your solution worked.",
   "tickets": [
     {
       "id": "SUPP-01",
       "category": "Permissions",
       "title": "HR New Hire Access Request",
-      "summary": "A new employee in HR, Sarah Jenkins, reports she cannot open the 'HR_Private' folder on the shared drive. Other HR staff have no issues.",
-      "tags": ["ntfs", "groups", "onboarding"],
+      "summary": "Sarah in HR cannot open the 'HR_Private' folder. Other HR staff have no issues. You've confirmed she is in the 'HR_Department' group.",
+      "tags": ["ntfs", "groups"],
       "artifact": [
         "User: sjenkins",
-        "Error: 'Windows cannot access \\\\FileServer\\HR_Private - Access is Denied'",
-        "AD Check: User is a member of 'Domain Users' and 'HR_Department' groups.",
-        "Folder Security: 'HR_Staff' group has Modify permissions; 'HR_Department' is not listed."
+        "AD Groups: HR_Department",
+        "Folder Permissions: HR_Staff (Modify)"
       ],
       "workflow": {
         "triage": {
           "q": "What is the most efficient way to see exactly why Sarah is being blocked?",
-          "options": [
-            "Ask Sarah to restart her computer three times",
-            "Check the 'Effective Access' tab in the folder's Advanced Security settings for sjenkins",
-            "Delete the HR folder and recreate it",
-            "Give Sarah the Domain Admin password temporarily"
-          ],
+          "options": ["Restart the PC", "Check 'Effective Access' for sjenkins on the folder", "Recreate the folder", "Ask her for her password"],
           "correct": 1
         },
         "diagnosis": {
-          "q": "Sarah is in 'HR_Department' but the folder gives access to 'HR_Staff'. What is the issue?",
-          "options": [
-            "The user's password has expired",
-            "The user is not a member of the specific security group that has NTFS permissions for that folder",
-            "The folder is encrypted with BitLocker",
-            "The server is out of licenses"
-          ],
+          "q": "Sarah is in 'HR_Department', but the folder allows 'HR_Staff'. What is the issue?",
+          "options": ["Password expired", "She is in a group, but not the specific group assigned to this folder", "Disk is full", "Folder is encrypted"],
           "correct": 1
         },
         "fix": {
-          "q": "How do you resolve this according to standard onboarding procedures?",
-          "options": [
-            "Add Sarah's individual user account directly to the folder's security tab",
-            "Add Sarah to the 'HR_Staff' security group in Active Directory",
-            "Share the folder with 'Everyone'",
-            "Disable NTFS permissions on the File Server"
-          ],
+          "q": "How do you resolve this correctly?",
+          "options": ["Add her individual account to the folder", "Add her to the 'HR_Staff' group in AD", "Share with Everyone", "Disable permissions"],
           "correct": 1
         }
       },
       "debrief": {
-        "summary": "Direct permissions are harder to manage than group-based ones.",
-        "takeaway": "Resolution Insight: In enterprise environments, access is managed via the AGDLP principle (Accounts into Global groups, into Domain Local groups, which are assigned Permissions). Assigning permissions to a group rather than an individual ensures that as staff change, you only manage AD membership rather than editing thousands of folder ACLs."
+        "summary": "Group membership only works if the group itself has permission.",
+        "takeaway": "Resolution Insight: Just because a user is in 'HR' doesn't mean they automatically see every HR folder. You must verify if the specific group the user belongs to matches the group listed on the folder's security list. We add her to the group rather than adding her name directly to the folder to keep the security list clean and easy to manage."
       }
     },
     {
       "id": "SUPP-02",
       "category": "File Systems",
       "title": "USB Storage Capacity Error",
-      "summary": "A user is trying to copy a 5GB database export to a 16GB USB drive. The drive is empty, but Windows returns an error saying 'The file is too large for the destination file system.'",
-      "tags": ["fat32", "ntfs", "file limits"],
+      "summary": "A user has 14GB free on a USB but can't copy a single 5GB file.",
+      "tags": ["fat32", "ntfs"],
       "artifact": [
         "File Size: 5.1 GB",
-        "USB Capacity: 16 GB (14.9 GB free)",
         "USB File System: FAT32"
       ],
       "workflow": {
-        "triage": {
-          "q": "The drive has enough space, but the file won't copy. What property should you look at first in Disk Management?",
-          "options": [
-            "The drive letter assigned to the USB",
-            "The File System type (FAT32, NTFS, or exFAT)",
-            "The brand of the USB drive",
-            "The color of the USB port (2.0 vs 3.0)"
-          ],
-          "correct": 1
-        },
-        "diagnosis": {
-          "q": "Why does a 5GB file fail to copy to a 16GB FAT32 volume?",
-          "options": [
-            "The USB is corrupted",
-            "FAT32 has a maximum individual file size limit of 4GB",
-            "Windows 10 does not support USB drives larger than 4GB",
-            "The file is infected with a virus"
-          ],
-          "correct": 1
-        },
-        "fix": {
-          "q": "How do you enable the user to carry this 5GB file?",
-          "options": [
-            "Compress the file into five 1GB parts",
-            "Reformat the USB drive as NTFS or exFAT",
-            "Buy a 32GB USB drive",
-            "Update the USB drivers in Device Manager"
-          ],
-          "correct": 1
-        }
+        "triage": { "q": "The drive has enough space. What property should you check first?", "options": ["Drive Letter", "File System type", "USB Brand", "Port Color"], "correct": 1 },
+        "diagnosis": { "q": "Why does a 5GB file fail on a 16GB FAT32 volume?", "options": ["USB is broken", "FAT32 cannot handle any single file larger than 4GB", "Windows limit", "Virus"], "correct": 1 },
+        "fix": { "q": "What is the fix?", "options": ["Split the file", "Reformat to NTFS or exFAT", "Buy bigger USB", "Update drivers"], "correct": 1 }
       },
       "debrief": {
-        "summary": "File systems have architectural limits regardless of storage size.",
-        "takeaway": "Resolution Insight: The File Allocation Table (FAT32) uses a 32-bit value to track file sizes, creating a hard limit of 4GB (minus 1 byte) per file. To handle modern data sizes, NTFS or exFAT must be used, as they support significantly larger files (up to 16 Exabytes for NTFS)."
+        "summary": "Total space and file size limits are two different things.",
+        "takeaway": "Resolution Insight: You identified that the 'space available' wasn't the problem—the 'architecture' was. Even with 100GB free, a FAT32 drive will always reject a 5GB file because its 'map' isn't big enough to track a single file of that size. Switching to NTFS removes this old limitation."
       }
     },
     {
       "id": "SUPP-03",
       "category": "Domain Support",
       "title": "Workstation Trust Relationship Failure",
-      "summary": "A user returning from a 3-month leave tries to log in. They receive: 'The trust relationship between this workstation and the primary domain failed.'",
+      "summary": "A user returning from leave gets a 'trust relationship' error at login.",
       "tags": ["active directory", "secure channel"],
       "artifact": [
         "Error: Trust Relationship Failure",
-        "Last Login: 92 days ago",
-        "Network: Connectivity to DC is confirmed."
+        "Last Login: 90+ days ago"
       ],
       "workflow": {
-        "triage": { "q": "What tool can you use to verify the secure channel status?", "options": ["Test-ComputerSecureChannel in PowerShell", "Disk Cleanup", "Device Manager", "Task Manager"], "correct": 0 },
-        "diagnosis": { "q": "What happened to this computer's account?", "options": ["The user's password expired", "The machine account password (managed by netlogon) is out of sync with the domain", "The hardware is too old", "The OS is Home edition"], "correct": 1 },
-        "fix": { "q": "What is the best way to fix the trust?", "options": ["Unjoin and rejoin the domain", "Reinstall Windows", "Reset the user's password", "Change the computer name"], "correct": 0 }
+        "triage": { "q": "What tool verifies the secure channel?", "options": ["Test-ComputerSecureChannel", "Disk Cleanup", "Device Manager", "Task Manager"], "correct": 0 },
+        "diagnosis": { "q": "What happened while the user was away?", "options": ["User forgot password", "The computer's own internal password expired and fell out of sync with AD", "HDD failure", "Home edition"], "correct": 1 },
+        "fix": { "q": "How do you fix it?", "options": ["Unjoin and Rejoin domain", "Reinstall Windows", "Reset user password", "Rename PC"], "correct": 0 }
       },
       "debrief": {
-        "summary": "Computer accounts have passwords just like users do.",
-        "takeaway": "Resolution Insight: Windows computers change their 'machine password' in Active Directory every 30 days by default. If a PC is off for months, it may miss multiple updates, causing the 'Secure Channel' to break. Rejoining the domain creates a new Security Identifier (SID) and resets this trust."
+        "summary": "Computers have 'passwords' that expire just like users.",
+        "takeaway": "Resolution Insight: Computers are members of the domain too. When this laptop was off for 3 months, it missed its scheduled password rotation with Active Directory. By unjoining and rejoining, you are essentially 're-introducing' the computer to the domain so they can agree on a new secret password."
       }
     },
     {
       "id": "SUPP-04",
       "category": "Permissions",
       "title": "Folder Inheritance Discrepancy",
-      "summary": "A manager created a sub-folder. Even though the team has access to the parent folder, no one can see the new sub-folder.",
+      "summary": "A manager created a sub-folder. The team can't see it, even though they have access to the main folder.",
       "tags": ["ntfs", "inheritance"],
       "artifact": [
-        "Parent: 'Marketing' (Inheritance Enabled)",
-        "Sub-folder: 'Campaign_2024' (Inheritance Disabled)",
-        "Security: Only the Manager is listed on the sub-folder ACL."
+        "Parent: 'Marketing' (Inherited)",
+        "Sub-folder: 'Campaign' (Inheritance Disabled)"
       ],
       "workflow": {
-        "triage": { "q": "In the Security tab, how can you tell if a permission is inherited?", "options": ["Inherited permissions have a grey checkbox", "Inherited permissions are red", "They are listed at the bottom", "They are underlined"], "correct": 0 },
-        "diagnosis": { "q": "Why is the team blocked?", "options": ["The server is full", "Inheritance was disabled, so the sub-folder didn't receive the 'Allow' entries from the parent", "The files are hidden", "The team is in the wrong OU"], "correct": 1 },
-        "fix": { "q": "How do you restore team access?", "options": ["Re-enable inheritance on the sub-folder", "Give Everyone Full Control", "Delete and recreate the folder", "Reboot the server"], "correct": 0 }
+        "triage": { "q": "How can you tell if a permission is inherited?", "options": ["Grey checkboxes", "Red text", "Underlined", "Bold"], "correct": 0 },
+        "diagnosis": { "q": "Why is the team blocked?", "options": ["Server full", "Inheritance was turned off, so the 'Allow' rules didn't 'flow down' to the new folder", "Hidden files", "Wrong OU"], "correct": 1 },
+        "fix": { "q": "How do you restore access?", "options": ["Enable inheritance", "Everyone Full Control", "Delete folder", "Reboot"], "correct": 0 }
       },
       "debrief": {
-        "summary": "Inheritance is the flow of permissions from top to bottom.",
-        "takeaway": "Resolution Insight: By default, sub-folders 'inherit' permissions from their parent. Disabling inheritance (breaking the link) prevents this flow. Re-enabling it ensures consistency across the file structure and reduces the risk of 'permission drift' where sub-folders have different security than their parents."
+        "summary": "Permissions should flow like a waterfall from the top folder down.",
+        "takeaway": "Resolution Insight: When the manager disabled inheritance, they 'broke the chain.' Even though the team had access to the top folder, the new sub-folder became a private island. Re-enabling inheritance forces the sub-folder to listen to the parent's security rules again."
       }
     },
     {
       "id": "SUPP-05",
       "category": "Domain Support",
       "title": "Duplicate Computer Object Block",
-      "summary": "You are joining a laptop named 'LAPTOP-05' to the domain. You get 'The account already exists' and access is denied.",
-      "tags": ["active directory", "naming"],
+      "summary": "Joining 'LAPTOP-05' fails with 'Account already exists'.",
+      "tags": ["active directory"],
       "artifact": [
-        "Search: 'LAPTOP-05' exists in AD, created 2 years ago.",
-        "Status: The old device was decommissioned but never removed from AD."
+        "AD Search: 'LAPTOP-05' already exists from 2 years ago."
       ],
       "workflow": {
-        "triage": { "q": "Where do you check for existing computer names in AD?", "options": ["Active Directory Users and Computers (ADUC)", "Group Policy Management", "DNS Console", "DHCP Console"], "correct": 0 },
-        "diagnosis": { "q": "Why is the join failing?", "options": ["The domain is full", "AD won't allow a new device to hijack an existing computer account's SID without permission", "The name is too long", "The BIOS is outdated"], "correct": 1 },
-        "fix": { "q": "What is the professional fix?", "options": ["Delete or Reset the old object in AD before joining", "Rename the new laptop to 'LAPTOP-05-NEW'", "Disable the firewall", "Use a local account"], "correct": 0 }
+        "triage": { "q": "Where do you check for old computer names?", "options": ["ADUC", "GPMC", "DNS", "DHCP"], "correct": 0 },
+        "diagnosis": { "q": "Why is the join failing?", "options": ["Domain full", "AD is protecting the old object's identity and won't let a new machine 'clobber' it", "Name too long", "BIOS error"], "correct": 1 },
+        "fix": { "q": "How do you fix it?", "options": ["Delete/Reset the old AD object first", "Rename new laptop", "Disable Firewall", "Local account"], "correct": 0 }
       },
       "debrief": {
-        "summary": "Active Directory protects computer identity.",
-        "takeaway": "Resolution Insight: Every computer in AD has a unique Security Identifier (SID). If you try to join a new machine with an existing name, AD sees it as a security risk (identity theft). You must 'Reset' the account to allow a new SID to be associated with that name."
+        "summary": "Active Directory remembers names to prevent security spoofing.",
+        "takeaway": "Resolution Insight: You found a 'stale' object. Active Directory doesn't know 'LAPTOP-05' is a brand new piece of hardware; it thinks someone is trying to impersonate an old computer. Deleting the old record clears the path for the new machine to register its own unique security ID (SID)."
       }
     },
     {
       "id": "SUPP-06",
       "category": "Permissions",
       "title": "Group Conflict: The Deny Rule",
-      "summary": "James is in 'Contractors' (Deny Finance) and 'Project-A' (Allow Finance). He is blocked from the Finance folder.",
-      "tags": ["ntfs", "deny logic"],
+      "summary": "James is in a group that is 'Allowed' and a group that is 'Denied'. He is blocked.",
+      "tags": ["ntfs", "deny"],
       "artifact": [
-        "Contractors: Deny Read/Write",
-        "Project-A: Allow Read"
+        "Contractors: Deny",
+        "Project-A: Allow"
       ],
       "workflow": {
-        "triage": { "q": "Which takes precedence in NTFS?", "options": ["Allow", "Deny", "The first group added", "The largest group"], "correct": 1 },
-        "diagnosis": { "q": "Why is James blocked?", "options": ["He isn't in enough groups", "An explicit Deny overrides any Allow, regardless of group membership", "His account is locked", "The folder is too large"], "correct": 1 },
-        "fix": { "q": "How do you give James access?", "options": ["Remove the 'Deny' and simply leave the 'Allow' boxes unchecked for contractors", "Move him to a new OU", "Make him an Admin", "Change his password"], "correct": 0 }
+        "triage": { "q": "Which takes precedence?", "options": ["Allow", "Deny", "First one", "Largest group"], "correct": 1 },
+        "diagnosis": { "q": "Why is James blocked?", "options": ["Not enough groups", "In Windows, a 'Deny' always wins over an 'Allow'", "Locked account", "Folder too big"], "correct": 1 },
+        "fix": { "q": "How do you give access?", "options": ["Remove 'Deny' and leave 'Allow' unchecked for Contractors", "New OU", "Make Admin", "Change password"], "correct": 0 }
       },
       "debrief": {
-        "summary": "Deny is a powerful, 'sticky' permission.",
-        "takeaway": "Resolution Insight: Windows uses a specific order for evaluating ACLs. An explicit 'Deny' is checked before any 'Allow'. Best practice is to avoid 'Deny' whenever possible; instead, simply 'don't grant' access. This allows users to gain access through other group memberships without being blocked."
+        "summary": "A 'Deny' is a 'No' that cannot be overruled by a 'Yes'.",
+        "takeaway": "Resolution Insight: You learned that 'Deny' is the most powerful setting. If you want to restrict someone, it's better to just 'not grant' them the permission. Using 'Deny' is like a master lock—even if they have a 'Yes' key from another group, the 'Deny' lock keeps the door shut."
       }
     },
     {
       "id": "SUPP-07",
       "category": "File Systems",
-      "title": "Unallocated Space Management",
-      "summary": "A user needs a D: drive for data, but the 1TB disk only shows a C: drive.",
-      "tags": ["disk management", "volumes"],
+      "title": "Creating a New Data Partition",
+      "summary": "User has a 1TB C: drive but wants a separate D: drive for projects.",
+      "tags": ["disk management"],
       "artifact": [
-        "Disk 0: 1TB Total",
-        "C: Partition: 900GB (500GB free)"
+        "Disk 0: 900GB C: (500GB free)"
       ],
       "workflow": {
         "triage": { "q": "Which tool manages disk volumes?", "options": ["Disk Management", "File Explorer", "Task Manager", "Device Manager"], "correct": 0 },
-        "diagnosis": { "q": "What must happen before a D: drive can be created?", "options": ["The C: drive must be shrunk to create unallocated space", "The disk must be replaced", "Windows must be reinstalled", "BitLocker must be disabled"], "correct": 0 },
-        "fix": { "q": "What are the steps?", "options": ["Shrink C: volume -> New Simple Volume on Unallocated Space", "Format C:", "Rename C: to D:", "Plug in a USB"], "correct": 0 }
+        "diagnosis": { "q": "What must happen first?", "options": ["Shrink C: to make 'Unallocated Space'", "Replace disk", "Reinstall Windows", "Disable BitLocker"], "correct": 0 },
+        "fix": { "q": "Steps?", "options": ["Shrink C: -> New Simple Volume", "Format C:", "Rename C:", "Use USB"], "correct": 0 }
       },
       "debrief": {
-        "summary": "Volumes are logical divisions of physical disks.",
-        "takeaway": "Resolution Insight: A 'Volume' must sit within a 'Partition'. By shrinking an existing volume, you return space to an 'Unallocated' state. From there, you can create a new partition table entry and format it with a file system to create a separate drive letter (D:)."
+        "summary": "You can't build a new room (D:) until you clear some land (Unallocated Space).",
+        "takeaway": "Resolution Insight: You can't just 'create' a D: drive if the C: drive is using the whole disk. By shrinking C:, you push the existing data to the front of the drive, leaving 'empty land' at the end where a brand new partition can be built."
       }
     },
     {
       "id": "SUPP-08",
       "category": "Permissions",
       "title": "Share vs NTFS Constraints",
-      "summary": "User has 'Full Control' on a network share but gets 'Access Denied' when saving. NTFS is set to 'Read'.",
+      "summary": "User has Full Control on the Share but 'Read' on NTFS. They can't save files.",
       "tags": ["share vs ntfs"],
       "artifact": [
-        "Share: Everyone - Full Control",
-        "NTFS: User - Read Only"
+        "Share: Full Control",
+        "NTFS: Read Only"
       ],
       "workflow": {
-        "triage": { "q": "When combining Share and NTFS, which wins?", "options": ["The least restrictive", "The most restrictive", "Share permissions only", "NTFS permissions only"], "correct": 1 },
-        "diagnosis": { "q": "Why is the save failing?", "options": ["The share is broken", "The NTFS 'Read' limit is more restrictive than the Share 'Full Control'", "The file is too small", "The network is down"], "correct": 1 },
-        "fix": { "q": "How do you resolve it?", "options": ["Grant 'Modify' at the NTFS level", "Grant 'Modify' at the Share level", "Map the drive again", "Restart the PC"], "correct": 0 }
+        "triage": { "q": "Which wins?", "options": ["Least restrictive", "Most restrictive", "Share only", "NTFS only"], "correct": 1 },
+        "diagnosis": { "q": "Why is the save failing?", "options": ["Broken share", "The 'Read' limit on the folder is tighter than the 'Full' limit on the share", "Small file", "No network"], "correct": 1 },
+        "fix": { "q": "Fix?", "options": ["Grant 'Modify' on NTFS", "Grant 'Modify' on Share", "Remap drive", "Restart"], "correct": 0 }
       },
       "debrief": {
-        "summary": "Network access is a 'double-gate' system.",
-        "takeaway": "Resolution Insight: Think of Share permissions as the gate to the property and NTFS as the lock on the front door. A user must pass through BOTH. Windows evaluates both and applies the 'Most Restrictive' result. Modern admins usually set Share to 'Full Control' and manage security entirely via NTFS."
+        "summary": "Getting through the network 'gate' is only half the battle.",
+        "takeaway": "Resolution Insight: Think of Share permissions as the 'security guard at the gate' and NTFS as the 'key to the office.' The guard let the user in (Full Control), but once they got to the office, their key was 'Read Only.' You have to fix the lock on the office door (NTFS) for them to do their work."
       }
     },
     {
       "id": "SUPP-09",
       "category": "File Systems",
       "title": "The Invisible Internal Drive",
-      "summary": "A user installed a second SSD, but it doesn't appear in 'This PC'.",
+      "summary": "A brand new SSD is plugged in but doesn't show in 'This PC'.",
       "tags": ["initialization"],
       "artifact": [
-        "Disk Management: Disk 1 shows as 'Not Initialized' and 'Unallocated'."
+        "Disk Management: 'Not Initialized' / 'Unallocated'"
       ],
       "workflow": {
-        "triage": { "q": "What is the state of a brand-new, unformatted disk?", "options": ["Not Initialized", "Healthy", "Active", "Dynamic"], "correct": 0 },
-        "diagnosis": { "q": "Why is it invisible?", "options": ["It is broken", "A disk must be initialized (GPT/MBR) and a volume created before Windows assigns it a drive letter", "It is an external drive", "The BIOS is blocking it"], "correct": 1 },
-        "fix": { "q": "What is the fix?", "options": ["Initialize disk -> Create New Simple Volume -> Format NTFS", "Replace the cable", "Update Windows", "Assign a letter to the C: drive"], "correct": 0 }
+        "triage": { "q": "State of a brand-new disk?", "options": ["Not Initialized", "Healthy", "Active", "Dynamic"], "correct": 0 },
+        "diagnosis": { "q": "Why is it invisible?", "options": ["Broken", "Needs Initialization and a Volume created", "External", "BIOS block"], "correct": 1 },
+        "fix": { "q": "Fix?", "options": ["Initialize -> New Simple Volume -> Format", "New cable", "Update Windows", "Assign letter to C:"], "correct": 0 }
       },
       "debrief": {
-        "summary": "Hardware needs a logical structure to be usable.",
-        "takeaway": "Resolution Insight: Initialization creates the partition style (GPT is the modern standard). Without a partition table and a formatted file system (NTFS), Windows cannot map the storage sectors to a drive letter that the user can interact with in File Explorer."
+        "summary": "A new disk is like a blank notebook with no lines or page numbers.",
+        "takeaway": "Resolution Insight: Windows won't show a drive until it has a 'table of contents' (Initialization) and 'pages' (Formatting). Once you initialized the disk and gave it a drive letter, you gave Windows a way to talk to the hardware."
       }
     },
     {
       "id": "SUPP-10",
       "category": "Domain Support",
-      "title": "Authentication Block: Kerberos Time Skew",
-      "summary": "User cannot log in. Error: 'There is a time difference between the client and the server.'",
-      "tags": ["kerberos", "time sync"],
+      "title": "Authentication Block: Time Skew",
+      "summary": "Login fails. Error: 'Time difference between client and server.'",
+      "tags": ["kerberos"],
       "artifact": [
         "Client: 1:00 PM",
-        "Domain Controller: 1:10 PM"
+        "DC: 1:10 PM"
       ],
       "workflow": {
-        "triage": { "q": "What is the default Kerberos time skew limit?", "options": ["1 minute", "5 minutes", "10 minutes", "30 minutes"], "correct": 1 },
-        "diagnosis": { "q": "Why does time matter for login?", "options": ["Windows uses time for its screensaver", "Kerberos tickets are timestamped to prevent replay attacks; large differences cause rejection", "The server is in a different time zone", "The battery is dead"], "correct": 1 },
-        "fix": { "q": "How do you fix this?", "options": ["Resync time using 'w32tm /resync'", "Change the time zone", "Update the BIOS", "Reset the user's password"], "correct": 0 }
+        "triage": { "q": "Kerberos time skew limit?", "options": ["1 min", "5 mins", "10 mins", "30 mins"], "correct": 1 },
+        "diagnosis": { "q": "Why does time matter?", "options": ["Screensaver", "Security handshake fails if clocks don't match (prevents replay attacks)", "Time zone", "Battery"], "correct": 1 },
+        "fix": { "q": "Fix?", "options": ["Resync time (w32tm /resync)", "Change time zone", "Update BIOS", "Reset password"], "correct": 0 }
       },
       "debrief": {
-        "summary": "Time is a critical security component in Active Directory.",
-        "takeaway": "Resolution Insight: Kerberos is the default auth protocol in AD. It uses 'Timestamps' to ensure that a captured login packet cannot be reused later (a Replay Attack). If the client and DC disagree by more than 5 minutes, the security handshake is aborted to protect the network."
+        "summary": "Security requires everyone to be on the same clock.",
+        "takeaway": "Resolution Insight: You identified that a 10-minute difference is too large. The domain uses time to prove that a login request is 'fresh.' If the clocks are too far apart, the server thinks someone might be trying to reuse an old, stolen login packet and blocks the access to be safe."
       }
     }
   ]
