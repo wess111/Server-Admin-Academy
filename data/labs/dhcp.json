@@ -1,109 +1,622 @@
 {
-  "id": "dhcp",
-  "title": "DHCP Systems: Address Management",
+  "id": "dhcp-core",
+  "title": "DHCP Systems: Enterprise Connectivity",
   "track": "Systems Engineering",
-  "subject": "Network Infrastructure",
-  "rolePill": "Systems Engineer",
-  "description": "Manage IP allocation, solve scope exhaustion, and configure relay agents in a routed environment.",
-  "reportOverview": "This module validates your ability to manage the IPv4 lifecycle and troubleshoot delivery failures across VLAN boundaries.",
-  "categories": ["Scope Management", "Routing & Relays", "Security"],
   "tickets": [
     {
-      "id": "DHCP-01",
-      "category": "Scope Management",
-      "title": "Intermittent Connectivity in the Cafe",
-      "summary": "Users in the guest cafe are getting 169.254.x.x addresses. Some users can connect, but new arrivals cannot.",
-      "tags": ["Exhaustion", "APIPA", "Leases"],
+      "id": "DHCP-001",
+      "category": "Connectivity",
+      "title": "Unusual Gateway Assignment",
+      "summary": "Multiple users on the Marketing floor are reporting they can't reach internal resources, but they seem to be able to reach personal email sites. Their IPs look 'off'.",
+      "tags": [
+        "Gateway",
+        "Routing"
+      ],
       "artifact": [
-        "Cafe Subnet: 10.0.5.0/24",
-        "Scope Statistics: 253 of 254 addresses in use",
-        "Current Lease Duration: 8 Days",
-        "Red Herring: DHCP Service Status is 'Running'"
+        "Corporate Subnet: 10.50.0.0/24",
+        "Marketing User (ipconfig): 192.168.1.45",
+        "Marketing User (gateway): 192.168.1.1",
+        "Physical Check: A small white plastic device found plugged into Wall Jack 402."
       ],
       "workflow": {
         "triage": {
-          "q": "What does a 169.254.x.x address indicate about the client's attempt to get an IP?",
+          "q": "What is the most immediate conclusion based on the client receiving a 192.168.x.x address on a 10.x.x.x network?",
           "options": [
-            "The client has a static IP conflict",
-            "The client failed to receive a DHCP Offer/Ack (APIPA)",
-            "The DHCP server is assigning 'Emergency' IPs",
-            "The wireless access point is encrypted"
+            "The main DHCP server has failed and failed over to a backup range",
+            "The client has a static IP set by the user",
+            "A 'Rogue' DHCP server (likely a home router) is responding on the wire",
+            "The network switch has rebooted into safe mode"
           ],
-          "correct": 1
+          "correct": 2
         },
         "diagnosis": {
-          "q": "The scope is 100% full. Why are addresses not being freed up when users leave the cafe?",
+          "q": "Why did the client machine accept the 192.168.1.1 gateway instead of the corporate one?",
           "options": [
-            "The lease duration is too long (8 days), keeping IPs reserved for inactive clients",
-            "The DHCP database is full and cannot delete records",
-            "The router is blocking the DHCP Release packets",
-            "The users are not logging out of the captive portal"
+            "The rogue server responded to the DHCP Discover broadcast faster than the corporate server",
+            "The corporate server is configured to ignore the Marketing floor",
+            "Windows always prefers 192.168 addresses over 10.x addresses",
+            "The rogue server has a higher priority 'metric' in Active Directory"
           ],
           "correct": 0
         },
         "fix": {
-          "q": "What is the best configuration change to ensure high-turnover areas like a cafe always have available IPs?",
+          "q": "What is the best long-term remediation to prevent this from happening again on this floor?",
           "options": [
-            "Shorten the Lease Duration to 2 or 4 hours",
-            "Expand the subnet to a /16 immediately",
-            "Disable the DHCP scope and restart it daily",
-            "Tell users to release their IP manually"
+            "Change the corporate subnet to 192.168.1.0/24",
+            "Enable 'DHCP Snooping' on the access layer switches",
+            "Disable the DHCP service on the Domain Controller",
+            "Tell users not to bring devices from home"
           ],
-          "correct": 0
+          "correct": 1
         }
       },
       "debrief": {
-        "summary": "Scope exhaustion is common in 'transient' environments.",
-        "takeaway": "Matching lease duration to user behavior (short stay = short lease) prevents 'ghost' reservations from blocking new users."
+        "summary": "A rogue DHCP server (like a home router) can cause 'split brain' networks where clients get incorrect gateways.",
+        "takeaway": "DHCP Snooping is a Layer 2 security feature that only allows DHCP 'Offers' from trusted switch ports."
       }
     },
     {
-      "id": "DHCP-02",
-      "category": "Routing & Relays",
-      "title": "New VLAN 20 Cannot Reach DHCP",
-      "summary": "A new department has been moved to VLAN 20. They are physically connected but cannot get an IP from the central DHCP server on VLAN 10.",
-      "tags": ["IP-Helper", "Relay-Agent", "VLAN"],
+      "id": "DHCP-002",
+      "category": "Scope Management",
+      "title": "The 'Lunch Break' Disconnect",
+      "summary": "Every day at 1:00 PM, users returning from the guest lobby complain they can no longer connect to the Wi-Fi. It works fine for the first 20 people in the morning.",
+      "tags": [
+        "Exhaustion",
+        "Leases"
+      ],
       "artifact": [
-        "DHCP Server: 10.0.10.5",
-        "Client Subnet: 10.0.20.0/24",
-        "Router: Routing is enabled between VLAN 10 and 20",
-        "Red Herring: Firewall logs show no blocked traffic"
+        "Lobby Subnet: 172.16.10.0/24 (254 IPs)",
+        "Scope Stats: 253 In-Use, 1 Available",
+        "Lease Duration: 8 Days",
+        "Traffic Pattern: High turnover (guests staying 30-60 mins)"
       ],
       "workflow": {
         "triage": {
-          "q": "Why do DHCP Discover packets fail to reach a server on a different VLAN by default?",
+          "q": "What do the Scope Statistics (253 In-Use) reveal about the current issue?",
           "options": [
-            "DHCP uses broadcasts, which do not cross router boundaries",
-            "The server doesn't know the route back to the client",
-            "VLAN 20 is inherently less secure than VLAN 10",
-            "The DHCP server is restricted to a single NIC"
+            "The server is running too slow to process requests",
+            "The IP address pool is exhausted and cannot fulfill new requests",
+            "The subnet mask is incorrectly configured",
+            "There is a broadcast storm on the wireless network"
           ],
-          "correct": 0
+          "correct": 1
         },
         "diagnosis": {
-          "q": "What component is missing on the VLAN 20 gateway to allow it to 'forward' these requests?",
+          "q": "Given the high turnover of guests, why are addresses not being reclaimed when people leave?",
           "options": [
-            "A static route to the DHCP server",
-            "A DHCP Relay Agent or 'IP Helper-Address'",
-            "An Access Control List (ACL)",
-            "A DNS Forwarder"
+            "Guests are not clicking 'Logout' on the portal",
+            "The 8-day lease duration is keeping IPs reserved long after guests leave",
+            "The server database is corrupted and won't delete old entries",
+            "The router is blocking 'Release' packets from smartphones"
           ],
           "correct": 1
         },
         "fix": {
-          "q": "How should you configure the Router/Switch to fix the delivery issue?",
+          "q": "What configuration change will solve this without changing the network size?",
           "options": [
-            "Add 'ip helper-address 10.0.10.5' to the VLAN 20 interface",
-            "Move the DHCP server into VLAN 20",
-            "Enable 'Promiscuous Mode' on the client NICs",
-            "Create a Superscope on the DHCP Server"
+            "Shorten the Lease Duration to 2 or 4 hours",
+            "Increase the Lease Duration to 30 days to ensure stability",
+            "Change the subnet to a /16",
+            "Disable the DHCP server during lunch hours"
           ],
           "correct": 0
         }
       },
       "debrief": {
-        "summary": "DHCP Relay (IP Helper) is the bridge between broadcast and unicast.",
-        "takeaway": "The relay agent catches the local broadcast and sends it directly to the server, allowing centralized DHCP for the whole enterprise."
+        "summary": "Lease duration should match user behavior. Transient areas (Lobbies, Cafes) need short leases to recycle IPs quickly.",
+        "takeaway": "Avoid the 'default' 8-day lease for high-turnover wireless segments."
+      }
+    },
+    {
+      "id": "DHCP-003",
+      "category": "DNS Integration",
+      "title": "Internal App 404s",
+      "summary": "Users can reach 'google.com' but cannot reach the internal portal 'kb.corp.local'. They are getting a 404 or 'Server Not Found' error.",
+      "tags": [
+        "DNS",
+        "Options"
+      ],
+      "artifact": [
+        "Client ipconfig /all:",
+        "IPv4 Address: 10.10.20.55",
+        "DNS Servers: 8.8.8.8, 8.8.4.4",
+        "Internal DNS Server IP: 10.10.10.10"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What is the problem with the DNS servers assigned to the client?",
+          "options": [
+            "The DNS servers are too slow",
+            "Public DNS (8.8.8.8) cannot resolve internal (.local) names",
+            "The client is using IPv6 instead of IPv4",
+            "The DNS server IPs are missing from the gateway"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Where is the client getting these external DNS addresses from?",
+          "options": [
+            "The web browser's hardcoded settings",
+            "DHCP Option 006 (DNS Servers) is configured with public IPs",
+            "The computer's BIOS settings",
+            "The ISP's modem"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "How do you ensure all clients use the internal DNS server?",
+          "options": [
+            "Update DHCP Option 006 to point to 10.10.10.10",
+            "Tell users to manually change their DNS to 10.10.10.10",
+            "Add a forwarder on the Google DNS servers",
+            "Disable the DHCP service"
+          ],
+          "correct": 0
+        }
+      },
+      "debrief": {
+        "summary": "DHCP doesn't just give out IPs; it gives out the 'identity' of the network (DNS, WINS, NTP).",
+        "takeaway": "Always point internal clients to internal DNS first so they can find Active Directory resources."
+      }
+    },
+    {
+      "id": "DHCP-004",
+      "category": "Reservations",
+      "title": "The 'Flipping' Printer",
+      "summary": "The main reception printer is intermittently going offline. Some days it works, other days it is 'Unreachable'.",
+      "tags": [
+        "Conflict",
+        "Reservations"
+      ],
+      "artifact": [
+        "Printer Static IP: 10.0.0.25",
+        "DHCP Scope: 10.0.0.1 - 10.0.0.100",
+        "DHCP Audit Log: 'Address 10.0.0.25 issued to workstation-04'"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What does the Audit Log reveal about the printer's IP address?",
+          "options": [
+            "The printer is turning itself off",
+            "The DHCP server is issuing the printer's IP to other devices",
+            "The printer has a bad network cable",
+            "The DHCP server is offline"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Why is the DHCP server giving away an address that the printer is already using?",
+          "options": [
+            "The printer didn't 'tell' the server it was using it",
+            "The static IP was set within the dynamic range without an exclusion or reservation",
+            "The workstation-04 has 'Admin' rights",
+            "The subnet mask is too long"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "How do you permanently prevent this conflict?",
+          "options": [
+            "Create a DHCP Reservation for the printer's MAC at 10.0.0.25",
+            "Restart the printer every morning",
+            "Change the workstation's IP manually",
+            "Increase the DHCP lease time"
+          ],
+          "correct": 0
+        }
+      },
+      "debrief": {
+        "summary": "Static IPs should always be excluded from the pool OR managed via DHCP Reservations.",
+        "takeaway": "If a device is 'important' enough for a static IP, the DHCP server needs to know so it doesn't give it to a random laptop."
+      }
+    },
+    {
+      "id": "DHCP-005",
+      "category": "VOIP",
+      "title": "Phones Stuck on 'Waiting for DHCP'",
+      "summary": "The company just deployed 50 new IP phones. They are powered on and plugged in, but they never get past the 'Configuring' screen.",
+      "tags": [
+        "VOIP",
+        "Options"
+      ],
+      "artifact": [
+        "DHCP Server: Windows Server 2022",
+        "Phone Display: 'TFTP Server Not Found'",
+        "Wireshark on Phone: Requesting Option 66"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What specific piece of information are the phones missing from the DHCP server?",
+          "options": [
+            "A default gateway",
+            "The address of the TFTP server (Option 66)",
+            "A valid subnet mask",
+            "A DNS suffix"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Most IP phones require 'DHCP Options' to find their configuration files. Which option is standard for Boot Server Host Names?",
+          "options": [
+            "Option 003",
+            "Option 006",
+            "Option 066",
+            "Option 015"
+          ],
+          "correct": 2
+        },
+        "fix": {
+          "q": "What change should be made in the DHCP console?",
+          "options": [
+            "Add Option 066 and enter the IP of the Phone Controller/TFTP server",
+            "Create a new scope for the phones only",
+            "Disable Windows Firewall on the DHCP server",
+            "Give the phones static IPs one by one"
+          ],
+          "correct": 0
+        }
+      },
+      "debrief": {
+        "summary": "Advanced devices (Phones, Thin Clients, PXE boot) use DHCP Options to find their config servers automatically.",
+        "takeaway": "Option 66 (TFTP Server) and Option 67 (Bootfile Name) are critical for VOIP and Imaging."
+      }
+    },
+    {
+      "id": "DHCP-006",
+      "category": "Relay Agents",
+      "title": "New Wing, No Signal",
+      "summary": "A new office wing was added with its own subnet (10.20.1.0/24). Computers there get 169.254.x.x, but if you carry them back to the old wing, they work fine.",
+      "tags": [
+        "Relay",
+        "VLAN",
+        "APIPA"
+      ],
+      "artifact": [
+        "DHCP Server: 10.10.1.5 (Old Wing)",
+        "Client: 169.254.88.12 (New Wing)",
+        "Router: New Wing and Old Wing are separated by a Layer 3 Switch"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "Why are the clients in the new wing getting APIPA (169.254) addresses?",
+          "options": [
+            "The DHCP server is out of IPs",
+            "The DHCP Discover broadcasts are not reaching the server across the router",
+            "The network cable is too long",
+            "The clients are not authorized to use the new wing"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "What feature must be enabled on the Layer 3 switch to 'help' these requests reach the server?",
+          "options": [
+            "A Static Route",
+            "A DHCP Relay Agent (IP Helper)",
+            "An Access Control List",
+            "Port Mirroring"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "What command should be applied to the New Wing's Gateway interface?",
+          "options": [
+            "ip helper-address 10.10.1.5",
+            "shutdown / restart",
+            "ip route 0.0.0.0 0.0.0.0 10.10.1.5",
+            "dhcp-enable"
+          ],
+          "correct": 0
+        }
+      },
+      "debrief": {
+        "summary": "Routers block broadcasts. DHCP is a broadcast protocol.",
+        "takeaway": "The IP Helper address 'converts' the broadcast into a unicast packet and sends it directly to the server."
+      }
+    },
+    {
+      "id": "DHCP-007",
+      "category": "Security",
+      "title": "The CEO's New Laptop",
+      "summary": "The CEO has a brand new laptop. It works at his house, but in the office, it just says 'Identifying...' and never connects.",
+      "tags": [
+        "Filtering",
+        "Security"
+      ],
+      "artifact": [
+        "DHCP Server: 'Allow' filters are enabled",
+        "Audit Log: 'Packet dropped - MAC 00-1A-2B... - Denied by filter'",
+        "Status: Laptop has a 169.254.x.x address"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What is the DHCP server doing with the CEO's request according to the log?",
+          "options": [
+            "The server is ignoring it because the MAC address is not on the 'Allow' list",
+            "The server is trying to send an IP but the laptop is rejecting it",
+            "The server is out of memory",
+            "The server is not authorized in AD"
+          ],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "Why are other employees working fine?",
+          "options": [
+            "They have faster computers",
+            "Their MAC addresses were already added to the 'Allow' filter list",
+            "They are using static IPs",
+            "They are on a different VLAN"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "What is the fix to get the CEO online immediately?",
+          "options": [
+            "Add the CEO's MAC address to the 'Allow' filter folder in the DHCP console",
+            "Disable the entire DHCP server and restart it",
+            "Tell the CEO to use his phone's hotspot",
+            "Delete the DHCP database"
+          ],
+          "correct": 0
+        }
+      },
+      "debrief": {
+        "summary": "DHCP Filters allow you to whitelist or blacklist specific hardware (MAC) addresses.",
+        "takeaway": "If 'Allow' filters are on, every new device must be manually registered or it will be ignored."
+      }
+    },
+    {
+      "id": "DHCP-008",
+      "category": "Authorization",
+      "title": "New Server, No Service",
+      "summary": "You've just promoted a new Windows Server and installed the DHCP role. You created a scope, but it's showing a red down arrow and won't start.",
+      "tags": [
+        "AD",
+        "Authorization"
+      ],
+      "artifact": [
+        "Server Name: DC-PROD-03",
+        "DHCP Console: Red Down Arrow on IPv4 Node",
+        "Event Viewer: ID 1046 'The DHCP service is not authorized to start'"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What is the meaning of a red down arrow even when the Windows service is 'Started'?",
+          "options": [
+            "The database is corrupt",
+            "The server lacks authorization in Active Directory",
+            "The scope is empty",
+            "The network cable is unplugged"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "In an AD Domain, who has the right to authorize a DHCP server?",
+          "options": [
+            "Any Domain User",
+            "An Enterprise Administrator",
+            "A Help Desk Technician",
+            "The local 'System' account"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "How do you clear the error and start issuing IPs?",
+          "options": [
+            "Right-click 'Server' in the DHCP console and select 'Authorize'",
+            "Reinstall the DHCP role",
+            "Change the server's IP address",
+            "Restart the Domain Controller"
+          ],
+          "correct": 0
+        }
+      },
+      "debrief": {
+        "summary": "Authorization prevents unauthorized people from spinning up 'Rogue' DHCP servers on a domain network.",
+        "takeaway": "Authorization is an AD-level security check, not a local service status."
+      }
+    },
+    {
+      "id": "DHCP-009",
+      "category": "DDNS",
+      "title": "Missing Hostnames",
+      "summary": "The security team says they can't track which computer is which. They see an IP in the logs, but when they check DNS, there is no name associated with it.",
+      "tags": [
+        "DNS",
+        "Dynamic Updates"
+      ],
+      "artifact": [
+        "DHCP Server Property: 'Dynamically update DNS records' is UNCHECKED",
+        "DNS Zone: Reverse Lookup Zone (PTR) is nearly empty",
+        "Scenario: Most clients are non-Windows devices (Linux/IOT)"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "Why is the DNS system failing to show names for these IPs?",
+          "options": [
+            "The DNS server is offline",
+            "The DHCP server is not configured to register client names into DNS",
+            "The clients are using fake names",
+            "The network is too fast for DNS to keep up"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Non-Windows devices often don't update DNS themselves. Who should do it for them in a managed network?",
+          "options": [
+            "The user must type it in",
+            "The DHCP server can perform 'Proxy' updates for them",
+            "The firewall should do it",
+            "DNS updates are impossible for Linux"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "Which setting will fix the lack of PTR (Reverse) records?",
+          "options": [
+            "Enable 'Always dynamically update DNS records' on the DHCP server",
+            "Restart the DNS service",
+            "Delete the DHCP scope",
+            "Enable IPv6"
+          ],
+          "correct": 0
+        }
+      },
+      "debrief": {
+        "summary": "DHCP can act as a bridge, telling DNS whenever it gives an IP to a device.",
+        "takeaway": "For full visibility, ensure the DHCP server is configured to update DNS records, especially for non-Windows clients."
+      }
+    },
+    {
+      "id": "DHCP-010",
+      "category": "Failover",
+      "title": "The Out-of-Sync Partner",
+      "summary": "You have two DHCP servers in a failover relationship. Suddenly, Server B is reporting 'Communications Interrupted' and won't issue IPs from its half of the pool.",
+      "tags": [
+        "Failover",
+        "Time"
+      ],
+      "artifact": [
+        "Server A Time: 10:05 AM",
+        "Server B Time: 10:12 AM",
+        "Failover Status: 'State: Communications Interrupted'"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "What stands out as a potential cause for the communication failure between the two servers?",
+          "options": [
+            "One server has more RAM than the other",
+            "There is a 7-minute time difference between the two servers",
+            "Server A is newer than Server B",
+            "The failover cable is the wrong color"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "DHCP Failover requires tight time synchronization. What is the maximum allowed 'Time Skew' usually allowed?",
+          "options": [
+            "1 hour",
+            "60 seconds",
+            "10 minutes",
+            "24 hours"
+          ],
+          "correct": 1
+        },
+        "fix": {
+          "q": "What is the most reliable way to fix the sync issue and prevent it from recurring?",
+          "options": [
+            "Manually type the correct time on both servers",
+            "Ensure both servers are syncing to the same NTP/Domain time source",
+            "Disable failover and just use one server",
+            "Reboot both servers simultaneously"
+          ],
+          "correct": 1
+        }
+      },
+      "debrief": {
+        "summary": "Failover partners use timestamps to decide who 'owns' a lease. If times are too far apart, they stop talking to avoid database corruption.",
+        "takeaway": "NTP (Network Time Protocol) is the backbone of high-availability services."
+      }
+    },
+    {
+      "id": "DHCP-011",
+      "category": "Exclusions",
+      "title": "Static IP Theft",
+      "summary": "The File Server (10.10.1.10) keeps losing its network connection. When it happens, the SysAdmin notices a random iPad has joined the network and 'stolen' the IP.",
+      "tags": [
+        "Exclusions",
+        "Conflicts"
+      ],
+      "artifact": [
+        "File Server IP: 10.10.1.10 (Static)",
+        "DHCP Scope: 10.10.1.1 - 10.10.1.254",
+        "Exclusions: None configured"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "Why did the DHCP server give a client the same IP that the server is using statically?",
+          "options": [
+            "The iPad is 'hacking' the network",
+            "The DHCP server has no way of knowing 10.10.1.10 is in use because it's not excluded from the pool",
+            "The file server is too old",
+            "The subnet mask is incorrect"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "What is the best way to define a 'No-Go Zone' for the DHCP server inside a scope?",
+          "options": [
+            "An Exclusion Range",
+            "A Filter",
+            "A Policy",
+            "A Superscope"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "How should the scope be adjusted to protect the servers (which use IPs .1 through .20)?",
+          "options": [
+            "Add an exclusion range for 10.10.1.1 to 10.10.1.20",
+            "Reduce the scope to only 50 IPs",
+            "Give the iPad a static IP too",
+            "Turn off the DHCP server"
+          ],
+          "correct": 0
+        }
+      },
+      "debrief": {
+        "summary": "If you don't tell the DHCP server to 'stay away' from certain IPs, it will eventually hand them out.",
+        "takeaway": "Exclusions are for blocks of IPs used by static devices; Reservations are for individual devices you want DHCP to manage."
+      }
+    },
+    {
+      "id": "DHCP-012",
+      "category": "Options",
+      "title": "Wrong Destination",
+      "summary": "Every computer in the branch office can talk to each other, but nobody can get to the Internet. Pinging 8.8.8.8 fails with 'Destination Host Unreachable'.",
+      "tags": [
+        "Gateway",
+        "Option 3"
+      ],
+      "artifact": [
+        "Branch Subnet: 192.168.10.0/24",
+        "Branch Router IP: 192.168.10.1",
+        "Client ipconfig: Gateway is 192.168.10.254"
+      ],
+      "workflow": {
+        "triage": {
+          "q": "Compare the client's gateway to the actual router's IP. What is the mismatch?",
+          "options": [
+            "The client is on the wrong subnet",
+            "The client is trying to send internet traffic to .254, but the router is at .1",
+            "The router is turned off",
+            "The DNS server is missing"
+          ],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Which DHCP Option is responsible for telling clients where the Default Gateway (Router) is?",
+          "options": [
+            "Option 003 Router",
+            "Option 006 DNS",
+            "Option 015 DNS Domain Name",
+            "Option 044 WINS"
+          ],
+          "correct": 0
+        },
+        "fix": {
+          "q": "How do you restore internet access for the branch?",
+          "options": [
+            "Change DHCP Option 003 to 192.168.10.1",
+            "Reboot the router",
+            "Give everyone a 10.x.x.x IP",
+            "Disable the firewall"
+          ],
+          "correct": 0
+        }
+      },
+      "debrief": {
+        "summary": "The 'Router' option (003) is the most critical setting after the IP itself. Without it, traffic never leaves the local segment.",
+        "takeaway": "If internal works but external fails, check the Gateway (Option 003) first."
       }
     }
   ]
