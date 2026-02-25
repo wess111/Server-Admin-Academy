@@ -1,162 +1,209 @@
 {
-  "id": "dns-raw-10",
-  "title": "DNS Systems: Name Resolution",
+  "id": "dhcp-core-10-complete",
+  "title": "DHCP Systems: Infrastructure & Leasing",
   "track": "System Engineering",
-  "subject": "DNS",
+  "subject": "DHCP",
   "rolePill": "Systems Administrator",
+  "description": "Master the logic of dynamic addressing. These scenarios cover the lifecycle of an IP lease, from broadcast boundaries to failover synchronization.",
   "tickets": [
     {
-      "id": "DNS-01",
-      "category": "DNS",
-      "title": "\"Internal site loads by IP, but not by name\"",
-      "summary": "Users can reach 'http://172.18.2.50' but get a 404/Not Found when they type 'http://portal.local'.",
+      "id": "DHCP-01",
+      "category": "DHCP",
+      "title": "\"New DHCP server shows a red down arrow\"",
+      "summary": "The DHCP service is 'Running' in Services.msc, but the IPv4 node in the management console shows a red circle with a down arrow.",
+      "artifact": [
+        "Authorization: Pending",
+        "Scope: 10.0.0.100 - 10.0.0.200 (Active)",
+        "Event ID 1046: The DHCP service is not authorized to service clients."
+      ],
       "workflow": {
-        "triage": { "q": "If the IP works but the name doesn't, which system is failing?", "options": ["Web Server", "DNS", "Firewall"], "correct": 1 },
-        "diagnosis": { "q": "What is missing in the DNS Forward Lookup Zone?", "options": ["An 'A' (Host) record for 'portal'", "An MX record", "The server's serial number"], "correct": 0 },
-        "fix": { "q": "How do you fix the translation?", "options": ["Create an 'A' record pointing 'portal' to 172.18.2.50", "Restart the server", "Flush DNS"], "correct": 0 }
+        "triage": { "q": "In a Windows Domain, what must happen before a DHCP server is allowed to lease IPs?", "options": ["It must be Authorized in Active Directory", "It must be rebooted twice", "The firewall must be disabled"], "correct": 0 },
+        "diagnosis": { "q": "Why is the console icon red despite the service being 'On'?", "options": ["Active Directory is blocking the server to prevent a 'Rogue' DHCP scenario", "The server is out of RAM", "The network cable is unplugged"], "correct": 0 },
+        "fix": { "q": "What is the resolution?", "options": ["Right-click the server in the console and select 'Authorize'", "Reinstall the DHCP role", "Create a new scope"], "correct": 0 }
       },
       "debrief": {
-        "summary": "DNS is the 'translator' for the network.",
-        "takeaway": "Resolution Insight: You used the 'IP vs Name' test to prove the website was actually healthy. This proved the problem was just a 'language' issue. Adding the A-record gave the computers the map they needed to turn the human-friendly name into the server's real address."
+        "summary": "Authorization prevents unauthorized servers from joining the network.",
+        "takeaway": "You identified that a 'Running' service doesn't mean an 'Active' service. Because a bad DHCP server can break an entire network, Windows requires you to 'vouch' for the server in Active Directory. Once authorized, the red arrow turns green, and the server is trusted to start talking to clients."
+      }
+    },
+    {
+      "id": "DHCP-02",
+      "category": "DHCP",
+      "title": "\"Wifi works on Floor 1, but Floor 2 gets 169.254 IPs\"",
+      "summary": "The DHCP server is on the Floor 1 subnet. Floor 2 clients are failing to get an IP address.",
+      "artifact": [
+        "Floor 1 Subnet: 192.168.1.0/24",
+        "Floor 2 Subnet: 192.168.2.0/24",
+        "Router Config: IP Helper-Address is missing on the Floor 2 interface"
+      ],
+      "workflow": {
+        "triage": { "q": "DHCP 'Discover' packets are broadcasts. How do they behave when they hit a router?", "options": ["The router drops them by default", "The router forwards them automatically", "The router converts them to DNS queries"], "correct": 0 },
+        "diagnosis": { "q": "Why is Floor 2 isolated from the DHCP server?", "options": ["The broadcast cannot cross the router 'wall' to reach the other subnet", "The server is full", "The Floor 2 switch is off"], "correct": 0 },
+        "fix": { "q": "How do you bridge the connection?", "options": ["Configure an 'IP Helper-Address' (Relay Agent) on the router", "Move the server to Floor 2", "Use static IPs for everyone"], "correct": 0 }
+      },
+      "debrief": {
+        "summary": "Routers act as barriers for broadcast traffic.",
+        "takeaway": "You realized the server was working fine, but the 'request' was trapped on the second floor. Since routers stop broadcasts to keep network noise low, you had to give the router a 'forwarding address' (IP Helper) to act as a courier for those requests."
       }
     },
     
     {
-      "id": "DNS-02",
-      "category": "DNS",
-      "title": "\"Google and external sites aren't resolving\"",
-      "summary": "Internal file shares and local sites work, but no one in the office can reach any website on the internet.",
+      "id": "DHCP-03",
+      "category": "DHCP",
+      "title": "\"Console is reporting BAD_ADDRESS conflicts\"",
+      "summary": "The address lease list is filling up with 'BAD_ADDRESS' entries, and users report 'IP Conflict' popups.",
+      "artifact": [
+        "Scope: 172.16.1.10 - 172.16.1.100",
+        "Conflicts: .10, .11, and .12 are marked 'BAD_ADDRESS'",
+        "Context: A tech recently installed 3 networked time-clocks with static IPs."
+      ],
       "workflow": {
-        "triage": { "q": "Where does your DNS server look if it doesn't know the answer to a name?", "options": ["Its own database", "Forwarders", "The client's history"], "correct": 1 },
-        "diagnosis": { "q": "Why is external resolution failing?", "options": ["The server doesn't have 'Forwarders' configured to ask the internet for help", "Google is down", "The users have no internet"], "correct": 0 },
-        "fix": { "q": "What is the fix?", "options": ["Add a Public DNS (like 8.8.8.8) to the 'Forwarders' tab", "Delete the internal zone", "Reboot the router"], "correct": 0 }
+        "triage": { "q": "What does 'BAD_ADDRESS' indicate in the DHCP console?", "options": ["The server attempted to offer an IP but found someone was already using it", "The database is corrupt", "The MAC address is invalid"], "correct": 0 },
+        "diagnosis": { "q": "Why is the conflict occurring?", "options": ["Static IPs were set within the range the DHCP server is trying to lease out", "The lease time is too long", "The server is too fast"], "correct": 0 },
+        "fix": { "q": "How do you stop the server from trying to use those IPs?", "options": ["Create an 'Exclusion Range' for the static IPs", "Reboot the time-clocks", "Delete the scope"], "correct": 0 }
       },
       "debrief": {
-        "summary": "Forwarders bridge the gap between private and public networks.",
-        "takeaway": "Resolution Insight: You identified that your server was an expert on your office, but 'blind' to the world. By adding a Forwarder, you gave your server a 'lifeline' to call whenever a user asks for an external site it doesn't recognize."
+        "summary": "Exclusions prevent IP collisions between static and dynamic devices.",
+        "takeaway": "The server actually protected the network by 'pinging' the IP first and seeing someone else answered. By creating an Exclusion, you told the server to stop touching those specific IPs, ending the 'tug-of-war' between the new time-clocks and the DHCP pool."
       }
     },
     {
-      "id": "DNS-03",
-      "category": "DNS",
-      "title": "\"Security log shows an IP, but I need the hostname\"",
-      "summary": "The firewall log says 10.0.0.45 is downloading huge files. You need to find out which computer that is using `nslookup 10.0.0.45`.",
+      "id": "DHCP-04",
+      "category": "DHCP",
+      "title": "\"Guest Wi-Fi says 'No IP addresses available'\"",
+      "summary": "The Guest Wi-Fi scope is 100% full. Most guests only stay for a few hours, yet the pool never empties.",
+      "artifact": [
+        "Scope Size: 254 IPs",
+        "Active Leases: 254",
+        "Lease Duration: 8 Days (Default)"
+      ],
       "workflow": {
-        "triage": { "q": "Which zone type handles turning an IP into a Name?", "options": ["Forward Lookup", "Reverse Lookup", "Stub Zone"], "correct": 1 },
-        "diagnosis": { "q": "Why did the lookup fail?", "options": ["The IP is fake", "There is no 'PTR' record created for that subnet", "The PC is off"], "correct": 1 },
-        "fix": { "q": "How do you enable this feature?", "options": ["Create a Reverse Lookup Zone for the subnet", "Restart DNS", "Check the user's name"], "correct": 0 }
+        "triage": { "q": "What happens to an IP lease when a guest leaves the building?", "options": ["It stays 'reserved' for that guest until the lease duration expires", "It returns to the pool immediately", "It is deleted"], "correct": 0 },
+        "diagnosis": { "q": "Why is the scope exhausted even though the lobby is empty?", "options": ["The 8-day lease is holding onto IPs for people who aren't there anymore", "The subnet is too small", "DNS is slow"], "correct": 0 },
+        "fix": { "q": "What is the best adjustment for high-turnover areas?", "options": ["Shorten the lease duration to 2 or 4 hours", "Increase the lease to 30 days", "Reinstall DHCP"], "correct": 0 }
       },
       "debrief": {
-        "summary": "Reverse Lookups provide 'Caller ID' for your network.",
-        "takeaway": "Resolution Insight: You realized that DNS is usually a one-way street (Name to IP). By creating the Reverse Zone, you enabled 'PTR' records, which act like a reverse-phonebook, letting you track down mystery devices based on their IP address alone."
+        "summary": "Lease duration controls how quickly the server recycles IPs.",
+        "takeaway": "You identified that the IPs weren't 'missing'; they were just 'trapped' by a long lease. By shortening the duration, you allow the server to 'clean up' and reclaim addresses much faster, making a small pool of IPs work for hundreds of different guests throughout the week."
       }
     },
     {
-      "id": "DNS-04",
-      "category": "DNS",
-      "title": "\"Server move resulted in intermittent connection errors\"",
-      "summary": "A server moved to 10.0.0.50, but DNS still shows the old 10.0.0.20 address. Half the users can't connect.",
+      "id": "DHCP-05",
+      "category": "DHCP",
+      "title": "\"Secondary DHCP server is giving out old DNS info\"",
+      "summary": "You updated the DNS settings on the Primary server, but the Failover partner is still handing out the old IPs.",
+      "artifact": [
+        "Primary Server: Option 006 (DNS) = 10.0.0.1",
+        "Secondary Server: Option 006 (DNS) = 8.8.8.8",
+        "Sync Status: Leases are syncing, but options are not."
+      ],
       "workflow": {
-        "triage": { "q": "What happens if a name has two 'A' records with different IPs?", "options": ["It picks the first", "It uses 'Round Robin' and switches between them", "It crashes"], "correct": 1 },
-        "diagnosis": { "q": "Why is the old record still there?", "options": ["The record is 'stale' because Scavenging isn't cleaning up old entries", "The server is haunted", "Client error"], "correct": 0 },
-        "fix": { "q": "What is the fix?", "options": ["Manually delete the old record and enable 'Scavenging'", "Restart the server", "Rename the server"], "correct": 0 }
+        "triage": { "q": "Do configuration changes (Options) sync automatically in a failover pair?", "options": ["No, they must be manually replicated", "Yes, instantly", "Only after a reboot"], "correct": 0 },
+        "diagnosis": { "q": "Why is the partner out of sync?", "options": ["The settings change hasn't been 'replicated' to the partner server", "The firewall is blocking it", "The partner is broken"], "correct": 0 },
+        "fix": { "q": "How do you push the new config?", "options": ["Right-click the scope and select 'Replicate Scope'", "Restart both servers", "Delete the secondary scope"], "correct": 0 }
       },
       "debrief": {
-        "summary": "Stale records create 'ghost' destinations.",
-        "takeaway": "Resolution Insight: You found a 'ghost' in the machine. Because DNS didn't 'forget' the old IP, it was sending half your users to a dead address. Deleting it and setting up Scavenging ensures the phonebook stays accurate by automatically removing old, unused entries."
+        "summary": "Failover pairs sync leases automatically, but configuration requires a manual push.",
+        "takeaway": "You discovered that 'Leases' (who has what) and 'Rules' (DNS/Gateway) are handled differently. Manually triggering replication ensures that no matter which server answers the client, they get the same up-to-date instructions."
       }
     },
     {
-      "id": "DNS-05",
-      "category": "DNS",
-      "title": "\"Marketing wants 'shop.local' to point to our web server\"",
-      "summary": "The web server's real name is `web-cluster-01`. Marketing wants a shorter, prettier name for the users.",
+      "id": "DHCP-06",
+      "category": "DHCP",
+      "title": "\"Users have an IP but 'No Internet' status\"",
+      "summary": "Running `ipconfig /all` shows a valid IP and Subnet, but the 'Default Gateway' line is completely blank.",
+      "artifact": [
+        "DHCP Options: 006 (DNS) and 015 (Domain) are set",
+        "Missing: Option 003",
+        "Connectivity: Internal ping works, external ping fails"
+      ],
       "workflow": {
-        "triage": { "q": "Which record type creates an 'Alias' or nickname?", "options": ["A (Host)", "CNAME (Alias)", "MX"], "correct": 1 },
-        "diagnosis": { "q": "Why use an Alias instead of another A-Record?", "options": ["Faster", "If the server's IP changes, you only update one A-Record and the Alias stays linked", "Security"], "correct": 1 },
-        "fix": { "q": "What record do you create?", "options": ["CNAME record for 'shop' pointing to 'web-cluster-01'", "Rename the server", "Use a hosts file"], "correct": 0 }
+        "triage": { "q": "Which DHCP Option provides the 'exit route' (Default Gateway) for a subnet?", "options": ["Option 003 Router", "Option 006 DNS", "Option 001 Mask"], "correct": 0 },
+        "diagnosis": { "q": "Why is the gateway missing on the clients?", "options": ["The DHCP server isn't configured to send Option 003", "The router is off", "The user is on a static IP"], "correct": 0 },
+        "fix": { "q": "What is the fix?", "options": ["Add Option 003 to the Scope Options with the Router's IP", "Restart the server", "Change the subnet mask"], "correct": 0 }
       },
       "debrief": {
-        "summary": "CNAMEs allow servers to have multiple 'identities'.",
-        "takeaway": "Resolution Insight: You gave the server a nickname. This is best practice because it separates the 'technical' name from the 'marketing' name. If you ever replace the server hardware, you just point the nickname to the new machine and the users never even notice."
+        "summary": "DHCP is a configuration engine for the whole network stack.",
+        "takeaway": "You realized that an IP address alone is like having a house with no driveway—you can't leave. By adding Option 003, you provided the necessary 'exit route' the computers needed to reach the internet, proving DHCP does much more than just name-tagging."
       }
     },
     {
-      "id": "DNS-06",
-      "category": "DNS",
-      "title": "\"We can't receive any outside emails\"",
-      "summary": "Internal email works, and you can send out, but no external mail is reaching your company domain.",
+      "id": "DHCP-07",
+      "category": "DHCP",
+      "title": "\"The NAS is not getting its reserved .200 address\"",
+      "summary": "A storage device has a reservation for 10.0.0.200, but it keeps appearing with a random IP like .105.",
+      "artifact": [
+        "Reservation MAC: 00-11-22-33-44-55",
+        "Actual Device MAC: 00-11-22-33-44-56",
+        "DHCP Log: Assignment to .105 successful"
+      ],
       "workflow": {
-        "triage": { "q": "Which record tells the world where your mail server is?", "options": ["A (Host)", "MX (Mail Exchanger)", "NS"], "correct": 1 },
-        "diagnosis": { "q": "Why is mail bouncing?", "options": ["Mail server is off", "The internet's DNS doesn't know which server is the 'Mailbox' for your domain", "Wrong passwords"], "correct": 1 },
-        "fix": { "q": "What is the fix?", "options": ["Add an MX record pointing to your mail server", "Increase speed", "Restart mail service"], "correct": 0 }
+        "triage": { "q": "What unique hardware ID does DHCP use to match a reservation to a device?", "options": ["MAC Address", "Hostname", "Serial Number"], "correct": 0 },
+        "diagnosis": { "q": "Why is the reservation failing?", "options": ["The MAC address in the reservation entry has a typo", "The server is full", "The NAS is incompatible"], "correct": 0 },
+        "fix": { "q": "How do you fix it?", "options": ["Update the reservation with the correct MAC address", "Delete the reservation", "Reboot the server"], "correct": 0 }
       },
       "debrief": {
-        "summary": "MX records are the 'mailing address' for your domain.",
-        "takeaway": "Resolution Insight: You identified that the world knew your server existed, but didn't know it was a 'Mail' server. The MX record acts like a sign on the building that says 'Deliver Mail Here,' ensuring the internet's postmen know where to drop the letters."
+        "summary": "Reservations rely on exact hardware matches.",
+        "takeaway": "You found the typo! DHCP logic is strict: if the hardware ID (MAC) doesn't match perfectly, the server doesn't recognize the device as 'special.' Correcting the MAC ensures the server recognizes the NAS and grants it the reserved IP every time."
       }
     },
     {
-      "id": "DNS-07",
-      "category": "DNS",
-      "title": "\"Logins are taking 5 minutes to complete\"",
-      "summary": "Workstations can ping the Domain Controller, but they take forever to 'find' it during the login screen.",
-      "artifact": ["_msdcs subfolder in DNS is empty."],
+      "id": "DHCP-08",
+      "category": "DHCP",
+      "title": "\"Lease durations changed to 1 hour after Server A went down\"",
+      "summary": "With Server A offline, Server B is handling all requests, but users notice their leases expire every 60 minutes.",
+      "artifact": [
+        "Failover Mode: Hot Standby",
+        "MCLT (Maximum Client Lead Time): 60 Minutes",
+        "Scope Lease: 8 Days"
+      ],
       "workflow": {
-        "triage": { "q": "Which record type helps a PC 'locate' services like Active Directory?", "options": ["A (Host)", "SRV (Service)", "TXT"], "correct": 1 },
-        "diagnosis": { "q": "Why are logins slow?", "options": ["The PC is 'hunting' for a DC because the Service map (SRV records) is missing", "Slow typing", "Hardware failure"], "correct": 0 },
-        "fix": { "q": "How do you re-register these records?", "options": ["Restart the 'Netlogon' service on the Domain Controller", "Reinstall Windows", "Buy a new DC"], "correct": 0 }
+        "triage": { "q": "In a failover relationship, what does 'MCLT' represent?", "options": ["The temporary lease time a secondary server gives out during an outage", "The maximum number of clients allowed", "The speed of the database"], "correct": 0 },
+        "diagnosis": { "q": "Why are the leases so short during the outage?", "options": ["The secondary server uses the MCLT 'safety' duration until it can confirm the primary is gone for good", "Server B is broken", "Network congestion"], "correct": 0 },
+        "fix": { "q": "Is this a bug or normal behavior?", "options": ["Standard behavior; no action needed", "Error; reinstall DHCP", "The database is corrupt"], "correct": 0 }
       },
       "debrief": {
-        "summary": "SRV records are the 'GPS' for Windows services.",
-        "takeaway": "Resolution Insight: You realized that just 'knowing the name' isn't enough; the PC needs to know which server is the 'Login Expert.' Restarting Netlogon forces the DC to announce itself and repopulate those GPS coordinates (SRV records) in DNS."
+        "summary": "MCLT is a protective timer during server transitions.",
+        "takeaway": "You discovered the 'fail-safe.' The secondary server only gives out short 1-hour leases so it doesn't accidentally conflict with the primary server later. It's the server's way of saying, 'I'll help you for now, but check back soon in case the boss wakes up!'"
       }
     },
     {
-      "id": "DNS-08",
-      "category": "DNS",
-      "title": "\"Changes on DC-01 aren't showing up on DC-02\"",
-      "summary": "You added a record to your primary DNS server, but your backup server still has no record of it after two hours.",
-      "artifact": ["Zone Properties: 'Allow Zone Transfers' is unchecked."],
+      "id": "DHCP-09",
+      "category": "DHCP",
+      "title": "\"Computer names aren't showing up in DNS anymore\"",
+      "summary": "DHCP is leasing IPs correctly, but internal name resolution is failing for new laptops.",
+      "artifact": [
+        "DHCP Properties -> DNS Tab: 'Dynamically update DNS' is unchecked",
+        "DNS Console: Missing records for new 'LAPTOP-' names"
+      ],
       "workflow": {
-        "triage": { "q": "How does a backup DNS server get its info from the primary?", "options": ["Zone Transfer", "Copy/Paste", "Email"], "correct": 0 },
-        "diagnosis": { "q": "Why is the sync failing?", "options": ["The primary server is 'guarding' the data and won't let the backup download it", "Disk full", "DC-02 is too old"], "correct": 0 },
-        "fix": { "q": "What is the fix?", "options": ["Enable 'Allow Zone Transfers' to the secondary server", "Reinstall DNS", "Restart the router"], "correct": 0 }
+        "triage": { "q": "Where is the automated 'partnership' between DHCP and DNS configured?", "options": ["The DNS Tab in DHCP Server Properties", "Active Directory Users", "The Router"], "correct": 0 },
+        "diagnosis": { "q": "Why is the DNS phonebook out of date?", "options": ["DHCP hasn't been told to 'tell' DNS when it hands out a new lease", "DNS is crashed", "The names are too long"], "correct": 0 },
+        "fix": { "q": "How do you automate this?", "options": ["Enable 'Dynamically update DNS records' in DHCP", "Manually type names into DNS", "Disable DHCP"], "correct": 0 }
       },
       "debrief": {
-        "summary": "Zone Transfers are the 'sync' engine of DNS.",
-        "takeaway": "Resolution Insight: You identified a security gate. DNS servers don't just share their data with anyone. By enabling Zone Transfers, you 'unlocked' the database for DC-02, ensuring your backup server stays just as smart as your primary one."
+        "summary": "DHCP and DNS must work together to keep the network organized.",
+        "takeaway": "You bridged the communication gap. When DHCP hands out an IP, it should immediately 'ring up' the DNS server to update the records. Turning this on ensures your network 'phonebook' stays accurate automatically as devices come and go."
       }
     },
     {
-      "id": "DNS-09",
-      "category": "DNS",
-      "title": "\"Pinging a deleted server still returns an IP\"",
-      "summary": "You deleted a server's DNS record, but when you ping it from your desk, it still somehow 'finds' the old IP.",
+      "id": "DHCP-10",
+      "category": "DHCP",
+      "title": "\"The DHCP service won't start - Error 1067\"",
+      "summary": "The DHCP service crashes immediately on startup. Event logs point to a database error.",
+      "artifact": [
+        "Path: C:\\Windows\\System32\\dhcp",
+        "Event Log: 'The DHCP service failed to initialize the database'",
+        "File: dhcp.mdb is corrupted"
+      ],
       "workflow": {
-        "triage": { "q": "Where does a computer 'remember' old DNS answers locally?", "options": ["History", "DNS Cache", "RAM"], "correct": 1 },
-        "diagnosis": { "q": "Why is your PC still seeing a deleted record?", "options": ["The PC is using its local cache instead of asking the server", "The server is lying", "Cable error"], "correct": 0 },
-        "fix": { "q": "How do you 'empty' the PC's memory?", "options": ["Run 'ipconfig /flushdns'", "Restart the PC", "Clear browser history"], "correct": 0 }
+        "triage": { "q": "Where does Windows store the physical DHCP lease database?", "options": ["The System32\\dhcp folder", "The Registry", "The cloud"], "correct": 0 },
+        "diagnosis": { "q": "Why is the service crashing?", "options": ["The physical database file is corrupted and cannot be read", "Not enough RAM", "Wrong Windows version"], "correct": 0 },
+        "fix": { "q": "How do you recover without rebuilding from scratch?", "options": ["Use the 'Restore' command to pull from the automatic backup folder", "Reinstall Windows", "Delete the folder"], "correct": 0 }
       },
       "debrief": {
-        "summary": "Local cache can hide the truth of a fix.",
-        "takeaway": "Resolution Insight: You learned that the 'server' isn't the only one with a memory. Your PC was trying to be 'fast' by using an old answer it already had saved. Flushing the DNS forced the PC to look at the real, updated phonebook on the server."
-      }
-    },
-    {
-      "id": "DNS-10",
-      "category": "DNS",
-      "title": "\"External resolution died when Google DNS went down\"",
-      "summary": "You use 8.8.8.8 as your forwarder. When it went offline, your whole office lost internet browsing.",
-      "artifact": ["Root Hints: Populated", "Setting: 'Use root hints if no forwarders available' is UNCHECKED."],
-      "workflow": {
-        "triage": { "q": "What are 'Root Hints'?", "options": ["The 13 'Master' DNS servers for the whole internet", "Internal backups", "Google's IP list"], "correct": 0 },
-        "diagnosis": { "q": "Why did the internet die?", "options": ["The server wasn't allowed to use its 'emergency backup' (Root Hints) when the forwarder failed", "Router off", "DNS deleted"], "correct": 0 },
-        "fix": { "q": "How do you enable the fail-safe?", "options": ["Check the box to 'Use root hints if no forwarders are available'", "Wait for Google", "Reinstall Windows"], "correct": 0 }
-      },
-      "debrief": {
-        "summary": "Root Hints are the 'Last Resort' for internet resolution.",
-        "takeaway": "Resolution Insight: You found the safety net. Forwarders are like calling a 'smart friend,' but Root Hints are like 'looking it up in the library yourself.' Enabling this ensures the office can still browse even if your primary forwarders go offline."
+        "summary": "DHCP relies on a local database file that can occasionally fail.",
+        "takeaway": "You treated DHCP like what it actually is—a database application. When the file breaks, the service can't start. Using the Restore feature points the service to a healthy backup copy, bringing your scopes and leases back to life in seconds."
       }
     }
   ]
