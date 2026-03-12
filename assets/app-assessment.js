@@ -3,7 +3,6 @@ const lab = params.get("lab");
 
 let assessment;
 let attempt = 1;
-let answers = [];
 
 async function loadAssessment(){
 
@@ -19,31 +18,51 @@ renderActivities();
 
 function renderActivities(){
 
-const container = document.getElementById("activities");
-container.innerHTML = "";
+const container=document.getElementById("activities");
+container.innerHTML="";
 
 assessment.activities.forEach((a,i)=>{
 
-const div = document.createElement("div");
-div.className="activity";
+const block=document.createElement("div");
+block.className="activity";
 
-const q = document.createElement("p");
-q.innerText = `${i+1}. ${a.prompt}`;
-div.appendChild(q);
+const prompt=document.createElement("p");
+prompt.innerText=(i+1)+". "+a.prompt;
+block.appendChild(prompt);
 
 if(a.type==="dropdown"){
 
-const select = document.createElement("select");
+const select=document.createElement("select");
 
 a.options.forEach(o=>{
 const opt=document.createElement("option");
-opt.text=o;
 opt.value=o;
+opt.text=o;
 select.appendChild(opt);
 });
 
 select.dataset.index=i;
-div.appendChild(select);
+block.appendChild(select);
+
+}
+
+if(a.type==="scriptDropdown"){
+
+const code=document.createElement("pre");
+code.innerText=a.script;
+block.appendChild(code);
+
+const select=document.createElement("select");
+
+a.options.forEach(o=>{
+const opt=document.createElement("option");
+opt.value=o;
+opt.text=o;
+select.appendChild(opt);
+});
+
+select.dataset.index=i;
+block.appendChild(select);
 
 }
 
@@ -60,8 +79,8 @@ const select=document.createElement("select");
 
 a.right.forEach(r=>{
 const opt=document.createElement("option");
-opt.text=r;
 opt.value=r;
+opt.text=r;
 select.appendChild(opt);
 });
 
@@ -69,13 +88,46 @@ select.dataset.index=i+"-"+j;
 
 row.appendChild(label);
 row.appendChild(select);
-div.appendChild(row);
+
+block.appendChild(row);
 
 });
 
 }
 
-container.appendChild(div);
+if(a.type==="order"){
+
+const list=document.createElement("ul");
+list.id="order-"+i;
+
+a.steps.forEach(step=>{
+
+const li=document.createElement("li");
+li.textContent=step;
+li.draggable=true;
+
+li.ondragstart=e=>{
+e.dataTransfer.setData("text",step);
+};
+
+list.appendChild(li);
+
+});
+
+list.ondragover=e=>e.preventDefault();
+
+list.ondrop=e=>{
+e.preventDefault();
+const text=e.dataTransfer.getData("text");
+const item=[...list.children].find(x=>x.textContent===text);
+list.appendChild(item);
+};
+
+block.appendChild(list);
+
+}
+
+container.appendChild(block);
 
 });
 
@@ -84,19 +136,20 @@ container.appendChild(div);
 function grade(){
 
 let score=0;
-const activities=document.querySelectorAll(".activity");
 
 assessment.activities.forEach((a,i)=>{
 
-if(a.type==="dropdown"){
+const block=document.querySelectorAll(".activity")[i];
 
-const select=activities[i].querySelector("select");
+if(a.type==="dropdown" || a.type==="scriptDropdown"){
+
+const select=block.querySelector("select");
 
 if(select.value===a.answer){
 score++;
-activities[i].classList.add("correct");
+block.classList.add("correct");
 }else{
-activities[i].classList.add("incorrect");
+block.classList.add("incorrect");
 }
 
 }
@@ -104,8 +157,7 @@ activities[i].classList.add("incorrect");
 if(a.type==="matching"){
 
 let correct=true;
-
-const selects=activities[i].querySelectorAll("select");
+const selects=block.querySelectorAll("select");
 
 selects.forEach((s,j)=>{
 if(s.value!==a.answers[j]) correct=false;
@@ -113,9 +165,22 @@ if(s.value!==a.answers[j]) correct=false;
 
 if(correct){
 score++;
-activities[i].classList.add("correct");
+block.classList.add("correct");
 }else{
-activities[i].classList.add("incorrect");
+block.classList.add("incorrect");
+}
+
+}
+
+if(a.type==="order"){
+
+const items=[...block.querySelectorAll("li")].map(li=>li.textContent);
+
+if(JSON.stringify(items)===JSON.stringify(a.answer)){
+score++;
+block.classList.add("correct");
+}else{
+block.classList.add("incorrect");
 }
 
 }
@@ -128,21 +193,21 @@ return score;
 
 function showResults(score){
 
-const results=document.getElementById("results");
-
 const total=assessment.activities.length;
 const percent=Math.round(score/total*100);
 
+const results=document.getElementById("results");
+
 results.innerHTML=`
 <h2>Assessment Results</h2>
-<p>Score: ${score} / ${total}</p>
-<p>Attempt: ${attempt} of ${assessment.attemptsAllowed}</p>
+<p>Score: ${score}/${total}</p>
+<p>Attempt ${attempt} of ${assessment.attemptsAllowed}</p>
 `;
 
 if(percent>=assessment.passScore){
 
 results.innerHTML+=`<p>Status: PASS</p>`;
-showReport(score,total);
+report(score,total);
 
 }
 
@@ -152,13 +217,11 @@ if(attempt<assessment.attemptsAllowed){
 
 results.innerHTML+=`<button onclick="retry()">Retry</button>`;
 
-}
-
-else{
+}else{
 
 results.innerHTML+=`<p>Status: FAIL</p>`;
 revealAnswers();
-showReport(score,total);
+report(score,total);
 
 }
 
@@ -176,30 +239,28 @@ document.getElementById("results").innerHTML="";
 
 function revealAnswers(){
 
-const container=document.getElementById("results");
+const r=document.getElementById("results");
 
-container.innerHTML+="<h3>Correct Answers</h3>";
+r.innerHTML+="<h3>Correct Answers</h3>";
 
 assessment.activities.forEach((a,i)=>{
 
-if(a.type==="dropdown"){
-
-container.innerHTML+=`<p>${i+1}. ${a.answer}</p>`;
-
+if(a.answer){
+r.innerHTML+=`<p>${i+1}. ${a.answer}</p>`;
 }
 
 });
 
 }
 
-function showReport(score,total){
+function report(score,total){
 
-const container=document.getElementById("results");
+const r=document.getElementById("results");
 
-container.innerHTML+=`
+r.innerHTML+=`
 <h3>Generate Report</h3>
 
-<p>Student Name: <input id="studentName"></p>
+<p>Student Name <input id="studentName"></p>
 
 <button onclick="generateReport(${score},${total})">Generate</button>
 `;
