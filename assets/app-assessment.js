@@ -50,15 +50,19 @@ function buildRandomizedState(assessmentData) {
       state[index].dropdownOptions = shuffleArray([...activity.options]);
     }
 
-    if ((activity.type === "matching") && Array.isArray(activity.options)) {
+    if (activity.type === "matching" && Array.isArray(activity.options)) {
       state[index].matchingOptions = shuffleArray([...activity.options]);
     }
 
-    if ((activity.type === "matchLines") && Array.isArray(activity.right)) {
+    if (activity.type === "matchLines" && Array.isArray(activity.right)) {
       state[index].matchLinesRight = shuffleArray([...activity.right]);
     }
 
-    if ((activity.type === "scriptDropdown" || activity.type === "scriptFill" || activity.type === "script-fill")) {
+    if (
+      activity.type === "scriptDropdown" ||
+      activity.type === "scriptFill" ||
+      activity.type === "script-fill"
+    ) {
       state[index].scriptOptions = {};
       const parts = activity.scriptParts || activity.script || [];
       parts.forEach(part => {
@@ -805,23 +809,76 @@ function renderMultiSelect(activity, index) {
 function renderReviewStep(container) {
   const text = document.createElement("p");
   text.className = "reviewText";
-  text.textContent = "Review the assessment structure below, then submit when you are ready.";
+  text.textContent = "Review the assessment structure below before submitting. Tasks marked Incomplete can still be submitted if you choose not to return to them.";
   container.appendChild(text);
 
   const list = document.createElement("div");
   list.className = "reviewList";
 
   assessment.activities.forEach((activity, index) => {
+    const attempted = isActivityAttempted(activity, index);
+
     const item = document.createElement("div");
     item.className = "reviewItem";
     item.innerHTML = `
-      <strong>Task ${index + 1}:</strong> ${escapeHtml(activity.title || `Task ${index + 1}`)}
+      <div style="display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; flex-wrap:wrap;">
+        <strong>Task ${index + 1}: ${escapeHtml(activity.title || `Task ${index + 1}`)}</strong>
+        <span class="${attempted ? "reviewStatusComplete" : "reviewStatusIncomplete"}">
+          ${attempted ? "Complete" : "Incomplete"}
+        </span>
+      </div>
       <div style="margin-top:0.45rem; color:#94a3b8;">${escapeHtml(activity.prompt)}</div>
     `;
     list.appendChild(item);
   });
 
   container.appendChild(list);
+}
+
+function isActivityAttempted(activity, index) {
+  if (activity.type === "dropdown") {
+    const value = getStoredDropdownValue(index);
+    return typeof value === "string" && value.trim() !== "";
+  }
+
+  if (activity.type === "scriptDropdown") {
+    const values = getStoredScriptDropdownState(index);
+    const keys = Object.keys(activity.answers || {});
+    if (!keys.length) return false;
+    return keys.every(key => typeof values[key] === "string" && values[key].trim() !== "");
+  }
+
+  if (activity.type === "scriptFill" || activity.type === "script-fill") {
+    const values = getStoredScriptDropdownState(index);
+    const blanks = (activity.script || []).filter(part => part && typeof part === "object" && part.id);
+    if (!blanks.length) return false;
+    return blanks.every(blank => typeof values[blank.id] === "string" && values[blank.id].trim() !== "");
+  }
+
+  if (activity.type === "matching") {
+    const values = getStoredMatchingState(index);
+    if (!Array.isArray(values) || !activity.pairs?.length) return false;
+    return activity.pairs.every((_, pairIndex) => typeof values[pairIndex] === "string" && values[pairIndex].trim() !== "");
+  }
+
+  if (activity.type === "matchLines") {
+    const values = getStoredMatchLinesState(index);
+    const leftItems = activity.left || [];
+    if (!leftItems.length) return false;
+    return leftItems.every(left => typeof values[left] === "string" && values[left].trim() !== "");
+  }
+
+  if (activity.type === "order") {
+    const values = getStoredOrderState(index);
+    return Array.isArray(values) && values.length > 0;
+  }
+
+  if (activity.type === "multiSelect") {
+    const values = getStoredMultiSelectState(index);
+    return Array.isArray(values) && values.length > 0;
+  }
+
+  return false;
 }
 
 function persistVisibleInputs() {
