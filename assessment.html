@@ -6,59 +6,139 @@
   <title>Assessment • Server Admin Academy</title>
   <link rel="stylesheet" href="./assets/site.css" />
   <link rel="stylesheet" href="./assets/styles-assessment.css" />
-  <script defer src="./assets/app-assessment.js"></script>
 </head>
 <body>
   <header class="top">
     <div class="container">
       <div class="navGlass">
-        <a class="brand" href="./index.html"><span class="brandMark">S</span><span class="brandName">Server Admin Academy</span></a>
+        <a class="brand" href="./index.html">
+          <span class="brandMark">S</span>
+          <span class="brandName">Server Admin Academy</span>
+        </a>
         <nav class="navLinks">
           <a class="navLink" href="./index.html">Home</a>
-          <a class="navLink" href="./knowledge-assessments.html">Knowledge Assessments</a>
-          <a class="navLink" href="./incident-scenarios.html">Incident Scenarios</a>
-          <a class="navLink" href="./guided-practice.html">Guided Practice</a>
+
+          <div class="navDrop">
+            <button class="navDropBtn" type="button">Domains <span class="chev">▾</span></button>
+            <div class="navDropMenu">
+              <a class="navDropItem" href="./support-operations.html">Support Operations</a>
+              <a class="navDropItem" href="./systems-engineering.html">Systems Engineering</a>
+              <a class="navDropItem" href="./security-operations.html">Security Operations</a>
+            </div>
+          </div>
+
+          <div class="navDrop">
+            <button class="navDropBtn" type="button">Engagement Modes <span class="chev">▾</span></button>
+            <div class="navDropMenu">
+              <a class="navDropItem isActive" href="./knowledge-assessments.html">Knowledge Assessments</a>
+              <a class="navDropItem" href="./incident-scenarios.html">Incident Scenarios</a>
+              <a class="navDropItem" href="./guided-practice.html">Guided Practice</a>
+              <a class="navDropItem" href="./capstone-projects.html">Capstone Projects</a>
+            </div>
+          </div>
+
+          <a class="navLink" href="./tools/index.html">Tools</a>
         </nav>
-        <div class="navCta"><a class="btn btnPill" href="./knowledge-assessments.html">Back to assessments</a></div>
+        <div class="navCta">
+          <a class="btn btnPill" href="./knowledge-assessments.html">Back to Assessments</a>
+        </div>
       </div>
     </div>
   </header>
 
   <main>
-    <section class="hero heroCompact glowSection">
+    <section class="hero heroCompact glowSection assessmentHero">
       <div class="glowLayer" aria-hidden="true"></div>
       <div class="container heroInner">
-        <div class="assessmentMetaRow">
-          <span class="badge purple" id="assessmentDomain">SYSTEMS ENGINEERING</span>
-          <span class="badge" id="assessmentDifficulty">STANDARD</span>
+        <div class="assessmentHeroContent">
+          <p class="assessmentEyebrow">Knowledge Assessment</p>
+          <h1 class="heroTitle heroTitleSmall" id="assessmentTitle">Loading assessment...</h1>
+          <p class="heroSub" id="assessmentWelcome">
+            Welcome to this assessment activity. Read through the scenario and complete each task carefully.
+            Some tasks require ordering steps, matching administrative concepts, or completing PowerShell commands.
+            Review your responses before submitting.
+          </p>
         </div>
-        <h1 class="heroTitle heroTitleSmall" id="assessmentTitle">Assessment</h1>
-        <p class="heroSub" id="assessmentScenario"></p>
       </div>
     </section>
 
     <div class="sectionDivider"></div>
 
-    <section class="section">
-      <div class="container assessmentWrap">
-        <div class="card assessmentSummary">
-          <div><strong>Attempts Allowed:</strong> <span id="attemptsAllowed"></span></div>
-          <div><strong>Pass Score:</strong> <span id="passScore"></span>%</div>
-          <div><strong>Answer Reveal:</strong> After final attempt</div>
-        </div>
+    <section class="section assessmentShellSection">
+      <div class="container">
+        <div class="assessmentShell">
+          <aside class="assessmentSidebar">
+            <div class="sidebarCard">
+              <div class="sidebarTitle">Assessment Navigation</div>
+              <nav id="assessmentNav" class="assessmentNav"></nav>
 
-        <div id="activities"></div>
+              <div class="sidebarMeta">
+                <div class="metaRow">
+                  <span class="metaLabel">Attempts</span>
+                  <span class="metaValue" id="attemptMeta">-</span>
+                </div>
+                <div class="metaRow">
+                  <span class="metaLabel">Pass Score</span>
+                  <span class="metaValue" id="passMeta">-</span>
+                </div>
+              </div>
+            </div>
+          </aside>
 
-        <div class="assessmentActions">
-          <button class="btn btnPill" id="submitBtn" type="button">Submit Assessment</button>
-        </div>
+          <div class="assessmentMain">
+            <section class="assessmentCard" id="scenarioSection" data-section="scenario">
+              <div class="cardHeader">
+                <p class="cardEyebrow">Scenario</p>
+                <h2 class="cardTitle">Assessment Context</h2>
+              </div>
+              <div class="cardBody">
+                <p id="assessmentScenario" class="scenarioText"></p>
+              </div>
+            </section>
 
-        <div class="card resultsPanel" id="resultsPanel" hidden>
-          <h2 class="h2">Assessment Results</h2>
-          <div id="resultsBody"></div>
+            <div id="activitiesContainer"></div>
+
+            <section class="assessmentCard" id="submitSection" data-section="submit">
+              <div class="cardHeader">
+                <p class="cardEyebrow">Submit</p>
+                <h2 class="cardTitle">Assessment Submission</h2>
+              </div>
+              <div class="cardBody submitArea">
+                <p class="submitText">
+                  Review your responses, then submit the assessment. If retries are enabled, you will be able to try again after your first attempt.
+                </p>
+                <button id="submitBtn" class="assessmentBtn assessmentBtnPrimary" type="button">
+                  Submit Assessment
+                </button>
+              </div>
+            </section>
+
+            <section class="assessmentCard" id="resultsSection" data-section="results" hidden>
+              <div class="cardHeader">
+                <p class="cardEyebrow">Results</p>
+                <h2 class="cardTitle">Assessment Results</h2>
+              </div>
+              <div class="cardBody">
+                <div id="resultsContent"></div>
+              </div>
+            </section>
+          </div>
         </div>
       </div>
     </section>
+
+    <div class="sectionDivider"></div>
+
+    <footer class="footer">
+      <div class="container footerRow">
+        <div class="footerLeft">
+          <div class="footerBrand">Server Admin Academy</div>
+          <div class="footerMuted">Knowledge Assessment Workspace</div>
+        </div>
+      </div>
+    </footer>
   </main>
+
+  <script src="./assets/app-assessment.js"></script>
 </body>
 </html>
