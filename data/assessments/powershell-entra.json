@@ -4,60 +4,178 @@
   "retryEnabled": true,
   "revealAnswersAfterFinalAttempt": true,
   "passScore": 70,
-  "scenario": "NewVue Health administrators are preparing a management workstation to administer Microsoft Entra ID using PowerShell. The workstation must be configured with the correct modules and connected securely to the tenant.",
+  "scenario": "NewVue Health administrators are preparing a management workstation for Microsoft Entra administration by using PowerShell. Before the workstation can be used for cloud identity tasks, the correct PowerShell version must be available, the required module must be installed, and the administrator must authenticate successfully. Because this is a complementary activity, use the case study and reference information below to complete the required tasks.",
   "reference": [
-    {"label":"PowerShell Version","value":"PowerShell 7"},
-    {"label":"Module","value":"Microsoft.Entra"},
-    {"label":"Tenant Domain","value":"newvuehealth.onmicrosoft.com"}
+    { "label": "Required Shell", "value": "PowerShell 7" },
+    { "label": "Required Module", "value": "Microsoft.Entra" },
+    { "label": "Cloud Identity Platform", "value": "Microsoft Entra ID" },
+    { "label": "Tenant Domain", "value": "newvuehealth.onmicrosoft.com" }
   ],
   "activities": [
-
     {
       "type": "order",
-      "title": "PowerShell Environment Preparation",
-      "prompt": "Arrange the steps required to prepare the workstation for Microsoft Entra PowerShell administration.",
+      "title": "Task 1 - Prepare the Workstation",
+      "prompt": "Drag and Drop Task\nYou want to prepare the workstation for Microsoft Entra administration.\nTo answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
       "steps": [
         "Install PowerShell 7",
-        "Verify PowerShell version",
-        "Install Microsoft.Entra module",
-        "Verify module installation",
-        "Connect to Microsoft Graph"
+        "Verify the PowerShell version",
+        "Install the Microsoft.Entra module",
+        "Verify that the module is available",
+        "Connect to the cloud environment"
       ],
       "answer": [
         "Install PowerShell 7",
-        "Verify PowerShell version",
-        "Install Microsoft.Entra module",
-        "Verify module installation",
-        "Connect to Microsoft Graph"
-      ]
+        "Verify the PowerShell version",
+        "Install the Microsoft.Entra module",
+        "Verify that the module is available",
+        "Connect to the cloud environment"
+      ],
+      "explanation": "Workstation preparation requires shell installation, verification, module installation, module validation, and connection."
     },
-
     {
       "type": "scriptDropdown",
-      "title": "Module Installation Command",
-      "prompt": "Complete the PowerShell command used to install the Microsoft Entra module.",
+      "title": "Task 2 - Install the Required Module",
+      "prompt": "PowerShell Task\nYou want to install the module required for Microsoft Entra administration.\nTo answer, select the appropriate value for the missing portion of the command.",
       "scriptParts": [
         "Install-Module -Name ",
-        {"type":"dropdown","id":"module","options":["Microsoft.Entra","AzureAD","MSOnline"]},
+        {
+          "type": "dropdown",
+          "id": "module",
+          "options": [
+            "Microsoft.Entra",
+            "AzureAD",
+            "MSOLService"
+          ]
+        },
         " -Force"
       ],
       "answers": {
         "module": "Microsoft.Entra"
-      }
+      },
+      "explanation": "The Microsoft.Entra module is required for this administration workflow."
     },
-
     {
       "type": "dropdown",
-      "title": "Execution Policy",
-      "prompt": "Which execution policy allows locally created scripts to run but requires downloaded scripts to be signed?",
+      "title": "Task 3 - Choose the Correct Execution Policy",
+      "prompt": "Dropdown Task\nYou want locally created scripts to run while downloaded scripts remain subject to appropriate trust controls.\nTo answer, select the execution policy that best supports that objective.",
       "options": [
         "RemoteSigned",
         "Restricted",
-        "Unrestricted",
-        "AllSigned"
+        "AllSigned",
+        "Unrestricted"
       ],
-      "answer": "RemoteSigned"
+      "answer": "RemoteSigned",
+      "explanation": "RemoteSigned permits local scripts while applying restrictions to downloaded scripts."
+    },
+    {
+      "type": "scriptDropdown",
+      "title": "Task 4 - Connect to Microsoft Graph",
+      "prompt": "PowerShell Task\nYou want to authenticate before running Microsoft Graph administrative commands.\nTo answer, select the appropriate value for the missing portion of the command.",
+      "scriptParts": [
+        "Connect-",
+        {
+          "type": "dropdown",
+          "id": "connect",
+          "options": [
+            "MgGraph",
+            "AzureAD",
+            "ExchangeOnline"
+          ]
+        }
+      ],
+      "answers": {
+        "connect": "MgGraph"
+      },
+      "explanation": "Graph-based administration begins with Connect-MgGraph."
+    },
+    {
+      "type": "matchLines",
+      "title": "Task 5 - Interpret Common Commands",
+      "prompt": "Matching Task\nYou want to interpret administrative PowerShell commands correctly.\nTo answer, match each command on the left with the task it performs on the right.",
+      "left": [
+        "Get-MgUser",
+        "New-MgUser",
+        "Remove-MgUser"
+      ],
+      "right": [
+        "Retrieve user objects",
+        "Create a new user object",
+        "Delete a user object"
+      ],
+      "answer": {
+        "Get-MgUser": "Retrieve user objects",
+        "New-MgUser": "Create a new user object",
+        "Remove-MgUser": "Delete a user object"
+      },
+      "explanation": "Effective PowerShell administration requires correctly interpreting what each command does."
+    },
+    {
+      "type": "scriptDropdown",
+      "title": "Task 6 - Complete a User Creation Command",
+      "prompt": "PowerShell Task\nYou want to define the sign-in identity for a new cloud user.\nTo answer, select the appropriate value for the missing portion of the command.",
+      "scriptParts": [
+        "New-MgUser -DisplayName \"Jane Doe\" -",
+        {
+          "type": "dropdown",
+          "id": "param",
+          "options": [
+            "UserPrincipalName",
+            "GroupName",
+            "DeviceName"
+          ]
+        },
+        " \"jdoe@newvuehealth.onmicrosoft.com\""
+      ],
+      "answers": {
+        "param": "UserPrincipalName"
+      },
+      "explanation": "The UserPrincipalName parameter defines the sign-in identity of the cloud user."
+    },
+    {
+      "type": "scriptDropdown",
+      "title": "Task 7 - Complete a Multi-Line Script",
+      "prompt": "PowerShell Task\nYou want to connect to Microsoft Graph and create a new Microsoft Entra user.\nTo answer, select the appropriate value for each blank in the script.",
+      "scriptParts": [
+        "# Connect to Microsoft Graph\n",
+        "Connect-",
+        {
+          "type": "dropdown",
+          "id": "connect2",
+          "options": [
+            "MgGraph",
+            "AzureAD",
+            "ExchangeOnline"
+          ]
+        },
+        "\n\n# Create a new user\n",
+        "New-MgUser -DisplayName \"Jane Doe\" `\n",
+        "           -",
+        {
+          "type": "dropdown",
+          "id": "upn",
+          "options": [
+            "UserPrincipalName",
+            "GroupName",
+            "DeviceName"
+          ]
+        },
+        " \"jdoe@newvuehealth.onmicrosoft.com\" `\n",
+        "           -AccountEnabled ",
+        {
+          "type": "dropdown",
+          "id": "enabled",
+          "options": [
+            "true",
+            "false"
+          ]
+        }
+      ],
+      "answers": {
+        "connect2": "MgGraph",
+        "upn": "UserPrincipalName",
+        "enabled": "true"
+      },
+      "explanation": "The workflow requires both the Graph connection and the correct user-creation parameters."
     }
-
   ]
 }
