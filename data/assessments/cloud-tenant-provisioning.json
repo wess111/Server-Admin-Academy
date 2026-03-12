@@ -23,16 +23,16 @@
       "value": "admin@newvuehealth.onmicrosoft.com"
     },
     {
-      "label": "Portal URL",
-      "value": "https://admin.microsoft.com"
+      "label": "Portal",
+      "value": "Microsoft 365 admin center"
     },
     {
-      "label": "Portal URL",
-      "value": "https://entra.microsoft.com"
+      "label": "Portal",
+      "value": "Microsoft Entra admin center"
     },
     {
-      "label": "Portal URL",
-      "value": "https://intune.microsoft.com"
+      "label": "Portal",
+      "value": "Intune admin center"
     }
   ],
   "activities": [
@@ -44,15 +44,15 @@
         "Sign in using the administrator account",
         "Access the Microsoft 365 admin center",
         "Verify the tenant dashboard loads",
-        "Review the tenant subscription status"
+        "Review the subscription status"
       ],
       "answer": [
         "Sign in using the administrator account",
         "Access the Microsoft 365 admin center",
         "Verify the tenant dashboard loads",
-        "Review the tenant subscription status"
+        "Review the subscription status"
       ],
-      "explanation": "Administrative access must be established before tenant readiness and subscription validation can be confirmed."
+      "explanation": "Administrative access must be established before the tenant environment and subscription readiness can be confirmed."
     },
     {
       "type": "matching",
@@ -99,7 +99,7 @@
         "Sign-in form",
         "Review"
       ],
-      "explanation": "The branding wizard follows a staged workflow that moves from basic settings to final review."
+      "explanation": "The branding wizard follows a staged workflow that moves from the initial branding details to final review."
     },
     {
       "type": "dropdown",
