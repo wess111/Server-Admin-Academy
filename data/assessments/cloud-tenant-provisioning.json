@@ -1,145 +1,263 @@
 {
-  "title": "Cloud Tenant Provisioning",
+  "title": "Cloud Users and Groups",
   "attemptsAllowed": 2,
   "retryEnabled": true,
   "revealAnswersAfterFinalAttempt": true,
-  "passScore": 70,
-  "scenario": "NewVue Health has completed the initial provisioning of a Microsoft 365 tenant to support its transition toward hybrid cloud services. The tenant uses Microsoft 365 Business Premium and the initial cloud domain newvuehealth.onmicrosoft.com. The global administrator account has already been created and can access the Microsoft 365 administration environment. Before the organization proceeds to cloud identity, hybrid identity, and device management tasks, the system administrator must confirm administrative access, identify the correct portals, review the tenant environment, configure company branding, and validate that the new sign-in experience is visible to users.",
+  "passScore": 75,
+  "scenario": "A healthcare organization has already provisioned its Microsoft 365 tenant and activated licensing. The next phase is to establish a pilot cloud identity set in Microsoft Entra ID and Microsoft 365 by creating cloud-only users, organizing them into department-based security groups, enabling both assigned and attribute-driven membership, assigning Microsoft 365 E5 licenses, and validating that selected users can authenticate to Microsoft 365 services.",
   "reference": [
-    { "label": "Organization", "value": "NewVue Health" },
-    { "label": "Tenant Domain", "value": "newvuehealth.onmicrosoft.com" },
-    { "label": "License", "value": "Microsoft 365 Business Premium" },
-    { "label": "Administrator Account", "value": "admin@newvuehealth.onmicrosoft.com" },
-    { "label": "Portal", "value": "Microsoft 365 admin center" },
-    { "label": "Portal", "value": "Microsoft Entra admin center" },
-    { "label": "Portal", "value": "Intune admin center" }
+    {
+      "label": "Pilot users",
+      "value": "Alice Morgan, Brian Patel, Carla Johnson, Daniel Kim, Evelyn Rodriguez"
+    },
+    {
+      "label": "Tenant sign-in format",
+      "value": "<user>@<yourtenant>.onmicrosoft.com"
+    },
+    {
+      "label": "Assigned groups",
+      "value": "Administration_Cloud, Human_Resources_Cloud, IT_Operations_Cloud"
+    },
+    {
+      "label": "Dynamic groups",
+      "value": "Clinical_Services_Cloud, Finance_Cloud"
+    },
+    {
+      "label": "License to assign",
+      "value": "Microsoft 365 E5"
+    }
   ],
   "activities": [
     {
       "type": "order",
-      "title": "Task 1 - Confirm Administrative Access",
-      "prompt": "Drag and Drop Task\nYou want to confirm that the newly provisioned tenant is accessible and ready for administrative review.\nTo answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "taskType": "Drag and Drop Task",
+      "title": "Task 1 - Create the First Pilot User",
+      "prompt": "You want to create the first pilot cloud identity in Microsoft Entra ID by using the values provided in the case study. To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
       "steps": [
-        "Sign in using the administrator account",
-        "Open the Microsoft 365 admin center",
-        "Confirm that the tenant dashboard loads successfully",
-        "Review the subscription status"
+        "Sign in to Microsoft Entra Admin Center",
+        "Go to Users → All users",
+        "Select New user → Create new user",
+        "Enter Alice Morgan's UPN, display name, job title, and department",
+        "Allow Entra to auto-generate the password",
+        "Create the account"
       ],
       "answer": [
-        "Sign in using the administrator account",
-        "Open the Microsoft 365 admin center",
-        "Confirm that the tenant dashboard loads successfully",
-        "Review the subscription status"
+        "Sign in to Microsoft Entra Admin Center",
+        "Go to Users → All users",
+        "Select New user → Create new user",
+        "Enter Alice Morgan's UPN, display name, job title, and department",
+        "Allow Entra to auto-generate the password",
+        "Create the account"
       ],
-      "explanation": "Administrative access must be confirmed before the tenant can be used for later cloud configuration tasks."
+      "explanation": "The lab starts in All users, creates Alice Morgan first, and requires the identity attributes listed in the pilot-user table."
     },
     {
       "type": "matchLines",
-      "title": "Task 2 - Identify Portal Responsibilities",
-      "prompt": "Matching Task\nYou want to identify which administrative portal should be used for each management function.\nTo answer, match each portal on the left with the correct responsibility on the right.",
+      "taskType": "Matching Task",
+      "title": "Task 2 - Map the Pilot Users to Departments",
+      "prompt": "You want to verify that the pilot users were created with the correct department attributes because those values will later drive group membership and validation. To answer, match each pilot user on the left with the correct department on the right.",
       "left": [
-        "Microsoft 365 admin center",
-        "Microsoft Entra admin center",
-        "Intune admin center"
+        "Alice Morgan",
+        "Brian Patel",
+        "Carla Johnson",
+        "Daniel Kim",
+        "Evelyn Rodriguez"
       ],
       "right": [
-        "Service and license administration",
-        "Identity and directory management",
-        "Device management"
+        "Administration",
+        "Clinical Services",
+        "Human Resources",
+        "IT Operations",
+        "Finance"
       ],
       "answer": {
-        "Microsoft 365 admin center": "Service and license administration",
-        "Microsoft Entra admin center": "Identity and directory management",
-        "Intune admin center": "Device management"
+        "Alice Morgan": "Administration",
+        "Brian Patel": "Clinical Services",
+        "Carla Johnson": "Human Resources",
+        "Daniel Kim": "IT Operations",
+        "Evelyn Rodriguez": "Finance"
       },
-      "explanation": "Each portal has a distinct administrative scope in the Microsoft cloud environment."
-    },
-    {
-      "type": "dropdown",
-      "title": "Task 3 - Navigate to Intune",
-      "prompt": "Dropdown Task\nYou want to access the Intune admin center from the Microsoft 365 admin center so you can confirm device-management readiness.\nTo answer, select the appropriate action from the list.",
-      "options": [
-        "Open Admin centers and select Endpoint Manager / Intune",
-        "Open Billing and select Your products",
-        "Open Users and select Active users",
-        "Open Settings and select Domains"
-      ],
-      "answer": "Open Admin centers and select Endpoint Manager / Intune",
-      "explanation": "The Intune administrative interface is accessed from the Admin centers area of the Microsoft 365 admin center."
-    },
-    {
-      "type": "dropdown",
-      "title": "Task 4 - Verify Subscription Status",
-      "prompt": "Dropdown Task\nYou want to verify that the tenant is licensed correctly before continuing with additional cloud configuration.\nTo answer, select the administrative area where this verification is performed.",
-      "options": [
-        "Billing",
-        "Users",
-        "Groups",
-        "Devices"
-      ],
-      "answer": "Billing",
-      "explanation": "Subscription and licensing status is reviewed under Billing in the Microsoft 365 admin center."
-    },
-    {
-      "type": "dropdown",
-      "title": "Task 5 - Confirm the Initial Cloud Domain",
-      "prompt": "Dropdown Task\nYou want to confirm the initial domain assigned during tenant creation.\nTo answer, select the value that represents the default cloud domain in this case study.",
-      "options": [
-        "newvuehealth.onmicrosoft.com",
-        "newvue.local",
-        "newvuehealth.com",
-        "admin.newvuehealth.com"
-      ],
-      "answer": "newvuehealth.onmicrosoft.com",
-      "explanation": "The default Microsoft 365 tenant domain uses the onmicrosoft.com naming format."
+      "explanation": "The department attribute is central to both manual group placement and dynamic group membership in the lab."
     },
     {
       "type": "order",
-      "title": "Task 6 - Complete the Branding Workflow",
-      "prompt": "Drag and Drop Task\nYou want to configure the organization’s sign-in branding from the Company Branding page.\nTo answer, move the appropriate branding stages from the list of actions to the answer area and arrange them in the correct order.",
+      "taskType": "Drag and Drop Task",
+      "title": "Task 3 - Create an Assigned Security Group",
+      "prompt": "You want to create one of the manually managed departmental security groups in Microsoft Entra ID. To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
       "steps": [
-        "Basic",
-        "Layout",
-        "Header",
-        "Footer",
-        "Sign-in form",
-        "Review"
+        "Go to Groups → All groups",
+        "Select New group",
+        "Choose Security as the group type",
+        "Choose Assigned as the membership type",
+        "Enter the group name",
+        "Create the group"
       ],
       "answer": [
-        "Basic",
-        "Layout",
-        "Header",
-        "Footer",
-        "Sign-in form",
-        "Review"
+        "Go to Groups → All groups",
+        "Select New group",
+        "Choose Security as the group type",
+        "Choose Assigned as the membership type",
+        "Enter the group name",
+        "Create the group"
       ],
-      "explanation": "The branding workflow proceeds through staged configuration and ends with review."
+      "explanation": "Assigned groups are created manually and use Security + Assigned in the new-group workflow."
+    },
+    {
+      "type": "scriptFill",
+      "taskType": "PowerShell Task",
+      "title": "Task 4 - Build the Dynamic Membership Rule",
+      "prompt": "You want to create the Clinical Services dynamic group so that user membership is determined automatically from the Department attribute. To answer, select the appropriate value for each blank in the rule statement.",
+      "script": [
+        "(",
+        {
+          "id": "attr",
+          "options": [
+            "user.department",
+            "user.jobTitle",
+            "user.userPrincipalName"
+          ],
+          "correct": "user.department"
+        },
+        " -eq \"",
+        {
+          "id": "value",
+          "options": [
+            "Clinical Services",
+            "Clinical_Services_Cloud",
+            "Registered Nurse"
+          ],
+          "correct": "Clinical Services"
+        },
+        "\")"
+      ],
+      "explanation": "The lab uses Dynamic User groups and defines membership by department values such as Clinical Services and Finance."
+    },
+    {
+      "type": "matchLines",
+      "taskType": "Matching Task",
+      "title": "Task 5 - Map the Group Membership Model",
+      "prompt": "You want to distinguish which groups require manual membership updates and which groups populate automatically. To answer, match each group on the left with the correct membership model or expected member on the right.",
+      "left": [
+        "Administration_Cloud",
+        "Human_Resources_Cloud",
+        "IT_Operations_Cloud",
+        "Clinical_Services_Cloud",
+        "Finance_Cloud"
+      ],
+      "right": [
+        "Assigned group for Alice Morgan",
+        "Assigned group for Carla Johnson",
+        "Assigned group for Daniel Kim",
+        "Dynamic group for Brian Patel",
+        "Dynamic group for Evelyn Rodriguez"
+      ],
+      "answer": {
+        "Administration_Cloud": "Assigned group for Alice Morgan",
+        "Human_Resources_Cloud": "Assigned group for Carla Johnson",
+        "IT_Operations_Cloud": "Assigned group for Daniel Kim",
+        "Clinical_Services_Cloud": "Dynamic group for Brian Patel",
+        "Finance_Cloud": "Dynamic group for Evelyn Rodriguez"
+      },
+      "explanation": "The lab uses manual membership for three assigned groups and automatic membership for the two department-driven dynamic groups."
+    },
+    {
+      "type": "order",
+      "taskType": "Drag and Drop Task",
+      "title": "Task 6 - Add a User to an Assigned Group",
+      "prompt": "You want to place Carla Johnson into the Human_Resources_Cloud assigned group. To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "steps": [
+        "Go to Groups",
+        "Open Human_Resources_Cloud",
+        "Open the Members tab",
+        "Select Add members",
+        "Search for Carla Johnson",
+        "Save the membership change"
+      ],
+      "answer": [
+        "Go to Groups",
+        "Open Human_Resources_Cloud",
+        "Open the Members tab",
+        "Select Add members",
+        "Search for Carla Johnson",
+        "Save the membership change"
+      ],
+      "explanation": "Manual membership changes are performed from the group object by opening Members, adding the user, and saving."
     },
     {
       "type": "dropdown",
-      "title": "Task 7 - Validate Branding Changes",
-      "prompt": "Dropdown Task\nYou want to verify that the new sign-in branding is visible to users after the configuration is saved.\nTo answer, select the best validation method.",
+      "taskType": "Dropdown Task",
+      "title": "Task 7 - Verify License Availability",
+      "prompt": "You want to confirm that the required cloud license is available before assigning services to the pilot users. To answer, select the navigation path that should be opened in Microsoft 365 Admin Center.",
       "options": [
-        "Open a private browser window and test the sign-in page",
-        "Restart the administrator workstation",
-        "Force a Group Policy update",
-        "Create a new Azure virtual machine"
+        "Billing → Licenses",
+        "Users → Active users",
+        "Groups → All groups",
+        "Settings → Domains"
       ],
-      "answer": "Open a private browser window and test the sign-in page",
-      "explanation": "A private browser session reduces cached sign-in artifacts and gives a cleaner validation of the updated branding experience."
+      "answer": "Billing → Licenses",
+      "explanation": "The license-verification step in the lab occurs before assignment and is performed from the Billing area."
+    },
+    {
+      "type": "order",
+      "taskType": "Drag and Drop Task",
+      "title": "Task 8 - Assign Microsoft 365 E5 to a Pilot User",
+      "prompt": "You want to assign Microsoft 365 E5 to one of the pilot users after verifying license availability. To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "steps": [
+        "Open Microsoft 365 Admin Center",
+        "Go to Users → Active users",
+        "Select the pilot user account",
+        "Open Licenses and apps",
+        "Assign Microsoft 365 E5",
+        "Save changes"
+      ],
+      "answer": [
+        "Open Microsoft 365 Admin Center",
+        "Go to Users → Active users",
+        "Select the pilot user account",
+        "Open Licenses and apps",
+        "Assign Microsoft 365 E5",
+        "Save changes"
+      ],
+      "explanation": "The lab separates license availability from license assignment and performs the assignment from the Active users area."
+    },
+    {
+      "type": "matchLines",
+      "taskType": "Matching Task",
+      "title": "Task 9 - Verify Identity Configuration from the User Profile",
+      "prompt": "You want to review a pilot user in Microsoft Entra ID and validate both license and group membership. To answer, match each verification area on the left with the information it should confirm on the right.",
+      "left": [
+        "Licenses tab",
+        "Groups tab",
+        "All users list",
+        "Members tab of an assigned group"
+      ],
+      "right": [
+        "Microsoft 365 E5 is assigned",
+        "Assigned and dynamic memberships are visible",
+        "Cloud-only pilot identities exist",
+        "Manual group membership was added correctly"
+      ],
+      "answer": {
+        "Licenses tab": "Microsoft 365 E5 is assigned",
+        "Groups tab": "Assigned and dynamic memberships are visible",
+        "All users list": "Cloud-only pilot identities exist",
+        "Members tab of an assigned group": "Manual group membership was added correctly"
+      },
+      "explanation": "The lab validates identities from multiple views: all users, group membership, and the user profile’s licenses and groups tabs."
     },
     {
       "type": "dropdown",
-      "title": "Task 8 - Review Tenant Identity Details",
-      "prompt": "Dropdown Task\nYou want to review tenant identity information such as the tenant name, tenant ID, primary domain, and license from the identity portal.\nTo answer, select the page that should be opened first.",
+      "taskType": "Dropdown Task",
+      "title": "Task 10 - Complete Sign-In Validation",
+      "prompt": "You want to confirm that one of the pilot users can authenticate successfully into Microsoft 365 and reach cloud services after account creation and license assignment. To answer, select the action that should occur immediately before validating access to Outlook, OneDrive, Teams, and SharePoint.",
       "options": [
-        "Overview",
-        "Users",
-        "Groups",
-        "Devices"
+        "Complete the first sign-in password reset in a private browser session",
+        "Open Active Directory Users and Computers",
+        "Re-run the dynamic membership rule",
+        "Rename the pilot user account"
       ],
-      "answer": "Overview",
-      "explanation": "The Overview page in Microsoft Entra is where tenant-level identity details are reviewed."
+      "answer": "Complete the first sign-in password reset in a private browser session",
+      "explanation": "The lab’s sign-in validation uses an InPrivate/Incognito browser session and requires completion of the password reset before cloud services are checked."
     }
   ]
 }
