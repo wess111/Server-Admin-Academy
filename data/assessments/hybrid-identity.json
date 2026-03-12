@@ -1,1 +1,146 @@
-
+{
+  "title": "Hybrid Identity Configuration",
+  "attemptsAllowed": 2,
+  "retryEnabled": true,
+  "revealAnswersAfterFinalAttempt": true,
+  "passScore": 70,
+  "scenario": "NewVue Health is integrating its on-premises Active Directory environment with Microsoft Entra ID so that users can be synchronized between the local domain and the cloud tenant. The organization will use Azure AD Connect to establish this relationship before moving to later phases of hybrid identity and device registration. Because this is a complementary activity, use the case study and reference information below to complete the required tasks.",
+  "reference": [
+    { "label": "On-Premises Domain", "value": "newvue.local" },
+    { "label": "Cloud Tenant Domain", "value": "newvuehealth.onmicrosoft.com" },
+    { "label": "Synchronization Tool", "value": "Azure AD Connect" },
+    { "label": "Cloud Identity Platform", "value": "Microsoft Entra ID" }
+  ],
+  "activities": [
+    {
+      "type": "order",
+      "title": "Task 1 - Establish Hybrid Identity",
+      "prompt": "Drag and Drop Task\nYou want to establish hybrid identity between the on-premises directory and the cloud tenant.\nTo answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "steps": [
+        "Install Azure AD Connect",
+        "Sign in with the cloud global administrator account",
+        "Provide the on-premises Active Directory credentials",
+        "Select the synchronization options",
+        "Complete configuration and begin synchronization"
+      ],
+      "answer": [
+        "Install Azure AD Connect",
+        "Sign in with the cloud global administrator account",
+        "Provide the on-premises Active Directory credentials",
+        "Select the synchronization options",
+        "Complete configuration and begin synchronization"
+      ],
+      "explanation": "Hybrid identity setup requires the synchronization tool, cloud credentials, local directory credentials, configuration choices, and final synchronization."
+    },
+    {
+      "type": "matchLines",
+      "title": "Task 2 - Identify Component Roles",
+      "prompt": "Matching Task\nYou want to explain the role of each hybrid identity component.\nTo answer, match each component on the left with its function on the right.",
+      "left": [
+        "Microsoft Entra ID",
+        "Active Directory",
+        "Azure AD Connect"
+      ],
+      "right": [
+        "Cloud identity platform",
+        "On-premises directory service",
+        "Synchronization service"
+      ],
+      "answer": {
+        "Microsoft Entra ID": "Cloud identity platform",
+        "Active Directory": "On-premises directory service",
+        "Azure AD Connect": "Synchronization service"
+      },
+      "explanation": "Hybrid identity depends on understanding the roles of the cloud identity plane, the local directory, and the synchronization engine."
+    },
+    {
+      "type": "dropdown",
+      "title": "Task 3 - Select the Sign-In Method",
+      "prompt": "Dropdown Task\nYou want to keep the hybrid deployment simple while allowing passwords from on-premises users to be used in the cloud.\nTo answer, select the sign-in method that best supports that objective.",
+      "options": [
+        "Password Hash Synchronization",
+        "Certificate Services",
+        "DFS Namespace Replication",
+        "Conditional DNS Forwarding"
+      ],
+      "answer": "Password Hash Synchronization",
+      "explanation": "Password Hash Synchronization is the common streamlined sign-in method for basic hybrid identity deployments."
+    },
+    {
+      "type": "dropdown",
+      "title": "Task 4 - Limit Synchronization Scope",
+      "prompt": "Dropdown Task\nYou want to reduce unnecessary cloud objects and synchronize only the required identities.\nTo answer, select the configuration choice that best supports that objective.",
+      "options": [
+        "Select the required organizational units for synchronization",
+        "Synchronize every local object without filtering",
+        "Disable user synchronization entirely",
+        "Rename the on-premises domain"
+      ],
+      "answer": "Select the required organizational units for synchronization",
+      "explanation": "Scoped synchronization limits cloud object creation to the required directory containers."
+    },
+    {
+      "type": "order",
+      "title": "Task 5 - Validate Synchronization",
+      "prompt": "Drag and Drop Task\nYou want to verify that synchronization was configured successfully.\nTo answer, move the appropriate validation actions from the list of actions to the answer area and arrange them in the correct order.",
+      "steps": [
+        "Complete the Azure AD Connect configuration",
+        "Allow synchronization to run",
+        "Open Microsoft Entra administration",
+        "Review synchronized user objects"
+      ],
+      "answer": [
+        "Complete the Azure AD Connect configuration",
+        "Allow synchronization to run",
+        "Open Microsoft Entra administration",
+        "Review synchronized user objects"
+      ],
+      "explanation": "Validation occurs after synchronization completes and the synchronized objects can be reviewed in the cloud."
+    },
+    {
+      "type": "scriptDropdown",
+      "title": "Task 6 - Complete the Synchronization Command",
+      "prompt": "PowerShell Task\nYou want to trigger synchronization from the Azure AD Connect server.\nTo answer, select the appropriate value for each blank in the command.",
+      "scriptParts": [
+        "Start-",
+        {
+          "type": "dropdown",
+          "id": "cmd",
+          "options": [
+            "ADSyncSyncCycle",
+            "MgGraph",
+            "AzureTenantSync"
+          ]
+        },
+        " -PolicyType ",
+        {
+          "type": "dropdown",
+          "id": "type",
+          "options": [
+            "Delta",
+            "Full",
+            "Local"
+          ]
+        }
+      ],
+      "answers": {
+        "cmd": "ADSyncSyncCycle",
+        "type": "Delta"
+      },
+      "explanation": "A delta sync is commonly used to trigger synchronization of recent changes."
+    },
+    {
+      "type": "dropdown",
+      "title": "Task 7 - State the Hybrid Objective",
+      "prompt": "Dropdown Task\nYou want users to sign in with identities that originate in the local domain while still being available in the cloud.\nTo answer, select the statement that best describes the purpose of hybrid identity in this case study.",
+      "options": [
+        "Synchronize on-premises identities to the cloud tenant",
+        "Replace the cloud tenant with a local workgroup",
+        "Remove all Active Directory accounts",
+        "Disable Microsoft Entra authentication"
+      ],
+      "answer": "Synchronize on-premises identities to the cloud tenant",
+      "explanation": "The purpose of hybrid identity here is to make local identities available in the cloud environment."
+    }
+  ]
+}
