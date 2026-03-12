@@ -2,82 +2,144 @@
   "title": "Cloud Tenant Provisioning",
   "attemptsAllowed": 2,
   "retryEnabled": true,
-  "passScore": 80,
-  "scenario": "NewVue Health is transitioning from an on-premises AD environment to a hybrid cloud model using Microsoft 365 Business Premium. As the lead administrator, you must finalize the tenant provisioning, ensure the 'NewVue Blue' identity is enforced, and validate the environment before the Phase 3 hybrid-sync begins.",
+  "revealAnswersAfterFinalAttempt": true,
+  "passScore": 70,
+  "scenario": "NewVue Health has completed the initial provisioning of a Microsoft 365 tenant to support its transition toward hybrid cloud services. The tenant uses Microsoft 365 Business Premium and the initial cloud domain newvuehealth.onmicrosoft.com. The global administrator account has already been created and can access the Microsoft 365 administration environment. Before the organization proceeds to cloud identity, hybrid identity, and device management tasks, the system administrator must confirm administrative access, identify the correct portals, review the tenant environment, configure company branding, and validate that the new sign-in experience is visible to users.",
   "reference": [
-    { "label": "On-Prem Domain", "value": "newvue.local" },
-    { "label": "Cloud Domain", "value": "newvuehealth.onmicrosoft.com" },
-    { "label": "Brand Hex", "value": "#003D79" }
+    { "label": "Organization", "value": "NewVue Health" },
+    { "label": "Tenant Domain", "value": "newvuehealth.onmicrosoft.com" },
+    { "label": "License", "value": "Microsoft 365 Business Premium" },
+    { "label": "Administrator Account", "value": "admin@newvuehealth.onmicrosoft.com" },
+    { "label": "Portal", "value": "Microsoft 365 admin center" },
+    { "label": "Portal", "value": "Microsoft Entra admin center" },
+    { "label": "Portal", "value": "Intune admin center" }
   ],
   "activities": [
     {
       "type": "order",
-      "title": "Task 1: The Provisioning Sequence",
-      "prompt": "You need to bring the tenant from an unconfigured state to a branded, validated state. Move the administrative actions to the answer area and arrange them in the correct sequence.",
+      "title": "Task 1 - Confirm Administrative Access",
+      "prompt": "Drag and Drop Task\nYou want to confirm that the newly provisioned tenant is accessible and ready for administrative review.\nTo answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
       "steps": [
-        "Verify 'Business Premium' status in the Billing portal",
-        "Navigate to Entra ID > Company Branding",
-        "Upload the full NewVue Health logo PNG",
-        "Apply the #003D79 background color hex code",
-        "Validate appearance via Incognito browser session"
+        "Sign in using the administrator account",
+        "Open the Microsoft 365 admin center",
+        "Confirm that the tenant dashboard loads successfully",
+        "Review the subscription status"
       ],
       "answer": [
-        "Verify 'Business Premium' status in the Billing portal",
-        "Navigate to Entra ID > Company Branding",
-        "Upload the full NewVue Health logo PNG",
-        "Apply the #003D79 background color hex code",
-        "Validate appearance via Incognito browser session"
+        "Sign in using the administrator account",
+        "Open the Microsoft 365 admin center",
+        "Confirm that the tenant dashboard loads successfully",
+        "Review the subscription status"
       ],
-      "explanation": "Licensing must be confirmed before branding, and branding requires a clean browser session (Incognito) for immediate validation."
+      "explanation": "Administrative access must be confirmed before the tenant can be used for later cloud configuration tasks."
     },
     {
-      "type": "matching",
-      "title": "Task 2: Identity Configuration Mapping",
-      "prompt": "Match each NewVue Health requirement to the specific configuration field within the Microsoft Entra admin center.",
-      "options": [
-        "Page background color",
-        "Header Logo",
-        "Sign-in form text",
-        "Footer text"
+      "type": "matchLines",
+      "title": "Task 2 - Identify Portal Responsibilities",
+      "prompt": "Matching Task\nYou want to identify which administrative portal should be used for each management function.\nTo answer, match each portal on the left with the correct responsibility on the right.",
+      "left": [
+        "Microsoft 365 admin center",
+        "Microsoft Entra admin center",
+        "Intune admin center"
       ],
-      "pairs": [
-        { "left": "#003D79", "right": "Page background color" },
-        { "left": "NewVue Health full logo (PNG)", "right": "Header Logo" },
-        { "left": "Welcome to NewVue Health – Authorized Users Only", "right": "Sign-in form text" },
-        { "left": "© NewVue Health – Authorized Access Only", "right": "Footer text" }
+      "right": [
+        "Service and license administration",
+        "Identity and directory management",
+        "Device management"
       ],
-      "explanation": "Correct field mapping ensures the sign-in experience matches the corporate identity standards defined in the lab."
-    },
-    {
-      "type": "matching",
-      "title": "Task 3: Domain & Portal Scope",
-      "prompt": "You are managing a hybrid environment. Match the administrative endpoint or domain to its primary functional role in Phase 2.",
-      "options": [
-        "Initial Cloud Domain",
-        "Identity & Branding Portal",
-        "Subscription & Billing",
-        "On-Premises Infrastructure"
-      ],
-      "pairs": [
-        { "left": "newvuehealth.onmicrosoft.com", "right": "Initial Cloud Domain" },
-        { "left": "Entra ID Admin Center", "right": "Identity & Branding Portal" },
-        { "left": "Microsoft 365 Admin Center", "right": "Subscription & Billing" },
-        { "left": "newvue.local", "right": "On-Premises Infrastructure" }
-      ],
-      "explanation": "Distinguishing between the legacy local domain and the new cloud tenant domain is critical for hybrid identity success."
+      "answer": {
+        "Microsoft 365 admin center": "Service and license administration",
+        "Microsoft Entra admin center": "Identity and directory management",
+        "Intune admin center": "Device management"
+      },
+      "explanation": "Each portal has a distinct administrative scope in the Microsoft cloud environment."
     },
     {
       "type": "dropdown",
-      "title": "Task 4: Validation Logic",
-      "prompt": "A technician reports that branding changes are not visible after saving. What is the most likely administrative oversight?",
+      "title": "Task 3 - Navigate to Intune",
+      "prompt": "Dropdown Task\nYou want to access the Intune admin center from the Microsoft 365 admin center so you can confirm device-management readiness.\nTo answer, select the appropriate action from the list.",
       "options": [
-        "The browser is using cached CSS from the previous login",
-        "The logo file size exceeds the 10MB limit",
-        "The user is signing in with a .local account",
-        "The Global Admin role has been revoked"
+        "Open Admin centers and select Endpoint Manager / Intune",
+        "Open Billing and select Your products",
+        "Open Users and select Active users",
+        "Open Settings and select Domains"
       ],
-      "answer": "The browser is using cached CSS from the previous login",
-      "explanation": "Browser caching is the primary hurdle in M365 branding validation; using Incognito/Private mode is the standard fix."
+      "answer": "Open Admin centers and select Endpoint Manager / Intune",
+      "explanation": "The Intune administrative interface is accessed from the Admin centers area of the Microsoft 365 admin center."
+    },
+    {
+      "type": "dropdown",
+      "title": "Task 4 - Verify Subscription Status",
+      "prompt": "Dropdown Task\nYou want to verify that the tenant is licensed correctly before continuing with additional cloud configuration.\nTo answer, select the administrative area where this verification is performed.",
+      "options": [
+        "Billing",
+        "Users",
+        "Groups",
+        "Devices"
+      ],
+      "answer": "Billing",
+      "explanation": "Subscription and licensing status is reviewed under Billing in the Microsoft 365 admin center."
+    },
+    {
+      "type": "dropdown",
+      "title": "Task 5 - Confirm the Initial Cloud Domain",
+      "prompt": "Dropdown Task\nYou want to confirm the initial domain assigned during tenant creation.\nTo answer, select the value that represents the default cloud domain in this case study.",
+      "options": [
+        "newvuehealth.onmicrosoft.com",
+        "newvue.local",
+        "newvuehealth.com",
+        "admin.newvuehealth.com"
+      ],
+      "answer": "newvuehealth.onmicrosoft.com",
+      "explanation": "The default Microsoft 365 tenant domain uses the onmicrosoft.com naming format."
+    },
+    {
+      "type": "order",
+      "title": "Task 6 - Complete the Branding Workflow",
+      "prompt": "Drag and Drop Task\nYou want to configure the organization’s sign-in branding from the Company Branding page.\nTo answer, move the appropriate branding stages from the list of actions to the answer area and arrange them in the correct order.",
+      "steps": [
+        "Basic",
+        "Layout",
+        "Header",
+        "Footer",
+        "Sign-in form",
+        "Review"
+      ],
+      "answer": [
+        "Basic",
+        "Layout",
+        "Header",
+        "Footer",
+        "Sign-in form",
+        "Review"
+      ],
+      "explanation": "The branding workflow proceeds through staged configuration and ends with review."
+    },
+    {
+      "type": "dropdown",
+      "title": "Task 7 - Validate Branding Changes",
+      "prompt": "Dropdown Task\nYou want to verify that the new sign-in branding is visible to users after the configuration is saved.\nTo answer, select the best validation method.",
+      "options": [
+        "Open a private browser window and test the sign-in page",
+        "Restart the administrator workstation",
+        "Force a Group Policy update",
+        "Create a new Azure virtual machine"
+      ],
+      "answer": "Open a private browser window and test the sign-in page",
+      "explanation": "A private browser session reduces cached sign-in artifacts and gives a cleaner validation of the updated branding experience."
+    },
+    {
+      "type": "dropdown",
+      "title": "Task 8 - Review Tenant Identity Details",
+      "prompt": "Dropdown Task\nYou want to review tenant identity information such as the tenant name, tenant ID, primary domain, and license from the identity portal.\nTo answer, select the page that should be opened first.",
+      "options": [
+        "Overview",
+        "Users",
+        "Groups",
+        "Devices"
+      ],
+      "answer": "Overview",
+      "explanation": "The Overview page in Microsoft Entra is where tenant-level identity details are reviewed."
     }
   ]
 }
