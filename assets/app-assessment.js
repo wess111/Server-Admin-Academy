@@ -220,6 +220,8 @@ function renderActivityWidget(activity, index) {
       return renderScriptDropdown(activity, index);
     case "matching":
       return renderMatching(activity, index);
+    case "matchLines":
+      return renderMatchLines(activity, index);
     case "order":
       return renderOrder(activity, index);
     case "multiSelect":
@@ -334,6 +336,164 @@ function renderMatching(activity, index) {
   });
 
   return wrapper;
+}
+
+function renderMatchLines(activity, index) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "matchLinesWorkspace";
+  wrapper.dataset.activityIndex = index;
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.classList.add("matchSvg");
+
+  const leftCol = document.createElement("div");
+  leftCol.className = "matchLinesColumn";
+
+  const rightCol = document.createElement("div");
+  rightCol.className = "matchLinesColumn";
+
+  const stored = getStoredMatchLinesState(index);
+  const leftItems = activity.left || [];
+  const rightItems = activity.right || [];
+
+  leftItems.forEach((item, itemIndex) => {
+    const row = document.createElement("div");
+    row.className = "matchLineItem leftItem";
+    row.dataset.value = item;
+    row.dataset.index = itemIndex;
+
+    const label = document.createElement("div");
+    label.className = "matchLineLabel";
+    label.textContent = item;
+
+    const node = document.createElement("button");
+    node.type = "button";
+    node.className = "matchNode";
+    node.textContent = String.fromCharCode(65 + itemIndex);
+
+    row.appendChild(label);
+    row.appendChild(node);
+
+    row.addEventListener("click", () => {
+      const scope = row.closest(".matchLinesWorkspace");
+      if (!scope) return;
+      scope.querySelectorAll(".leftItem").forEach(el => el.classList.remove("isSelected"));
+      row.classList.add("isSelected");
+    });
+
+    row.addEventListener("dblclick", () => {
+      const current = getStoredMatchLinesState(index);
+      delete current[item];
+      storeMatchLinesState(index, current);
+      updateMatchLinesUI(wrapper, index, activity);
+    });
+
+    leftCol.appendChild(row);
+  });
+
+  rightItems.forEach((item, itemIndex) => {
+    const row = document.createElement("div");
+    row.className = "matchLineItem rightItem";
+    row.dataset.value = item;
+    row.dataset.index = itemIndex;
+
+    const node = document.createElement("button");
+    node.type = "button";
+    node.className = "matchNode right";
+    node.textContent = String.fromCharCode(65 + itemIndex);
+
+    const label = document.createElement("div");
+    label.className = "matchLineLabel";
+    label.textContent = item;
+
+    row.appendChild(node);
+    row.appendChild(label);
+
+    row.addEventListener("click", () => {
+      const selectedLeft = wrapper.querySelector(".leftItem.isSelected");
+      if (!selectedLeft) return;
+
+      const leftValue = selectedLeft.dataset.value;
+      const rightValue = item;
+      const current = getStoredMatchLinesState(index);
+
+      Object.keys(current).forEach(key => {
+        if (current[key] === rightValue) {
+          delete current[key];
+        }
+      });
+
+      current[leftValue] = rightValue;
+      storeMatchLinesState(index, current);
+      selectedLeft.classList.remove("isSelected");
+      updateMatchLinesUI(wrapper, index, activity);
+    });
+
+    rightCol.appendChild(row);
+  });
+
+  wrapper.appendChild(svg);
+  wrapper.appendChild(leftCol);
+  wrapper.appendChild(rightCol);
+
+  requestAnimationFrame(() => {
+    updateMatchLinesUI(wrapper, index, activity);
+  });
+
+  window.addEventListener("resize", () => {
+    updateMatchLinesUI(wrapper, index, activity);
+  });
+
+  return wrapper;
+}
+
+function updateMatchLinesUI(wrapper, index, activity) {
+  const svg = wrapper.querySelector(".matchSvg");
+  if (!svg) return;
+
+  svg.innerHTML = "";
+
+  wrapper.querySelectorAll(".matchLineItem").forEach(item => {
+    item.classList.remove("isMatched");
+  });
+
+  const stored = getStoredMatchLinesState(index);
+  const connections = Object.entries(stored);
+
+  if (!connections.length) return;
+
+  const wrapRect = wrapper.getBoundingClientRect();
+  svg.setAttribute("width", wrapRect.width);
+  svg.setAttribute("height", wrapper.scrollHeight);
+
+  connections.forEach(([leftValue, rightValue]) => {
+    const leftEl = [...wrapper.querySelectorAll(".leftItem")].find(el => el.dataset.value === leftValue);
+    const rightEl = [...wrapper.querySelectorAll(".rightItem")].find(el => el.dataset.value === rightValue);
+    if (!leftEl || !rightEl) return;
+
+    leftEl.classList.add("isMatched");
+    rightEl.classList.add("isMatched");
+
+    const leftNode = leftEl.querySelector(".matchNode");
+    const rightNode = rightEl.querySelector(".matchNode");
+    if (!leftNode || !rightNode) return;
+
+    const leftRect = leftNode.getBoundingClientRect();
+    const rightRect = rightNode.getBoundingClientRect();
+
+    const x1 = leftRect.left + leftRect.width / 2 - wrapRect.left;
+    const y1 = leftRect.top + leftRect.height / 2 - wrapRect.top;
+    const x2 = rightRect.left + rightRect.width / 2 - wrapRect.left;
+    const y2 = rightRect.top + rightRect.height / 2 - wrapRect.top;
+
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    const cx1 = x1 + 80;
+    const cx2 = x2 - 80;
+    line.setAttribute("d", `M ${x1} ${y1} C ${cx1} ${y1}, ${cx2} ${y2}, ${x2} ${y2}`);
+    line.setAttribute("class", "matchSvgLine");
+
+    svg.appendChild(line);
+  });
 }
 
 function renderOrder(activity, index) {
@@ -592,6 +752,10 @@ function persistVisibleInputs() {
     storeMatchingState(index, values);
   }
 
+  if (activity.type === "matchLines") {
+    // values are stored live on click
+  }
+
   if (activity.type === "order") {
     persistOrderState(index);
   }
@@ -794,6 +958,8 @@ function evaluateActivity(activity, index) {
       return evaluateScriptDropdown(activity, index);
     case "matching":
       return evaluateMatching(activity, index);
+    case "matchLines":
+      return evaluateMatchLines(activity, index);
     case "order":
       return evaluateOrder(activity, index);
     case "multiSelect":
@@ -839,6 +1005,25 @@ function evaluateMatching(activity, index) {
     correct,
     userAnswer,
     correctAnswer: activity.pairs.map(pair => pair.right)
+  };
+}
+
+function evaluateMatchLines(activity, index) {
+  const userAnswer = getStoredMatchLinesState(index);
+  const correctAnswer = activity.answer || {};
+  let correct = true;
+
+  const leftItems = activity.left || [];
+  leftItems.forEach(left => {
+    if (userAnswer[left] !== correctAnswer[left]) {
+      correct = false;
+    }
+  });
+
+  return {
+    correct,
+    userAnswer,
+    correctAnswer
   };
 }
 
@@ -892,6 +1077,14 @@ function storeMatchingState(index, value) {
   storeGeneric(`matching-${index}`, value);
 }
 
+function getStoredMatchLinesState(index) {
+  return getGeneric(`matchLines-${index}`) || {};
+}
+
+function storeMatchLinesState(index, value) {
+  storeGeneric(`matchLines-${index}`, value);
+}
+
 function getStoredOrderState(index) {
   return getGeneric(`order-${index}`) || [];
 }
@@ -909,6 +1102,7 @@ function clearStoredResponses() {
     localStorage.removeItem(storageKey(`dropdown-${index}`));
     localStorage.removeItem(storageKey(`script-${index}`));
     localStorage.removeItem(storageKey(`matching-${index}`));
+    localStorage.removeItem(storageKey(`matchLines-${index}`));
     localStorage.removeItem(storageKey(`order-${index}`));
     localStorage.removeItem(storageKey(`multi-${index}`));
   });
@@ -946,6 +1140,12 @@ function formatCorrectAnswer(activity, correctAnswer) {
   if (activity.type === "matching") {
     return (activity.pairs || [])
       .map(pair => `${escapeHtml(pair.left)} → ${escapeHtml(pair.right)}`)
+      .join("<br>");
+  }
+
+  if (activity.type === "matchLines") {
+    return Object.entries(correctAnswer || {})
+      .map(([left, right]) => `${escapeHtml(left)} → ${escapeHtml(right)}`)
       .join("<br>");
   }
 
