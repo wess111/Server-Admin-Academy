@@ -1,0 +1,110 @@
+{
+  "title": "Hybrid Identity Configuration",
+  "domainLabel": "Systems Engineering",
+  "difficulty": "intermediate",
+  "attemptsAllowed": 2,
+  "passScore": 70,
+  "scenario": "You are preparing an on-premises Active Directory environment for hybrid identity with Microsoft Entra ID. Complete the activities below to demonstrate the correct process for domain preparation, identity cleanup, Entra Connect configuration, and synchronization validation.",
+  "activities": [
+    {
+      "type": "order",
+      "typeLabel": "Order",
+      "prompt": "Arrange the following steps in the correct order to add and validate a custom domain for hybrid identity.",
+      "steps": [
+        "Register the custom domain",
+        "Add the domain in Microsoft 365",
+        "Create the TXT record in public DNS",
+        "Verify domain ownership"
+      ],
+      "answer": [
+        "Register the custom domain",
+        "Add the domain in Microsoft 365",
+        "Create the TXT record in public DNS",
+        "Verify domain ownership"
+      ]
+    },
+    {
+      "type": "dropdown",
+      "typeLabel": "Dropdown",
+      "prompt": "Select the tool used to identify directory attribute issues before synchronization.",
+      "options": [
+        "IdFix",
+        "Group Policy Management",
+        "DNS Manager",
+        "Windows Admin Center"
+      ],
+      "answer": "IdFix",
+      "explanation": "IdFix is used to identify and remediate attribute issues before hybrid sync."
+    },
+    {
+      "type": "scriptDropdown",
+      "typeLabel": "Script Dropdown",
+      "prompt": "Complete the user principal name format that should match the cloud domain before synchronization.",
+      "script": "user@________",
+      "options": [
+        "yourname.2bd.net",
+        "newvue.local",
+        "contoso.local",
+        "corp.internal"
+      ],
+      "answer": "yourname.2bd.net"
+    },
+    {
+      "type": "matching",
+      "typeLabel": "Matching",
+      "prompt": "Match each hybrid identity task to its purpose.",
+      "left": [
+        "Update UPN suffixes",
+        "Run IdFix",
+        "Configure Entra Connect with Password Hash Synchronization",
+        "Verify cloud sign-in"
+      ],
+      "right": [
+        "Align user sign-in names with the cloud domain",
+        "Correct directory issues before sync",
+        "Synchronize on-prem identities to Microsoft Entra ID",
+        "Confirm a synchronized account can authenticate"
+      ],
+      "answers": [
+        "Align user sign-in names with the cloud domain",
+        "Correct directory issues before sync",
+        "Synchronize on-prem identities to Microsoft Entra ID",
+        "Confirm a synchronized account can authenticate"
+      ]
+    },
+    {
+      "type": "multiSelect",
+      "typeLabel": "Select Steps",
+      "prompt": "Select the tasks that belong to the Entra Connect deployment stage.",
+      "options": [
+        "Choose Password Hash Synchronization",
+        "Apply OU filtering",
+        "Complete the configuration wizard",
+        "Create a mobile compliance policy",
+        "Publish a new website"
+      ],
+      "answer": [
+        "Choose Password Hash Synchronization",
+        "Apply OU filtering",
+        "Complete the configuration wizard"
+      ]
+    },
+    {
+      "type": "order",
+      "typeLabel": "Order",
+      "prompt": "Arrange the synchronization validation workflow in the correct order.",
+      "steps": [
+        "Verify synchronized users appear in Microsoft Entra ID",
+        "Test sign-in with a synchronized account",
+        "Confirm status in Microsoft 365",
+        "Document the sync result"
+      ],
+      "answer": [
+        "Verify synchronized users appear in Microsoft Entra ID",
+        "Test sign-in with a synchronized account",
+        "Confirm status in Microsoft 365",
+        "Document the sync result"
+      ]
+    }
+  ]
+}

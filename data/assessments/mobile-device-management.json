@@ -1,0 +1,109 @@
+{
+  "title": "Mobile Device Management",
+  "domainLabel": "Systems Engineering",
+  "difficulty": "intermediate",
+  "attemptsAllowed": 2,
+  "passScore": 70,
+  "scenario": "You are enabling hybrid device management for domain-joined Windows devices by using Hybrid Azure AD Join and Microsoft Intune. Complete the activities below to demonstrate the correct sequence for SCP configuration, automatic enrollment, compliance configuration, and management validation.",
+  "activities": [
+    {
+      "type": "order",
+      "typeLabel": "Order",
+      "prompt": "Arrange the following steps in the correct order to configure Hybrid Azure AD Join by using Azure AD Connect.",
+      "steps": [
+        "Open Azure AD Connect and choose Configure",
+        "Select Configure device options",
+        "Choose Configure Hybrid Azure AD Join",
+        "Publish the Service Connection Point and complete the wizard"
+      ],
+      "answer": [
+        "Open Azure AD Connect and choose Configure",
+        "Select Configure device options",
+        "Choose Configure Hybrid Azure AD Join",
+        "Publish the Service Connection Point and complete the wizard"
+      ]
+    },
+    {
+      "type": "dropdown",
+      "typeLabel": "Dropdown",
+      "prompt": "Select the Intune setting that must be configured to enable automatic enrollment for users.",
+      "options": [
+        "MDM user scope",
+        "Enrollment restrictions",
+        "Compliance policy state",
+        "Windows Autopilot deployment profile"
+      ],
+      "answer": "MDM user scope"
+    },
+    {
+      "type": "matching",
+      "typeLabel": "Matching",
+      "prompt": "Match each configuration area to its purpose in hybrid device management.",
+      "left": [
+        "Service Connection Point (SCP)",
+        "MDM automatic enrollment",
+        "Device compliance policy",
+        "Windows Update ring"
+      ],
+      "right": [
+        "Allows domain-joined devices to discover Microsoft Entra registration settings",
+        "Enrolls eligible devices into Intune",
+        "Defines device health and security requirements",
+        "Controls operating system update behavior"
+      ],
+      "answers": [
+        "Allows domain-joined devices to discover Microsoft Entra registration settings",
+        "Enrolls eligible devices into Intune",
+        "Defines device health and security requirements",
+        "Controls operating system update behavior"
+      ]
+    },
+    {
+      "type": "multiSelect",
+      "typeLabel": "Select Steps",
+      "prompt": "Select the validation checks used to confirm successful Hybrid Azure AD Join and Intune enrollment.",
+      "options": [
+        "Review device registration locally on the client",
+        "Confirm the device appears in Microsoft Entra ID",
+        "Confirm the device appears in Intune",
+        "Create a dynamic DNS update rule",
+        "Set up a print queue"
+      ],
+      "answer": [
+        "Review device registration locally on the client",
+        "Confirm the device appears in Microsoft Entra ID",
+        "Confirm the device appears in Intune"
+      ]
+    },
+    {
+      "type": "scriptDropdown",
+      "typeLabel": "Script Dropdown",
+      "prompt": "Complete the command used on a Windows client to review local device registration state.",
+      "script": "dsregcmd /________",
+      "options": [
+        "status",
+        "join",
+        "sync",
+        "report"
+      ],
+      "answer": "status"
+    },
+    {
+      "type": "order",
+      "typeLabel": "Order",
+      "prompt": "Arrange the management tasks in the correct order after enrollment is working.",
+      "steps": [
+        "Deploy Microsoft 365 Apps",
+        "Create a compliance policy",
+        "Assign the compliance policy",
+        "Configure a Windows Update ring"
+      ],
+      "answer": [
+        "Deploy Microsoft 365 Apps",
+        "Create a compliance policy",
+        "Assign the compliance policy",
+        "Configure a Windows Update ring"
+      ]
+    }
+  ]
+}

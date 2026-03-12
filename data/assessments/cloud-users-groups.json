@@ -1,0 +1,107 @@
+{
+  "title": "Cloud Users and Groups",
+  "domainLabel": "Systems Engineering",
+  "difficulty": "beginner",
+  "attemptsAllowed": 2,
+  "passScore": 70,
+  "scenario": "You are configuring cloud identity objects in Microsoft Entra ID and Microsoft 365. Complete the activities below to demonstrate correct user creation, group configuration, dynamic membership logic, and license assignment.",
+  "activities": [
+    {
+      "type": "order",
+      "typeLabel": "Order",
+      "prompt": "Arrange the following steps in the correct order to create a cloud-only user in Microsoft Entra ID.",
+      "steps": [
+        "Open Microsoft Entra Admin Center",
+        "Navigate to Users \u2192 All users",
+        "Select New user \u2192 Create new user",
+        "Enter account properties and create the account"
+      ],
+      "answer": [
+        "Open Microsoft Entra Admin Center",
+        "Navigate to Users \u2192 All users",
+        "Select New user \u2192 Create new user",
+        "Enter account properties and create the account"
+      ]
+    },
+    {
+      "type": "matching",
+      "typeLabel": "Matching",
+      "prompt": "Match each group membership type to the correct behavior.",
+      "left": [
+        "Assigned",
+        "Dynamic User"
+      ],
+      "right": [
+        "Membership is added manually",
+        "Membership is populated by attribute-based rules"
+      ],
+      "answers": [
+        "Membership is added manually",
+        "Membership is populated by attribute-based rules"
+      ]
+    },
+    {
+      "type": "scriptDropdown",
+      "typeLabel": "Script Dropdown",
+      "prompt": "Complete the dynamic membership rule used to place users in a department-based dynamic group.",
+      "script": "(user.department -eq \"________\")",
+      "options": [
+        "Clinical Services",
+        "Domain Admins",
+        "Windows 11",
+        "Global Administrator"
+      ],
+      "answer": "Clinical Services",
+      "explanation": "Department-based dynamic groups use a user attribute value such as Clinical Services or Finance."
+    },
+    {
+      "type": "multiSelect",
+      "typeLabel": "Select Steps",
+      "prompt": "Select the tasks that are part of cloud group management for this lab.",
+      "options": [
+        "Create security groups",
+        "Configure membership type",
+        "Assign users to assigned groups",
+        "Create a reverse lookup zone",
+        "Promote a server to domain controller"
+      ],
+      "answer": [
+        "Create security groups",
+        "Configure membership type",
+        "Assign users to assigned groups"
+      ]
+    },
+    {
+      "type": "dropdown",
+      "typeLabel": "Dropdown",
+      "prompt": "Select the location used to assign Microsoft 365 licenses to a cloud user.",
+      "options": [
+        "Microsoft 365 Admin Center \u2192 Users \u2192 Active users",
+        "Microsoft Entra Admin Center \u2192 Devices \u2192 All devices",
+        "Intune Admin Center \u2192 Apps \u2192 Monitor",
+        "Exchange Admin Center \u2192 Recipients"
+      ],
+      "answer": "Microsoft 365 Admin Center \u2192 Users \u2192 Active users"
+    },
+    {
+      "type": "matching",
+      "typeLabel": "Matching",
+      "prompt": "Match each administrative goal to the portal most directly used in this activity.",
+      "left": [
+        "Create users",
+        "Create security groups",
+        "Assign Microsoft 365 licenses"
+      ],
+      "right": [
+        "Microsoft Entra Admin Center",
+        "Microsoft Entra Admin Center",
+        "Microsoft 365 Admin Center"
+      ],
+      "answers": [
+        "Microsoft Entra Admin Center",
+        "Microsoft Entra Admin Center",
+        "Microsoft 365 Admin Center"
+      ]
+    }
+  ]
+}
