@@ -587,3 +587,37 @@
   background: rgba(239, 68, 68, 0.16);
   border: 1px solid rgba(239, 68, 68, 0.35);
 }
+/* ---------- Fix overflow for long drag-and-drop code blocks ---------- */
+
+.orderLayout,
+.orderPanel,
+.orderList,
+.orderDropzone,
+.orderItem {
+  min-width: 0;
+}
+
+.orderItem {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+.orderPanel {
+  overflow: hidden;
+}
+
+.orderList {
+  overflow-x: hidden;
+}
+
+.orderDropzone {
+  overflow-x: hidden;
+}
+
+@media (max-width: 1100px) {
+  .orderItem {
+    font-size: 0.95rem;
+  }
+}
