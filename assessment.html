@@ -1,29 +1,64 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Server Admin Academy Assessment</title>
-<link rel="stylesheet" href="assets/styles.css">
-<style>
-body{font-family:Arial;margin:40px}
-.activity{border:1px solid #ccc;padding:15px;margin-bottom:20px;border-radius:6px}
-.correct{background:#e8f7e8}
-.incorrect{background:#fdeaea}
-button{padding:10px 18px;margin-top:15px}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Assessment • Server Admin Academy</title>
+  <link rel="stylesheet" href="./assets/site.css" />
+  <link rel="stylesheet" href="./assets/styles-assessment.css" />
+  <script defer src="./assets/app-assessment.js"></script>
 </head>
-
 <body>
+  <header class="top">
+    <div class="container">
+      <div class="navGlass">
+        <a class="brand" href="./index.html"><span class="brandMark">S</span><span class="brandName">Server Admin Academy</span></a>
+        <nav class="navLinks">
+          <a class="navLink" href="./index.html">Home</a>
+          <a class="navLink" href="./knowledge-assessments.html">Knowledge Assessments</a>
+          <a class="navLink" href="./incident-scenarios.html">Incident Scenarios</a>
+          <a class="navLink" href="./guided-practice.html">Guided Practice</a>
+        </nav>
+        <div class="navCta"><a class="btn btnPill" href="./knowledge-assessments.html">Back to assessments</a></div>
+      </div>
+    </div>
+  </header>
 
-<h1 id="title"></h1>
-<p id="scenario"></p>
+  <main>
+    <section class="hero heroCompact glowSection">
+      <div class="glowLayer" aria-hidden="true"></div>
+      <div class="container heroInner">
+        <div class="assessmentMetaRow">
+          <span class="badge purple" id="assessmentDomain">SYSTEMS ENGINEERING</span>
+          <span class="badge" id="assessmentDifficulty">STANDARD</span>
+        </div>
+        <h1 class="heroTitle heroTitleSmall" id="assessmentTitle">Assessment</h1>
+        <p class="heroSub" id="assessmentScenario"></p>
+      </div>
+    </section>
 
-<div id="activities"></div>
+    <div class="sectionDivider"></div>
 
-<button id="submitBtn">Submit Assessment</button>
+    <section class="section">
+      <div class="container assessmentWrap">
+        <div class="card assessmentSummary">
+          <div><strong>Attempts Allowed:</strong> <span id="attemptsAllowed"></span></div>
+          <div><strong>Pass Score:</strong> <span id="passScore"></span>%</div>
+          <div><strong>Answer Reveal:</strong> After final attempt</div>
+        </div>
 
-<div id="results" style="margin-top:40px;"></div>
+        <div id="activities"></div>
 
-<script src="assets/app-assessment.js"></script>
+        <div class="assessmentActions">
+          <button class="btn btnPill" id="submitBtn" type="button">Submit Assessment</button>
+        </div>
+
+        <div class="card resultsPanel" id="resultsPanel" hidden>
+          <h2 class="h2">Assessment Results</h2>
+          <div id="resultsBody"></div>
+        </div>
+      </div>
+    </section>
+  </main>
 </body>
 </html>
