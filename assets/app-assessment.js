@@ -6,6 +6,7 @@ let currentAttempt = 1;
 let currentStep = 0;
 let draggedOrderItem = null;
 let activityResults = [];
+let randomizedState = {};
 
 document.addEventListener("DOMContentLoaded", initAssessment);
 
@@ -14,6 +15,8 @@ async function initAssessment() {
     const response = await fetch(`./data/assessments/${lab}.json`);
     if (!response.ok) throw new Error("Failed to load assessment.");
     assessment = await response.json();
+
+    randomizedState = buildRandomizedState(assessment);
 
     document.getElementById("assessmentTitle").textContent = assessment.title;
     document.getElementById("attemptMeta").textContent = `${assessment.attemptsAllowed} max`;
@@ -35,6 +38,54 @@ function renderFatal(message) {
   document.getElementById("workspaceContent").innerHTML = `<p class="scenarioText">${escapeHtml(message)}</p>`;
   document.getElementById("prevBtn").disabled = true;
   document.getElementById("nextBtn").disabled = true;
+}
+
+function buildRandomizedState(assessmentData) {
+  const state = {};
+
+  (assessmentData.activities || []).forEach((activity, index) => {
+    state[index] = {};
+
+    if (activity.type === "dropdown" && Array.isArray(activity.options)) {
+      state[index].dropdownOptions = shuffleArray([...activity.options]);
+    }
+
+    if ((activity.type === "matching") && Array.isArray(activity.options)) {
+      state[index].matchingOptions = shuffleArray([...activity.options]);
+    }
+
+    if ((activity.type === "matchLines") && Array.isArray(activity.right)) {
+      state[index].matchLinesRight = shuffleArray([...activity.right]);
+    }
+
+    if ((activity.type === "scriptDropdown" || activity.type === "scriptFill" || activity.type === "script-fill")) {
+      state[index].scriptOptions = {};
+      const parts = activity.scriptParts || activity.script || [];
+      parts.forEach(part => {
+        if (part && typeof part === "object" && Array.isArray(part.options) && part.id) {
+          state[index].scriptOptions[part.id] = shuffleArray([...part.options]);
+        }
+      });
+    }
+  });
+
+  return state;
+}
+
+function getRandomizedDropdownOptions(index, fallback) {
+  return randomizedState[index]?.dropdownOptions || fallback || [];
+}
+
+function getRandomizedMatchingOptions(index, fallback) {
+  return randomizedState[index]?.matchingOptions || fallback || [];
+}
+
+function getRandomizedMatchLinesRight(index, fallback) {
+  return randomizedState[index]?.matchLinesRight || fallback || [];
+}
+
+function getRandomizedScriptOptions(index, blankId, fallback) {
+  return randomizedState[index]?.scriptOptions?.[blankId] || fallback || [];
 }
 
 function buildStepModel() {
@@ -250,7 +301,7 @@ function renderDropdown(activity, index) {
 
   addPlaceholderOption(select, "Select an answer");
 
-  activity.options.forEach(option => {
+  getRandomizedDropdownOptions(index, activity.options).forEach(option => {
     const opt = document.createElement("option");
     opt.value = option;
     opt.textContent = option;
@@ -281,7 +332,7 @@ function renderScriptDropdown(activity, index) {
 
       addPlaceholderOption(select, "Select");
 
-      part.options.forEach(option => {
+      getRandomizedScriptOptions(index, part.id, part.options).forEach(option => {
         const opt = document.createElement("option");
         opt.value = option;
         opt.textContent = option;
@@ -321,7 +372,7 @@ function renderScriptFill(activity, index) {
 
       addPlaceholderOption(select, "Select");
 
-      (part.options || []).forEach(option => {
+      getRandomizedScriptOptions(index, part.id, part.options).forEach(option => {
         const opt = document.createElement("option");
         opt.value = option;
         opt.textContent = option;
@@ -350,6 +401,7 @@ function renderMatching(activity, index) {
   wrapper.className = "matchGrid";
 
   const stored = getStoredMatchingState(index);
+  const randomizedOptions = getRandomizedMatchingOptions(index, activity.options);
 
   activity.pairs.forEach((pair, pairIndex) => {
     const row = document.createElement("div");
@@ -366,7 +418,7 @@ function renderMatching(activity, index) {
 
     addPlaceholderOption(select, "Select a match");
 
-    activity.options.forEach(option => {
+    randomizedOptions.forEach(option => {
       const opt = document.createElement("option");
       opt.value = option;
       opt.textContent = option;
@@ -404,7 +456,7 @@ function renderMatchLines(activity, index) {
   rightCol.className = "matchLinesColumn";
 
   const leftItems = activity.left || [];
-  const rightItems = activity.right || [];
+  const rightItems = getRandomizedMatchLinesRight(index, activity.right);
 
   leftItems.forEach((item, itemIndex) => {
     const row = document.createElement("div");
@@ -784,16 +836,7 @@ function persistVisibleInputs() {
     if (select) storeGeneric(`dropdown-${index}`, select.value);
   }
 
-  if (activity.type === "scriptDropdown") {
-    const selects = [...document.querySelectorAll(`select[data-activity-index="${index}"][data-script-blank-id]`)];
-    const values = {};
-    selects.forEach(select => {
-      values[select.dataset.scriptBlankId] = select.value;
-    });
-    storeScriptDropdownState(index, values);
-  }
-
-  if (activity.type === "scriptFill" || activity.type === "script-fill") {
+  if (activity.type === "scriptDropdown" || activity.type === "scriptFill" || activity.type === "script-fill") {
     const selects = [...document.querySelectorAll(`select[data-activity-index="${index}"][data-script-blank-id]`)];
     const values = {};
     selects.forEach(select => {
@@ -809,10 +852,6 @@ function persistVisibleInputs() {
       values[Number(select.dataset.pairIndex)] = select.value;
     });
     storeMatchingState(index, values);
-  }
-
-  if (activity.type === "matchLines") {
-    /* stored live on click */
   }
 
   if (activity.type === "order") {
@@ -949,6 +988,7 @@ function handleRetry() {
   currentAttempt += 1;
   currentStep = 0;
   activityResults = [];
+  randomizedState = buildRandomizedState(assessment);
   clearStoredResponses();
   renderCurrentStep();
 }
