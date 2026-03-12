@@ -1,45 +1,43 @@
 {
-  "title": "Cloud Tenant Provisioning: NewVue Health",
+  "title": "Cloud Tenant Provisioning",
   "attemptsAllowed": 2,
   "retryEnabled": true,
-  "passScore": 75,
-  "scenario": "As part of NewVue Health's Phase 2 modernization, you must provision the M365 Business Premium tenant. This assessment validates your ability to navigate the portals, execute specific branding steps, and verify tenant readiness.",
+  "passScore": 80,
+  "scenario": "NewVue Health is transitioning from an on-premises AD environment to a hybrid cloud model using Microsoft 365 Business Premium. As the lead administrator, you must finalize the tenant provisioning, ensure the 'NewVue Blue' identity is enforced, and validate the environment before the Phase 3 hybrid-sync begins.",
   "reference": [
-    { "label": "Tenant Domain", "value": "newvuehealth.onmicrosoft.com" },
-    { "label": "Brand Color", "value": "#003D79" },
-    { "label": "Admin UPN", "value": "admin@newvuehealth.onmicrosoft.com" }
+    { "label": "On-Prem Domain", "value": "newvue.local" },
+    { "label": "Cloud Domain", "value": "newvuehealth.onmicrosoft.com" },
+    { "label": "Brand Hex", "value": "#003D79" }
   ],
   "activities": [
     {
       "type": "order",
-      "title": "The Tenant Setup Pipeline",
-      "prompt": "You have just received your global admin credentials. Arrange these actions in the correct sequence to provision and brand the tenant according to the NewVue requirements.",
+      "title": "Task 1: The Provisioning Sequence",
+      "prompt": "You need to bring the tenant from an unconfigured state to a branded, validated state. Move the administrative actions to the answer area and arrange them in the correct sequence.",
       "steps": [
-        "Sign in to the M365 Admin Center for the first time",
-        "Navigate to the 'Billing' section to confirm Business Premium licenses",
-        "Open the Entra ID Admin Center to configure Company Branding",
-        "Enter the hex code #003D79 for the brand color",
-        "Wait 2-5 minutes for branding propagation",
-        "Validate via an Incognito browser session"
+        "Verify 'Business Premium' status in the Billing portal",
+        "Navigate to Entra ID > Company Branding",
+        "Upload the full NewVue Health logo PNG",
+        "Apply the #003D79 background color hex code",
+        "Validate appearance via Incognito browser session"
       ],
       "answer": [
-        "Sign in to the M365 Admin Center for the first time",
-        "Navigate to the 'Billing' section to confirm Business Premium licenses",
-        "Open the Entra ID Admin Center to configure Company Branding",
-        "Enter the hex code #003D79 for the brand color",
-        "Wait 2-5 minutes for branding propagation",
-        "Validate via an Incognito browser session"
+        "Verify 'Business Premium' status in the Billing portal",
+        "Navigate to Entra ID > Company Branding",
+        "Upload the full NewVue Health logo PNG",
+        "Apply the #003D79 background color hex code",
+        "Validate appearance via Incognito browser session"
       ],
-      "explanation": "Licensing must be verified before identity configuration; branding requires propagation time before validation will succeed."
+      "explanation": "Licensing must be confirmed before branding, and branding requires a clean browser session (Incognito) for immediate validation."
     },
     {
       "type": "matching",
-      "title": "Branding Value Mapping",
-      "prompt": "Match the specific NewVue Health branding requirement to the correct configuration field in the Microsoft Entra admin center.",
+      "title": "Task 2: Identity Configuration Mapping",
+      "prompt": "Match each NewVue Health requirement to the specific configuration field within the Microsoft Entra admin center.",
       "options": [
+        "Page background color",
         "Header Logo",
         "Sign-in form text",
-        "Page background color",
         "Footer text"
       ],
       "pairs": [
@@ -48,48 +46,38 @@
         { "left": "Welcome to NewVue Health – Authorized Users Only", "right": "Sign-in form text" },
         { "left": "© NewVue Health – Authorized Access Only", "right": "Footer text" }
       ],
-      "explanation": "Correct mapping ensures the sign-in page aligns with corporate identity standards."
-    },
-    {
-      "type": "script-fill",
-      "title": "PowerShell Identity Check",
-      "prompt": "A junior tech is trying to verify the tenant domain via CLI. Complete the PowerShell script using the inline options to successfully connect and retrieve the domain status.",
-      "script": [
-        "Import-Module",
-        { "id": "mod", "options": ["MSOnline", "ActiveDirectory", "AzureAD"], "correct": "MSOnline" },
-        "\nConnect-MsolService\nGet-MsolDomain -DomainName",
-        { "id": "dom", "options": ["newvue.local", "newvuehealth.onmicrosoft.com", "newvuehealth.com"], "correct": "newvuehealth.onmicrosoft.com" }
-      ],
-      "explanation": "The MSOnline module is used for Msol commands; the initial cloud domain is the .onmicrosoft.com address."
-    },
-    {
-      "type": "dropdown",
-      "title": "The 'Admin Center' Junction",
-      "prompt": "You are in the main M365 Admin Center. Which sequence is required to manage the mobile device enrollment policies for NewVue Health? ",
-      "options": [
-        "Show All -> Admin Centers -> Endpoint Management (Intune)",
-        "Users -> Active Users -> Manage Roles",
-        "Settings -> Domains -> Add Domain",
-        "Billing -> Your Products -> Assign Licenses"
-      ],
-      "answer": "Show All -> Admin Centers -> Endpoint Management (Intune)",
-      "explanation": "Intune (Endpoint Management) is a separate admin center linked via the main M365 sidebar."
+      "explanation": "Correct field mapping ensures the sign-in experience matches the corporate identity standards defined in the lab."
     },
     {
       "type": "matching",
-      "title": "Validation & Troubleshooting",
-      "prompt": "Match the validation action to the potential configuration failure it identifies.",
+      "title": "Task 3: Domain & Portal Scope",
+      "prompt": "You are managing a hybrid environment. Match the administrative endpoint or domain to its primary functional role in Phase 2.",
       "options": [
-        "Incognito/Private Window",
-        "Check Billing -> Subscriptions",
-        "Review HEX Code #003D79"
+        "Initial Cloud Domain",
+        "Identity & Branding Portal",
+        "Subscription & Billing",
+        "On-Premises Infrastructure"
       ],
       "pairs": [
-        { "left": "Avoids browser cache showing old/no branding", "right": "Incognito/Private Window" },
-        { "left": "Ensures the 'Business Premium' tenant is active", "right": "Check Billing -> Subscriptions" },
-        { "left": "Corrects a mismatch in company color scheme", "right": "Review HEX Code #003D79" }
+        { "left": "newvuehealth.onmicrosoft.com", "right": "Initial Cloud Domain" },
+        { "left": "Entra ID Admin Center", "right": "Identity & Branding Portal" },
+        { "left": "Microsoft 365 Admin Center", "right": "Subscription & Billing" },
+        { "left": "newvue.local", "right": "On-Premises Infrastructure" }
       ],
-      "explanation": "Validation requires ensuring the tenant is licensed and the view is not cached."
+      "explanation": "Distinguishing between the legacy local domain and the new cloud tenant domain is critical for hybrid identity success."
+    },
+    {
+      "type": "dropdown",
+      "title": "Task 4: Validation Logic",
+      "prompt": "A technician reports that branding changes are not visible after saving. What is the most likely administrative oversight?",
+      "options": [
+        "The browser is using cached CSS from the previous login",
+        "The logo file size exceeds the 10MB limit",
+        "The user is signing in with a .local account",
+        "The Global Admin role has been revoked"
+      ],
+      "answer": "The browser is using cached CSS from the previous login",
+      "explanation": "Browser caching is the primary hurdle in M365 branding validation; using Incognito/Private mode is the standard fix."
     }
   ]
 }
