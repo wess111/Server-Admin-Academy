@@ -564,3 +564,26 @@
     margin: 0.28rem 0.24rem;
   }
 }
+
+.reviewStatusComplete,
+.reviewStatusIncomplete {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.reviewStatusComplete {
+  color: #dcfce7;
+  background: rgba(34, 197, 94, 0.16);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.reviewStatusIncomplete {
+  color: #fee2e2;
+  background: rgba(239, 68, 68, 0.16);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
