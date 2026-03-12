@@ -1,5 +1,5 @@
 const params = new URLSearchParams(window.location.search);
-const lab = params.get("lab");
+let lab = params.get("lab") || "cloud-tenant-provisioning";
 
 let assessment = null;
 let currentAttempt = 1;
@@ -10,11 +10,6 @@ let activityResults = [];
 document.addEventListener("DOMContentLoaded", initAssessment);
 
 async function initAssessment() {
-  if (!lab) {
-    renderFatal("No assessment was specified in the URL.");
-    return;
-  }
-
   try {
     const response = await fetch(`./data/assessments/${lab}.json`);
     if (!response.ok) throw new Error("Failed to load assessment.");
@@ -66,9 +61,7 @@ function buildSidebar() {
     btn.textContent = step.label;
     btn.dataset.stepIndex = index;
 
-    if (step.type === "results") {
-      btn.disabled = true;
-    }
+    if (step.type === "results") btn.disabled = true;
 
     btn.addEventListener("click", () => {
       if (step.type === "results" && currentStep !== assessment._steps.length - 1) return;
@@ -83,7 +76,6 @@ function buildSidebar() {
 function updateSidebar() {
   document.querySelectorAll(".assessmentNavBtn").forEach((btn, index) => {
     btn.classList.toggle("isActive", index === currentStep);
-
     const step = assessment._steps[index];
     if (step.type === "results") {
       btn.disabled = currentStep !== assessment._steps.length - 1;
@@ -94,6 +86,7 @@ function updateSidebar() {
 function bindControls() {
   document.getElementById("prevBtn").addEventListener("click", () => {
     if (currentStep > 0) {
+      persistVisibleInputs();
       currentStep -= 1;
       renderCurrentStep();
     }
@@ -103,6 +96,8 @@ function bindControls() {
 }
 
 function handleNext() {
+  persistVisibleInputs();
+
   const step = assessment._steps[currentStep];
 
   if (step.type === "review") {
@@ -213,7 +208,6 @@ function renderActivityStep(container, activity, index) {
   prompt.className = "activityPrompt";
   prompt.textContent = activity.prompt;
   container.appendChild(prompt);
-
   container.appendChild(renderActivityWidget(activity, index));
 }
 
@@ -239,6 +233,7 @@ function renderDropdown(activity, index) {
   const select = document.createElement("select");
   select.className = "assessmentSelect";
   select.dataset.activityIndex = index;
+
   addPlaceholderOption(select, "Select an answer");
 
   activity.options.forEach(option => {
@@ -248,7 +243,10 @@ function renderDropdown(activity, index) {
     select.appendChild(opt);
   });
 
-  restoreDropdownValue(select, index);
+  const stored = getStoredDropdownValue(index);
+  if (stored) select.value = stored;
+
+  select.addEventListener("change", () => storeGeneric(`dropdown-${index}`, select.value));
   wrapper.appendChild(select);
   return wrapper;
 }
@@ -276,7 +274,15 @@ function renderScriptDropdown(activity, index) {
         select.appendChild(opt);
       });
 
-      restoreScriptDropdownValue(select, index, part.id);
+      const stored = getStoredScriptDropdownState(index);
+      if (stored[part.id]) select.value = stored[part.id];
+
+      select.addEventListener("change", () => {
+        const current = getStoredScriptDropdownState(index);
+        current[part.id] = select.value;
+        storeScriptDropdownState(index, current);
+      });
+
       pre.appendChild(select);
     }
   });
@@ -288,6 +294,8 @@ function renderScriptDropdown(activity, index) {
 function renderMatching(activity, index) {
   const wrapper = document.createElement("div");
   wrapper.className = "matchGrid";
+
+  const stored = getStoredMatchingState(index);
 
   activity.pairs.forEach((pair, pairIndex) => {
     const row = document.createElement("div");
@@ -311,7 +319,13 @@ function renderMatching(activity, index) {
       select.appendChild(opt);
     });
 
-    restoreMatchingValue(select, index, pairIndex);
+    if (stored[pairIndex]) select.value = stored[pairIndex];
+
+    select.addEventListener("change", () => {
+      const current = getStoredMatchingState(index);
+      current[pairIndex] = select.value;
+      storeMatchingState(index, current);
+    });
 
     row.appendChild(left);
     row.appendChild(select);
@@ -326,6 +340,11 @@ function renderOrder(activity, index) {
   wrapper.className = "orderLayout";
   wrapper.dataset.activityIndex = index;
 
+  const storedAnswer = getStoredOrderState(index);
+  const availableItems = storedAnswer.length
+    ? activity.steps.filter(step => !storedAnswer.includes(step))
+    : shuffleArray([...activity.steps]);
+
   const availablePanel = document.createElement("div");
   availablePanel.className = "orderPanel";
   availablePanel.innerHTML = `<h3 class="orderPanelTitle">Actions</h3>`;
@@ -335,6 +354,25 @@ function renderOrder(activity, index) {
   availableList.dataset.zone = "available";
   availableList.dataset.activityIndex = index;
   setupDropzone(availableList);
+
+  availableItems.forEach(step => {
+    availableList.appendChild(createOrderItem(step, index));
+  });
+
+  availablePanel.appendChild(availableList);
+
+  const controls = document.createElement("div");
+  controls.className = "orderControls";
+  controls.innerHTML = `
+    <button type="button" class="orderControlBtn" title="Move selected right" data-action="right">➜</button>
+    <button type="button" class="orderControlBtn" title="Move selected left" data-action="left">⬅</button>
+    <button type="button" class="orderControlBtn" title="Move selected up" data-action="up">↑</button>
+    <button type="button" class="orderControlBtn" title="Move selected down" data-action="down">↓</button>
+  `;
+
+  controls.querySelectorAll(".orderControlBtn").forEach(btn => {
+    btn.addEventListener("click", () => handleOrderControl(btn.dataset.action, index));
+  });
 
   const answerPanel = document.createElement("div");
   answerPanel.className = "orderPanel";
@@ -346,28 +384,11 @@ function renderOrder(activity, index) {
   answerList.dataset.activityIndex = index;
   setupDropzone(answerList);
 
-  const restored = getStoredOrderState(index);
-  const answerItems = restored.length ? restored : [];
-  const availableItems = restored.length
-    ? activity.steps.filter(step => !answerItems.includes(step))
-    : shuffleArray([...activity.steps]);
-
-  availableItems.forEach(step => availableList.appendChild(createOrderItem(step, index)));
-  answerItems.forEach(step => answerList.appendChild(createOrderItem(step, index)));
-
-  availablePanel.appendChild(availableList);
-  answerPanel.appendChild(answerList);
-
-  const controls = document.createElement("div");
-  controls.className = "orderControls";
-  controls.innerHTML = `
-    <button type="button" class="orderControlBtn" title="Move selected right" data-action="right">➜</button>
-    <button type="button" class="orderControlBtn" title="Move selected left" data-action="left">⬅</button>
-  `;
-
-  controls.querySelectorAll(".orderControlBtn").forEach(btn => {
-    btn.addEventListener("click", () => handleOrderControl(btn.dataset.action, index));
+  storedAnswer.forEach(step => {
+    answerList.appendChild(createOrderItem(step, index));
   });
+
+  answerPanel.appendChild(answerList);
 
   wrapper.appendChild(availablePanel);
   wrapper.appendChild(controls);
@@ -385,8 +406,26 @@ function createOrderItem(text, activityIndex) {
 
   item.addEventListener("click", () => {
     const scope = item.closest(".orderLayout");
+    if (!scope) return;
     scope.querySelectorAll(".orderItem").forEach(sib => sib.classList.remove("isSelected"));
     item.classList.add("isSelected");
+  });
+
+  item.addEventListener("dblclick", () => {
+    const scope = item.closest(".orderLayout");
+    if (!scope) return;
+
+    const available = scope.querySelector('[data-zone="available"]');
+    const answer = scope.querySelector('[data-zone="answer"]');
+
+    if (item.parentElement === available) {
+      answer.appendChild(item);
+    } else if (item.parentElement === answer) {
+      available.appendChild(item);
+    }
+
+    item.classList.remove("isSelected");
+    persistOrderState(activityIndex);
   });
 
   item.addEventListener("dragstart", () => {
@@ -434,12 +473,11 @@ function getDragAfterElement(container, y) {
     if (offset < 0 && offset > closest.offset) {
       return { offset, element: child };
     }
-
     return closest;
   }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
-function handleOrderControl(direction, activityIndex) {
+function handleOrderControl(action, activityIndex) {
   const wrapper = document.querySelector(`.orderLayout[data-activity-index="${activityIndex}"]`);
   if (!wrapper) return;
 
@@ -448,14 +486,22 @@ function handleOrderControl(direction, activityIndex) {
   const selected = wrapper.querySelector(".orderItem.isSelected");
   if (!selected) return;
 
-  if (direction === "right" && selected.parentElement === available) {
+  if (action === "right" && selected.parentElement === available) {
     answer.appendChild(selected);
-    selected.classList.remove("isSelected");
   }
 
-  if (direction === "left" && selected.parentElement === answer) {
+  if (action === "left" && selected.parentElement === answer) {
     available.appendChild(selected);
-    selected.classList.remove("isSelected");
+  }
+
+  if (action === "up" && selected.parentElement === answer) {
+    const prev = selected.previousElementSibling;
+    if (prev) answer.insertBefore(selected, prev);
+  }
+
+  if (action === "down" && selected.parentElement === answer) {
+    const next = selected.nextElementSibling;
+    if (next) answer.insertBefore(next, selected);
   }
 
   persistOrderState(activityIndex);
@@ -464,7 +510,7 @@ function handleOrderControl(direction, activityIndex) {
 function renderMultiSelect(activity, index) {
   const wrapper = document.createElement("div");
   wrapper.className = "multiGrid";
-  const restored = getStoredMultiSelectState(index);
+  const stored = getStoredMultiSelectState(index);
 
   activity.options.forEach((option, optionIndex) => {
     const label = document.createElement("label");
@@ -475,7 +521,12 @@ function renderMultiSelect(activity, index) {
     input.dataset.activityIndex = index;
     input.dataset.optionIndex = optionIndex;
     input.value = option;
-    input.checked = restored.includes(option);
+    input.checked = stored.includes(option);
+
+    input.addEventListener("change", () => {
+      const checked = [...wrapper.querySelectorAll('input[type="checkbox"]:checked')].map(cb => cb.value);
+      storeMultiSelectState(index, checked);
+    });
 
     const text = document.createElement("span");
     text.textContent = option;
@@ -510,7 +561,49 @@ function renderReviewStep(container) {
   container.appendChild(list);
 }
 
+function persistVisibleInputs() {
+  const step = assessment._steps[currentStep];
+  if (!step || step.type !== "activity") return;
+
+  const index = step.activityIndex;
+  const activity = assessment.activities[index];
+
+  if (activity.type === "dropdown") {
+    const select = document.querySelector(`select[data-activity-index="${index}"]`);
+    if (select) storeGeneric(`dropdown-${index}`, select.value);
+  }
+
+  if (activity.type === "scriptDropdown") {
+    const selects = [...document.querySelectorAll(`select[data-activity-index="${index}"][data-script-blank-id]`)];
+    const values = {};
+    selects.forEach(select => {
+      values[select.dataset.scriptBlankId] = select.value;
+    });
+    storeScriptDropdownState(index, values);
+  }
+
+  if (activity.type === "matching") {
+    const selects = [...document.querySelectorAll(`select[data-activity-index="${index}"][data-pair-index]`)];
+    const values = [];
+    selects.forEach(select => {
+      values[Number(select.dataset.pairIndex)] = select.value;
+    });
+    storeMatchingState(index, values);
+  }
+
+  if (activity.type === "order") {
+    persistOrderState(index);
+  }
+
+  if (activity.type === "multiSelect") {
+    const checked = [...document.querySelectorAll(`input[data-activity-index="${index}"][type="checkbox"]:checked`)]
+      .map(input => input.value);
+    storeMultiSelectState(index, checked);
+  }
+}
+
 function handleSubmitAssessment() {
+  persistVisibleInputs();
   activityResults = assessment.activities.map((activity, index) => evaluateActivity(activity, index));
   currentStep = assessment._steps.length - 1;
   renderCurrentStep();
@@ -710,8 +803,7 @@ function evaluateActivity(activity, index) {
 }
 
 function evaluateDropdown(activity, index) {
-  const select = document.querySelector(`select[data-activity-index="${index}"]`);
-  const userAnswer = select ? select.value : getStoredDropdownValue(index);
+  const userAnswer = getStoredDropdownValue(index);
   return {
     correct: userAnswer === activity.answer,
     userAnswer,
@@ -720,18 +812,8 @@ function evaluateDropdown(activity, index) {
 }
 
 function evaluateScriptDropdown(activity, index) {
-  const selects = [...document.querySelectorAll(`select[data-activity-index="${index}"][data-script-blank-id]`)];
-  const answerMap = {};
+  const answerMap = getStoredScriptDropdownState(index);
   let correct = true;
-
-  if (selects.length) {
-    selects.forEach(select => {
-      answerMap[select.dataset.scriptBlankId] = select.value;
-    });
-    storeScriptDropdownState(index, answerMap);
-  } else {
-    Object.assign(answerMap, getStoredScriptDropdownState(index));
-  }
 
   Object.keys(activity.answers || {}).forEach(key => {
     if (answerMap[key] !== activity.answers[key]) correct = false;
@@ -745,19 +827,8 @@ function evaluateScriptDropdown(activity, index) {
 }
 
 function evaluateMatching(activity, index) {
-  const selects = [...document.querySelectorAll(`select[data-activity-index="${index}"][data-pair-index]`)];
-  const userAnswer = [];
+  const userAnswer = getStoredMatchingState(index);
   let correct = true;
-
-  if (selects.length) {
-    selects.forEach(select => {
-      const pairIndex = Number(select.dataset.pairIndex);
-      userAnswer[pairIndex] = select.value;
-    });
-    storeMatchingState(index, userAnswer);
-  } else {
-    userAnswer.push(...getStoredMatchingState(index));
-  }
 
   activity.pairs.forEach((pair, pairIndex) => {
     if (userAnswer[pairIndex] !== pair.right) correct = false;
@@ -771,13 +842,7 @@ function evaluateMatching(activity, index) {
 }
 
 function evaluateOrder(activity, index) {
-  const answerList = document.querySelector(`.orderLayout[data-activity-index="${index}"] [data-zone="answer"]`);
-  const userAnswer = answerList
-    ? [...answerList.querySelectorAll(".orderItem")].map(item => item.textContent.trim())
-    : getStoredOrderState(index);
-
-  if (answerList) persistOrderState(index);
-
+  const userAnswer = getStoredOrderState(index);
   return {
     correct: arraysEqual(userAnswer, activity.answer),
     userAnswer,
@@ -786,13 +851,8 @@ function evaluateOrder(activity, index) {
 }
 
 function evaluateMultiSelect(activity, index) {
-  const checked = [...document.querySelectorAll(`input[data-activity-index="${index}"][type="checkbox"]:checked`)]
-    .map(input => input.value);
-
-  const userAnswer = checked.length ? checked : getStoredMultiSelectState(index);
+  const userAnswer = getStoredMultiSelectState(index);
   const correctAnswer = [...activity.answer].sort();
-
-  if (checked.length) storeMultiSelectState(index, userAnswer);
 
   return {
     correct: arraysEqual([...userAnswer].sort(), correctAnswer),
@@ -809,34 +869,6 @@ function persistOrderState(index) {
     .map(item => item.textContent.trim());
 
   storeGeneric(`order-${index}`, answer);
-}
-
-function restoreDropdownValue(select, index) {
-  const stored = getStoredDropdownValue(index);
-  if (stored) select.value = stored;
-  select.addEventListener("change", () => storeGeneric(`dropdown-${index}`, select.value));
-}
-
-function restoreScriptDropdownValue(select, index, blankId) {
-  const stored = getStoredScriptDropdownState(index);
-  if (stored[blankId]) select.value = stored[blankId];
-
-  select.addEventListener("change", () => {
-    const current = getStoredScriptDropdownState(index);
-    current[blankId] = select.value;
-    storeScriptDropdownState(index, current);
-  });
-}
-
-function restoreMatchingValue(select, index, pairIndex) {
-  const stored = getStoredMatchingState(index);
-  if (stored[pairIndex]) select.value = stored[pairIndex];
-
-  select.addEventListener("change", () => {
-    const current = getStoredMatchingState(index);
-    current[pairIndex] = select.value;
-    storeMatchingState(index, current);
-  });
 }
 
 function getStoredDropdownValue(index) {
@@ -892,7 +924,6 @@ function storeGeneric(key, value) {
 function getGeneric(key) {
   const raw = localStorage.getItem(storageKey(key));
   if (!raw) return null;
-
   try {
     return JSON.parse(raw);
   } catch {
@@ -900,13 +931,9 @@ function getGeneric(key) {
   }
 }
 
-function renderAnswerPreview(value) {
-  return escapeHtml(String(value || ""));
-}
-
 function formatCorrectAnswer(activity, correctAnswer) {
   if (activity.type === "dropdown") {
-    return renderAnswerPreview(correctAnswer);
+    return escapeHtml(correctAnswer || "");
   }
 
   if (activity.type === "scriptDropdown") {
