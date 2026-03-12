@@ -1,26 +1,417 @@
-.assessmentWrap { display:grid; gap:20px; }
-.assessmentSummary { display:flex; flex-wrap:wrap; gap:18px; align-items:center; }
-.assessmentMetaRow { display:flex; gap:10px; margin-bottom:12px; }
-.activityCard { padding:20px; display:grid; gap:14px; }
-.activityHeader { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
-.activityPrompt { margin:0; font-size:1rem; }
-.activityType { font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; opacity:.8; }
-.optionSelect, .matchSelect, .studentInput { width:100%; max-width:420px; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:#0e1525; color:#f5f7fb; }
-.matchRow { display:grid; grid-template-columns:minmax(180px, 1fr) minmax(220px, 1fr); gap:12px; align-items:center; margin-bottom:10px; }
-.scriptBlock { background:#0b1120; border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:14px 16px; overflow:auto; white-space:pre-wrap; font-family:Consolas, monospace; }
-.orderList { display:grid; gap:10px; padding:0; list-style:none; }
-.orderItem { display:flex; justify-content:space-between; align-items:center; gap:12px; border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:12px 14px; background:#0e1525; }
-.orderControls { display:flex; gap:8px; }
-.orderBtn { border:none; border-radius:10px; padding:8px 10px; background:#1a2440; color:#fff; cursor:pointer; }
-.checkGrid { display:grid; gap:10px; }
-.checkRow { display:flex; gap:10px; align-items:flex-start; }
-.resultGood { color:#84f0a3; }
-.resultBad { color:#ff9e9e; }
-.reviewBlock { margin-top:18px; padding-top:18px; border-top:1px solid rgba(255,255,255,.08); }
-.reviewItem { margin-bottom:12px; }
-.activityCard.isCorrect { border:1px solid rgba(132,240,163,.4); }
-.activityCard.isIncorrect { border:1px solid rgba(255,158,158,.35); }
-.assessmentActions { display:flex; justify-content:flex-end; }
-.reportActions { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
-.inlineList { margin:8px 0 0 18px; }
-@media (max-width:700px){ .matchRow{grid-template-columns:1fr;} .activityHeader{display:block;} }
+.assessmentHero {
+  padding-bottom: 2rem;
+}
+
+.assessmentHeroContent {
+  max-width: 900px;
+}
+
+.assessmentEyebrow,
+.cardEyebrow,
+.activityEyebrow {
+  margin: 0 0 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7dd3fc;
+}
+
+.assessmentShellSection {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.assessmentShell {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.assessmentSidebar {
+  position: sticky;
+  top: 1rem;
+}
+
+.sidebarCard,
+.assessmentCard {
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 18px;
+  box-shadow: 0 16px 38px rgba(2, 6, 23, 0.28);
+  backdrop-filter: blur(12px);
+}
+
+.sidebarCard {
+  padding: 1rem;
+}
+
+.sidebarTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin-bottom: 1rem;
+}
+
+.assessmentNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.assessmentNavBtn {
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.55);
+  color: #e2e8f0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+  transition: 0.18s ease;
+}
+
+.assessmentNavBtn:hover,
+.assessmentNavBtn.isActive {
+  background: rgba(37, 99, 235, 0.22);
+  border-color: rgba(96, 165, 250, 0.45);
+  color: #ffffff;
+}
+
+.sidebarMeta {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.55rem;
+}
+
+.metaLabel {
+  color: #94a3b8;
+  font-size: 0.92rem;
+}
+
+.metaValue {
+  color: #f8fafc;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.assessmentMain {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.assessmentCard {
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: 1rem 1.2rem 0.35rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.cardTitle {
+  margin: 0 0 0.75rem;
+  color: #f8fafc;
+  font-size: 1.25rem;
+}
+
+.cardBody {
+  padding: 1.2rem;
+}
+
+.scenarioText,
+.submitText,
+.resultsText,
+.reviewBlock,
+.activityPrompt {
+  color: #e2e8f0;
+  line-height: 1.65;
+}
+
+.activityCard {
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 18px;
+  box-shadow: 0 16px 38px rgba(2, 6, 23, 0.24);
+  overflow: hidden;
+}
+
+.activityCard.isCorrect {
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.activityCard.isIncorrect {
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+.activityHeader {
+  padding: 1rem 1.2rem 0.35rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.activityTitle {
+  margin: 0 0 0.75rem;
+  color: #f8fafc;
+  font-size: 1.15rem;
+}
+
+.activityBody {
+  padding: 1.2rem;
+}
+
+.activityPrompt {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.assessmentSelect,
+.inlineSelect,
+.matchSelect,
+.reportInput {
+  width: 100%;
+  max-width: 420px;
+  padding: 0.7rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.82);
+  color: #f8fafc;
+  font: inherit;
+}
+
+.inlineSelect {
+  display: inline-block;
+  width: auto;
+  min-width: 180px;
+  max-width: 240px;
+  margin: 0 0.2rem;
+  vertical-align: middle;
+}
+
+.scriptBlock {
+  margin: 0;
+  padding: 1rem;
+  border-radius: 14px;
+  background: #0b1220;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  color: #dbeafe;
+  font-family: Consolas, Monaco, "Courier New", monospace;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+.matchGrid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.matchRow {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(220px, 280px);
+  gap: 1rem;
+  align-items: center;
+  padding: 0.85rem;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.52);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.matchPromptText {
+  color: #e2e8f0;
+}
+
+.orderLayout {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 78px minmax(220px, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.orderPanel {
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.45);
+  padding: 0.9rem;
+}
+
+.orderPanelTitle {
+  margin: 0 0 0.9rem;
+  color: #f8fafc;
+  font-size: 1rem;
+}
+
+.orderList {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.orderItem {
+  padding: 0.75rem 0.85rem;
+  border-radius: 12px;
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  color: #e2e8f0;
+  cursor: grab;
+  user-select: none;
+}
+
+.orderItem.dragging {
+  opacity: 0.45;
+}
+
+.orderDropzone {
+  min-height: 56px;
+  border: 1px dashed rgba(125, 211, 252, 0.35);
+  border-radius: 12px;
+  padding: 0.35rem;
+  background: rgba(15, 23, 42, 0.28);
+}
+
+.orderControls {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.orderControlBtn {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 23, 42, 0.8);
+  color: #f8fafc;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.multiGrid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.multiOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.52);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  color: #e2e8f0;
+}
+
+.multiOption input {
+  margin-top: 0.15rem;
+}
+
+.assessmentBtn {
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem 1.1rem;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.assessmentBtnPrimary {
+  background: linear-gradient(135deg, #2563eb, #0ea5e9);
+  color: #fff;
+}
+
+.assessmentBtnSecondary {
+  background: rgba(15, 23, 42, 0.85);
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.resultsSummary {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+
+.resultsSummary strong {
+  color: #f8fafc;
+}
+
+.resultList,
+.reviewList {
+  display: grid;
+  gap: 0.7rem;
+  margin: 1rem 0;
+}
+
+.resultItem,
+.reviewItem {
+  padding: 0.85rem 0.95rem;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.52);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  color: #e2e8f0;
+}
+
+.resultItem.isCorrect {
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.resultItem.isIncorrect {
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+.reportBox {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  display: grid;
+  gap: 0.8rem;
+}
+
+.reportRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.reportInput {
+  max-width: 360px;
+}
+
+@media (max-width: 1100px) {
+  .assessmentShell {
+    grid-template-columns: 1fr;
+  }
+
+  .assessmentSidebar {
+    position: static;
+  }
+}
+
+@media (max-width: 900px) {
+  .orderLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .orderControls {
+    flex-direction: row;
+  }
+
+  .matchRow {
+    grid-template-columns: 1fr;
+  }
+}
