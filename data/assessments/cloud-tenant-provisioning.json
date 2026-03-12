@@ -1,102 +1,90 @@
 {
   "title": "Cloud Tenant Provisioning",
-  "domainLabel": "Systems Engineering",
-  "difficulty": "beginner",
   "attemptsAllowed": 2,
+  "retryEnabled": true,
+  "revealAnswersAfterFinalAttempt": true,
   "passScore": 70,
-  "scenario": "You are preparing a Microsoft 365 tenant for production use. Complete the activities below to demonstrate the correct workflow for provisioning the tenant, validating subscription readiness, and confirming administrative access.",
+  "scenario": "An organization is preparing a Microsoft 365 tenant environment to support identity, collaboration, and device management services. Review the tenant setup workflow and complete the activities required to validate administrative readiness.",
   "activities": [
     {
       "type": "order",
-      "typeLabel": "Order",
-      "prompt": "Arrange the following steps in the correct order to provision a Microsoft 365 cloud tenant.",
+      "title": "Tenant Provisioning Workflow",
+      "prompt": "Arrange the following steps in the correct order to complete the initial tenant provisioning workflow.",
       "steps": [
-        "Start the tenant sign-up process",
-        "Complete verification and organization details",
-        "Access the Microsoft 365 admin center",
-        "Confirm the subscription is active"
+        "Create the tenant and organization profile",
+        "Verify the account setup process",
+        "Sign in to the Microsoft 365 admin center",
+        "Review the default tenant domain"
       ],
       "answer": [
-        "Start the tenant sign-up process",
-        "Complete verification and organization details",
-        "Access the Microsoft 365 admin center",
-        "Confirm the subscription is active"
+        "Create the tenant and organization profile",
+        "Verify the account setup process",
+        "Sign in to the Microsoft 365 admin center",
+        "Review the default tenant domain"
       ],
-      "explanation": "Provisioning begins with tenant creation, then verification, then admin access, and finally service validation."
-    },
-    {
-      "type": "dropdown",
-      "typeLabel": "Dropdown",
-      "prompt": "Select the location used to verify that the Microsoft 365 subscription is active.",
-      "options": [
-        "Microsoft 365 Admin Center \u2192 Billing \u2192 Your products",
-        "Entra Admin Center \u2192 Users \u2192 All users",
-        "Intune Admin Center \u2192 Devices \u2192 All devices",
-        "Exchange Admin Center \u2192 Mail flow"
-      ],
-      "answer": "Microsoft 365 Admin Center \u2192 Billing \u2192 Your products",
-      "explanation": "Subscription readiness is verified from the Microsoft 365 admin center billing area."
+      "explanation": "Tenant creation must be completed before administrative access and validation tasks can be performed."
     },
     {
       "type": "matching",
-      "typeLabel": "Matching",
+      "title": "Portal Identification",
       "prompt": "Match each administrative portal to its primary purpose.",
-      "left": [
-        "Microsoft 365 Admin Center",
-        "Entra Admin Center",
-        "Intune Admin Center"
-      ],
-      "right": [
-        "Subscription and service administration",
-        "Identity and directory administration",
-        "Device enrollment and management"
-      ],
-      "answers": [
-        "Subscription and service administration",
-        "Identity and directory administration",
-        "Device enrollment and management"
-      ]
-    },
-    {
-      "type": "multiSelect",
-      "typeLabel": "Select Steps",
-      "prompt": "Select the actions required to validate that company branding was applied successfully.",
       "options": [
-        "Open a private browser session",
-        "Browse to the Microsoft sign-in page",
-        "Confirm visible branding elements",
-        "Create a DHCP scope",
-        "Restart the local DNS client service"
+        "Tenant and identity overview",
+        "Subscription and service administration",
+        "Device management administration"
       ],
-      "answer": [
-        "Open a private browser session",
-        "Browse to the Microsoft sign-in page",
-        "Confirm visible branding elements"
+      "pairs": [
+        {
+          "left": "Microsoft Entra admin center",
+          "right": "Tenant and identity overview"
+        },
+        {
+          "left": "Microsoft 365 admin center",
+          "right": "Subscription and service administration"
+        },
+        {
+          "left": "Intune admin center",
+          "right": "Device management administration"
+        }
       ],
-      "explanation": "Branding validation is done from the public sign-in experience, not from infrastructure tasks."
+      "explanation": "Each portal has a different administrative scope and should be validated for the correct purpose."
     },
     {
       "type": "dropdown",
-      "typeLabel": "Dropdown",
-      "prompt": "Select the page that displays tenant identity details such as Tenant ID and primary domain.",
+      "title": "Subscription Verification",
+      "prompt": "Select the portal used to verify that the Microsoft 365 Business Premium subscription is active.",
       "options": [
-        "Entra Admin Center \u2192 Overview",
-        "Intune Admin Center \u2192 Devices",
-        "Microsoft 365 Admin Center \u2192 Users",
-        "SharePoint Admin Center \u2192 Sites"
+        "Microsoft 365 admin center",
+        "Microsoft Entra admin center",
+        "SharePoint admin center",
+        "Exchange admin center"
       ],
-      "answer": "Entra Admin Center \u2192 Overview",
-      "explanation": "Tenant-level identity information is shown in the Entra overview area."
+      "answer": "Microsoft 365 admin center",
+      "explanation": "Subscription and billing information is reviewed in the Microsoft 365 admin center."
     },
     {
-      "type": "order",
-      "typeLabel": "Order",
-      "prompt": "Arrange the stages of default company branding configuration in the correct order.",
-      "steps": [
+      "type": "dropdown",
+      "title": "Tenant Information",
+      "prompt": "Select the page that displays tenant identity details such as the tenant ID and primary domain.",
+      "options": [
+        "Overview",
+        "Users",
+        "Groups",
+        "Licenses"
+      ],
+      "answer": "Overview",
+      "explanation": "The overview page provides tenant-level identity information."
+    },
+    {
+      "type": "multiSelect",
+      "title": "Branding Workflow Validation",
+      "prompt": "Select the stages that are part of the company branding workflow.",
+      "options": [
         "Basic",
         "Layout",
         "Header",
         "Footer",
+        "DHCP Scope",
         "Sign-in form",
         "Review"
       ],
@@ -108,7 +96,20 @@
         "Sign-in form",
         "Review"
       ],
-      "explanation": "The branding wizard progresses through these stages before final review."
+      "explanation": "Branding configuration includes the visual and sign-in customization stages, not infrastructure tasks such as DHCP scope creation."
+    },
+    {
+      "type": "dropdown",
+      "title": "Branding Validation Method",
+      "prompt": "Select the best method used to validate whether branding changes have propagated successfully.",
+      "options": [
+        "Open a private browser window and test the sign-in experience",
+        "Restart the local computer",
+        "Create a new Azure virtual machine",
+        "Force a Group Policy update"
+      ],
+      "answer": "Open a private browser window and test the sign-in experience",
+      "explanation": "A private browser window helps validate the live sign-in experience without relying on cached session data."
     }
   ]
 }
