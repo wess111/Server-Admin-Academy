@@ -1,108 +1,63 @@
 {
   "title": "Microsoft Entra PowerShell Administration",
-  "domainLabel": "Systems Engineering",
-  "difficulty": "intermediate",
   "attemptsAllowed": 2,
+  "retryEnabled": true,
+  "revealAnswersAfterFinalAttempt": true,
   "passScore": 70,
-  "scenario": "You are preparing a workstation for Microsoft Entra PowerShell administration. Complete the activities below to demonstrate the correct setup workflow, tenant connection process, and identity query techniques used in Microsoft Entra management.",
+  "scenario": "NewVue Health administrators are preparing a management workstation to administer Microsoft Entra ID using PowerShell. The workstation must be configured with the correct modules and connected securely to the tenant.",
+  "reference": [
+    {"label":"PowerShell Version","value":"PowerShell 7"},
+    {"label":"Module","value":"Microsoft.Entra"},
+    {"label":"Tenant Domain","value":"newvuehealth.onmicrosoft.com"}
+  ],
   "activities": [
+
     {
       "type": "order",
-      "typeLabel": "Order",
-      "prompt": "Arrange the following steps in the correct order to prepare the workstation for Microsoft Entra PowerShell.",
+      "title": "PowerShell Environment Preparation",
+      "prompt": "Arrange the steps required to prepare the workstation for Microsoft Entra PowerShell administration.",
       "steps": [
         "Install PowerShell 7",
-        "Verify the PowerShell version",
-        "Check for existing Microsoft.Entra modules",
-        "Update PowerShellGet",
-        "Review execution policy"
+        "Verify PowerShell version",
+        "Install Microsoft.Entra module",
+        "Verify module installation",
+        "Connect to Microsoft Graph"
       ],
       "answer": [
         "Install PowerShell 7",
-        "Verify the PowerShell version",
-        "Check for existing Microsoft.Entra modules",
-        "Update PowerShellGet",
-        "Review execution policy"
+        "Verify PowerShell version",
+        "Install Microsoft.Entra module",
+        "Verify module installation",
+        "Connect to Microsoft Graph"
       ]
     },
+
     {
       "type": "scriptDropdown",
-      "typeLabel": "Script Dropdown",
-      "prompt": "Complete the command used to connect to the Microsoft Entra tenant.",
-      "script": "Connect-________ -Scopes \"User.Read.All\",\"Directory.Read.All\"",
-      "options": [
-        "Entra",
-        "AzureAD",
-        "MgGraph",
-        "Tenant"
+      "title": "Module Installation Command",
+      "prompt": "Complete the PowerShell command used to install the Microsoft Entra module.",
+      "scriptParts": [
+        "Install-Module -Name ",
+        {"type":"dropdown","id":"module","options":["Microsoft.Entra","AzureAD","MSOnline"]},
+        " -Force"
       ],
-      "answer": "Entra",
-      "explanation": "The lab uses the Microsoft.Entra module and the Connect-Entra cmdlet."
+      "answers": {
+        "module": "Microsoft.Entra"
+      }
     },
+
     {
       "type": "dropdown",
-      "typeLabel": "Dropdown",
-      "prompt": "Select the command used to verify the currently connected Entra context.",
+      "title": "Execution Policy",
+      "prompt": "Which execution policy allows locally created scripts to run but requires downloaded scripts to be signed?",
       "options": [
-        "Get-EntraContext",
-        "Get-EntraTenantDetail",
-        "Get-EntraUser",
-        "Get-ExecutionPolicy -List"
+        "RemoteSigned",
+        "Restricted",
+        "Unrestricted",
+        "AllSigned"
       ],
-      "answer": "Get-EntraContext"
-    },
-    {
-      "type": "matching",
-      "typeLabel": "Matching",
-      "prompt": "Match each cmdlet to the information it returns.",
-      "left": [
-        "Get-EntraTenantDetail",
-        "Get-EntraDomain",
-        "Get-EntraUser",
-        "Get-EntraGroup"
-      ],
-      "right": [
-        "Tenant details",
-        "Configured domains",
-        "Directory users",
-        "Directory groups"
-      ],
-      "answers": [
-        "Tenant details",
-        "Configured domains",
-        "Directory users",
-        "Directory groups"
-      ]
-    },
-    {
-      "type": "scriptDropdown",
-      "typeLabel": "Script Dropdown",
-      "prompt": "Complete the command used to display cloud users and show only two specific properties.",
-      "script": "Get-EntraUser | Select-Object ________, UserPrincipalName",
-      "options": [
-        "DisplayName",
-        "GroupType",
-        "DomainName",
-        "SearchString"
-      ],
-      "answer": "DisplayName"
-    },
-    {
-      "type": "multiSelect",
-      "typeLabel": "Select Steps",
-      "prompt": "Select the PowerShell actions that are part of the introductory Entra administration workflow.",
-      "options": [
-        "Import the Microsoft.Entra module",
-        "Connect to the tenant",
-        "Query users and groups",
-        "Configure DHCP failover",
-        "Create an NTFS quota"
-      ],
-      "answer": [
-        "Import the Microsoft.Entra module",
-        "Connect to the tenant",
-        "Query users and groups"
-      ]
+      "answer": "RemoteSigned"
     }
+
   ]
 }
