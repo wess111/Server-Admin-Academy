@@ -1,0 +1,26 @@
+.assessmentWrap { display:grid; gap:20px; }
+.assessmentSummary { display:flex; flex-wrap:wrap; gap:18px; align-items:center; }
+.assessmentMetaRow { display:flex; gap:10px; margin-bottom:12px; }
+.activityCard { padding:20px; display:grid; gap:14px; }
+.activityHeader { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+.activityPrompt { margin:0; font-size:1rem; }
+.activityType { font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; opacity:.8; }
+.optionSelect, .matchSelect, .studentInput { width:100%; max-width:420px; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:#0e1525; color:#f5f7fb; }
+.matchRow { display:grid; grid-template-columns:minmax(180px, 1fr) minmax(220px, 1fr); gap:12px; align-items:center; margin-bottom:10px; }
+.scriptBlock { background:#0b1120; border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:14px 16px; overflow:auto; white-space:pre-wrap; font-family:Consolas, monospace; }
+.orderList { display:grid; gap:10px; padding:0; list-style:none; }
+.orderItem { display:flex; justify-content:space-between; align-items:center; gap:12px; border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:12px 14px; background:#0e1525; }
+.orderControls { display:flex; gap:8px; }
+.orderBtn { border:none; border-radius:10px; padding:8px 10px; background:#1a2440; color:#fff; cursor:pointer; }
+.checkGrid { display:grid; gap:10px; }
+.checkRow { display:flex; gap:10px; align-items:flex-start; }
+.resultGood { color:#84f0a3; }
+.resultBad { color:#ff9e9e; }
+.reviewBlock { margin-top:18px; padding-top:18px; border-top:1px solid rgba(255,255,255,.08); }
+.reviewItem { margin-bottom:12px; }
+.activityCard.isCorrect { border:1px solid rgba(132,240,163,.4); }
+.activityCard.isIncorrect { border:1px solid rgba(255,158,158,.35); }
+.assessmentActions { display:flex; justify-content:flex-end; }
+.reportActions { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+.inlineList { margin:8px 0 0 18px; }
+@media (max-width:700px){ .matchRow{grid-template-columns:1fr;} .activityHeader{display:block;} }
