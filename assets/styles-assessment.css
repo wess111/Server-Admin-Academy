@@ -3,12 +3,11 @@
 }
 
 .assessmentHeroContent {
-  max-width: 900px;
+  max-width: 920px;
 }
 
 .assessmentEyebrow,
-.cardEyebrow,
-.activityEyebrow {
+.cardEyebrow {
   margin: 0 0 0.4rem;
   font-size: 0.82rem;
   font-weight: 700;
@@ -105,13 +104,7 @@
 }
 
 .assessmentMain {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.assessmentCard {
-  overflow: hidden;
+  min-width: 0;
 }
 
 .cardHeader {
@@ -127,51 +120,66 @@
 
 .cardBody {
   padding: 1.2rem;
+  min-height: 420px;
+}
+
+.workspaceFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.2rem 1.2rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.workspaceFooterRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.workspaceStepText {
+  color: #94a3b8;
+  font-size: 0.95rem;
 }
 
 .scenarioText,
-.submitText,
+.activityPrompt,
 .resultsText,
-.reviewBlock,
-.activityPrompt {
+.reviewText {
   color: #e2e8f0;
-  line-height: 1.65;
+  line-height: 1.68;
 }
 
-.activityCard {
-  background: rgba(15, 23, 42, 0.72);
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 18px;
-  box-shadow: 0 16px 38px rgba(2, 6, 23, 0.24);
-  overflow: hidden;
+.referenceCard {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.52);
+  border: 1px solid rgba(148, 163, 184, 0.12);
 }
 
-.activityCard.isCorrect {
-  border-color: rgba(34, 197, 94, 0.45);
-}
-
-.activityCard.isIncorrect {
-  border-color: rgba(248, 113, 113, 0.45);
-}
-
-.activityHeader {
-  padding: 1rem 1.2rem 0.35rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
-}
-
-.activityTitle {
+.referenceTitle {
   margin: 0 0 0.75rem;
   color: #f8fafc;
-  font-size: 1.15rem;
+  font-size: 1rem;
 }
 
-.activityBody {
-  padding: 1.2rem;
+.referenceTable {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.activityPrompt {
-  margin-top: 0;
-  margin-bottom: 1rem;
+.referenceTable td {
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+  color: #e2e8f0;
+  vertical-align: top;
+}
+
+.referenceTable td:first-child {
+  color: #94a3b8;
+  width: 220px;
 }
 
 .assessmentSelect,
@@ -179,8 +187,8 @@
 .matchSelect,
 .reportInput {
   width: 100%;
-  max-width: 420px;
-  padding: 0.7rem 0.85rem;
+  max-width: 460px;
+  padding: 0.72rem 0.9rem;
   border-radius: 12px;
   border: 1px solid rgba(148, 163, 184, 0.22);
   background: rgba(15, 23, 42, 0.82);
@@ -206,7 +214,7 @@
   color: #dbeafe;
   font-family: Consolas, Monaco, "Courier New", monospace;
   font-size: 0.95rem;
-  line-height: 1.65;
+  line-height: 1.7;
   white-space: pre-wrap;
   overflow-x: auto;
 }
@@ -218,7 +226,7 @@
 
 .matchRow {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(220px, 280px);
+  grid-template-columns: minmax(240px, 1fr) minmax(240px, 300px);
   gap: 1rem;
   align-items: center;
   padding: 0.85rem;
@@ -233,7 +241,7 @@
 
 .orderLayout {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) 78px minmax(220px, 1fr);
+  grid-template-columns: minmax(240px, 1fr) 78px minmax(240px, 1fr);
   gap: 1rem;
   align-items: start;
 }
@@ -270,6 +278,10 @@
 
 .orderItem.dragging {
   opacity: 0.45;
+}
+
+.orderItem.isSelected {
+  outline: 2px solid rgba(96, 165, 250, 0.65);
 }
 
 .orderDropzone {
@@ -319,6 +331,47 @@
   margin-top: 0.15rem;
 }
 
+.reviewList,
+.resultList {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.reviewItem,
+.resultItem {
+  padding: 0.85rem 0.95rem;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.52);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  color: #e2e8f0;
+}
+
+.resultItem.isCorrect {
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.resultItem.isIncorrect {
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+.reportBox {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.reportRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.reportInput {
+  max-width: 360px;
+}
+
 .assessmentBtn {
   border: none;
   border-radius: 12px;
@@ -339,57 +392,9 @@
   border: 1px solid rgba(148, 163, 184, 0.18);
 }
 
-.resultsSummary {
-  display: grid;
-  gap: 0.45rem;
-  margin-bottom: 1rem;
-}
-
-.resultsSummary strong {
-  color: #f8fafc;
-}
-
-.resultList,
-.reviewList {
-  display: grid;
-  gap: 0.7rem;
-  margin: 1rem 0;
-}
-
-.resultItem,
-.reviewItem {
-  padding: 0.85rem 0.95rem;
-  border-radius: 14px;
-  background: rgba(15, 23, 42, 0.52);
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  color: #e2e8f0;
-}
-
-.resultItem.isCorrect {
-  border-color: rgba(34, 197, 94, 0.45);
-}
-
-.resultItem.isIncorrect {
-  border-color: rgba(248, 113, 113, 0.45);
-}
-
-.reportBox {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(148, 163, 184, 0.12);
-  display: grid;
-  gap: 0.8rem;
-}
-
-.reportRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.8rem;
-}
-
-.reportInput {
-  max-width: 360px;
+.assessmentBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 @media (max-width: 1100px) {
@@ -413,5 +418,14 @@
 
   .matchRow {
     grid-template-columns: 1fr;
+  }
+
+  .workspaceFooter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .workspaceFooterRight {
+    justify-content: space-between;
   }
 }
