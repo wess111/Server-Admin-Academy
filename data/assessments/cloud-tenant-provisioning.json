@@ -4,14 +4,14 @@
   "retryEnabled": true,
   "revealAnswersAfterFinalAttempt": true,
   "passScore": 70,
-  "scenario": "NewVue Health has provisioned a new Microsoft 365 tenant to support its transition toward hybrid cloud services. The tenant creation process has been completed, and the system administrator must confirm that the environment is accessible, identify the correct administrative portals, complete the branding workflow, and verify that branding changes are visible to users. Because this is a complementary activity, use the scenario and reference information below to complete the administrative tasks.",
+  "scenario": "NewVue Health has completed the initial provisioning of a Microsoft 365 tenant to support its transition toward hybrid cloud services. The tenant uses Microsoft 365 Business Premium and the initial cloud domain newvuehealth.onmicrosoft.com. The global administrator account has already been created and can access the Microsoft 365 administration environment. Before the organization proceeds to cloud identity, hybrid identity, and device management tasks, the system administrator must confirm administrative access, identify the correct portals, review the tenant environment, configure company branding, and validate that the new sign-in experience is visible to users.",
   "reference": [
     {
-      "label": "Tenant Name",
+      "label": "Organization",
       "value": "NewVue Health"
     },
     {
-      "label": "Initial Domain",
+      "label": "Tenant Domain",
       "value": "newvuehealth.onmicrosoft.com"
     },
     {
@@ -38,26 +38,26 @@
   "activities": [
     {
       "type": "order",
-      "title": "Administrative Access Workflow",
-      "prompt": "You need to confirm that the tenant environment is accessible after provisioning. Move the required actions into the Answer Area and arrange them in the correct order.",
+      "title": "Tenant Access Confirmation",
+      "prompt": "You want to confirm that the newly provisioned tenant is accessible and ready for administrative review. Move the required actions into the Answer Area and arrange them in the correct order.",
       "steps": [
         "Sign in using the administrator account",
-        "Access the Microsoft 365 admin center",
-        "Verify the tenant dashboard loads",
+        "Open the Microsoft 365 admin center",
+        "Confirm that the tenant dashboard loads successfully",
         "Review the subscription status"
       ],
       "answer": [
         "Sign in using the administrator account",
-        "Access the Microsoft 365 admin center",
-        "Verify the tenant dashboard loads",
+        "Open the Microsoft 365 admin center",
+        "Confirm that the tenant dashboard loads successfully",
         "Review the subscription status"
       ],
-      "explanation": "Administrative access must be established before the tenant environment and subscription readiness can be confirmed."
+      "explanation": "The administrator must first sign in, confirm that the tenant environment is available, and then verify that the subscription is active."
     },
     {
       "type": "matching",
-      "title": "Administrative Portal Roles",
-      "prompt": "Match each administrative portal to the type of management it primarily provides in this deployment.",
+      "title": "Portal Roles",
+      "prompt": "You want to continue administration of the new tenant. Match each administrative portal to the type of management it primarily provides.",
       "options": [
         "Service and license administration",
         "Identity and directory management",
@@ -77,12 +77,51 @@
           "right": "Device management"
         }
       ],
-      "explanation": "Each portal is used for a different administrative scope in the Microsoft cloud environment."
+      "explanation": "Each portal has a distinct administrative scope in the Microsoft cloud environment."
+    },
+    {
+      "type": "dropdown",
+      "title": "Accessing Intune",
+      "prompt": "You want to access the Intune admin center from the Microsoft 365 admin center. Select the action that best supports that objective.",
+      "options": [
+        "Open Admin centers and select Endpoint Manager / Intune",
+        "Open Billing and select Your products",
+        "Open Users and select Active users",
+        "Open Settings and select Domains"
+      ],
+      "answer": "Open Admin centers and select Endpoint Manager / Intune",
+      "explanation": "The Intune administrative interface is accessed from the Admin centers area of the Microsoft 365 admin center."
+    },
+    {
+      "type": "dropdown",
+      "title": "Subscription Review",
+      "prompt": "You want to verify that the tenant is licensed correctly before moving forward with additional cloud configuration. Select the administrative area where this check is performed.",
+      "options": [
+        "Billing",
+        "Users",
+        "Groups",
+        "Devices"
+      ],
+      "answer": "Billing",
+      "explanation": "Subscription and licensing status is reviewed under Billing in the Microsoft 365 admin center."
+    },
+    {
+      "type": "dropdown",
+      "title": "Initial Cloud Domain",
+      "prompt": "You want to confirm the initial domain assigned during tenant creation. Select the value that represents the default cloud domain in this case study.",
+      "options": [
+        "newvuehealth.onmicrosoft.com",
+        "newvue.local",
+        "newvuehealth.com",
+        "admin.newvuehealth.com"
+      ],
+      "answer": "newvuehealth.onmicrosoft.com",
+      "explanation": "The default Microsoft 365 tenant domain uses the onmicrosoft.com naming format."
     },
     {
       "type": "order",
-      "title": "Branding Configuration Stages",
-      "prompt": "The organization wants to customize the sign-in experience. Move the branding configuration stages into the Answer Area and arrange them in the correct order.",
+      "title": "Branding Configuration Workflow",
+      "prompt": "You want to configure the organization’s sign-in experience. Move the branding stages into the Answer Area and arrange them in the correct order.",
       "steps": [
         "Basic",
         "Layout",
@@ -99,20 +138,20 @@
         "Sign-in form",
         "Review"
       ],
-      "explanation": "The branding wizard follows a staged workflow that moves from the initial branding details to final review."
+      "explanation": "The branding wizard follows a staged sequence from basic settings to final review."
     },
     {
       "type": "dropdown",
       "title": "Branding Validation",
-      "prompt": "After completing the branding configuration, select the best method used to verify that the new sign-in experience is visible to users.",
+      "prompt": "You want to verify that the new sign-in branding is visible to users after the configuration is saved. Select the best validation method.",
       "options": [
         "Open a private browser window and test the sign-in page",
-        "Restart the workstation",
-        "Create a new Azure virtual machine",
-        "Force a Group Policy update"
+        "Restart the administrator workstation",
+        "Force a Group Policy update",
+        "Create a new Azure virtual machine"
       ],
       "answer": "Open a private browser window and test the sign-in page",
-      "explanation": "A private browser window avoids cached sessions and provides a cleaner validation of the sign-in experience."
+      "explanation": "A private browser session reduces cached sign-in artifacts and gives a cleaner validation of the updated branding experience."
     }
   ]
 }
