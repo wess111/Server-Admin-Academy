@@ -1,107 +1,82 @@
 {
   "title": "Cloud Users and Groups",
-  "domainLabel": "Systems Engineering",
-  "difficulty": "beginner",
   "attemptsAllowed": 2,
+  "retryEnabled": true,
+  "revealAnswersAfterFinalAttempt": true,
   "passScore": 70,
-  "scenario": "You are configuring cloud identity objects in Microsoft Entra ID and Microsoft 365. Complete the activities below to demonstrate correct user creation, group configuration, dynamic membership logic, and license assignment.",
+  "scenario": "NewVue Health has completed tenant provisioning and must now configure identity resources. The administrator must create cloud user accounts, assign licenses, and organize users into security groups to support departmental collaboration. The following information is available for the tenant environment.",
+  "reference": [
+    {"label": "Tenant Domain","value":"newvuehealth.onmicrosoft.com"},
+    {"label": "Admin Portal","value":"https://admin.microsoft.com"},
+    {"label": "Identity Portal","value":"https://entra.microsoft.com"},
+    {"label": "License","value":"Microsoft 365 Business Premium"}
+  ],
   "activities": [
+
     {
       "type": "order",
-      "typeLabel": "Order",
-      "prompt": "Arrange the following steps in the correct order to create a cloud-only user in Microsoft Entra ID.",
+      "title": "Create a Cloud User",
+      "prompt": "Move the administrative steps required to create a new cloud user into the Answer Area and arrange them in the correct order.",
       "steps": [
-        "Open Microsoft Entra Admin Center",
-        "Navigate to Users \u2192 All users",
-        "Select New user \u2192 Create new user",
-        "Enter account properties and create the account"
+        "Open the Microsoft 365 Admin Center",
+        "Navigate to Users",
+        "Select Active Users",
+        "Choose Add User",
+        "Enter user account details",
+        "Assign a license and create the account"
       ],
       "answer": [
-        "Open Microsoft Entra Admin Center",
-        "Navigate to Users \u2192 All users",
-        "Select New user \u2192 Create new user",
-        "Enter account properties and create the account"
+        "Open the Microsoft 365 Admin Center",
+        "Navigate to Users",
+        "Select Active Users",
+        "Choose Add User",
+        "Enter user account details",
+        "Assign a license and create the account"
       ]
     },
+
     {
       "type": "matching",
-      "typeLabel": "Matching",
-      "prompt": "Match each group membership type to the correct behavior.",
-      "left": [
-        "Assigned",
-        "Dynamic User"
+      "title": "User Management Locations",
+      "prompt": "Match each administrative location with its purpose.",
+      "options": [
+        "Create and manage user accounts",
+        "Manage group membership",
+        "Assign user licenses"
       ],
-      "right": [
-        "Membership is added manually",
-        "Membership is populated by attribute-based rules"
-      ],
-      "answers": [
-        "Membership is added manually",
-        "Membership is populated by attribute-based rules"
+      "pairs": [
+        {"left":"Active Users","right":"Create and manage user accounts"},
+        {"left":"Groups","right":"Manage group membership"},
+        {"left":"Licenses","right":"Assign user licenses"}
       ]
     },
+
     {
       "type": "scriptDropdown",
-      "typeLabel": "Script Dropdown",
-      "prompt": "Complete the dynamic membership rule used to place users in a department-based dynamic group.",
-      "script": "(user.department -eq \"________\")",
-      "options": [
-        "Clinical Services",
-        "Domain Admins",
-        "Windows 11",
-        "Global Administrator"
+      "title": "PowerShell User Creation",
+      "prompt": "Complete the PowerShell command used to connect to Microsoft Graph before creating users.",
+      "scriptParts": [
+        "Connect-",
+        {"type":"dropdown","id":"cmd","options":["MgGraph","AzureAD","MSOLService"]},
+        "\n\n# Authenticate using administrator credentials"
       ],
-      "answer": "Clinical Services",
-      "explanation": "Department-based dynamic groups use a user attribute value such as Clinical Services or Finance."
+      "answers": {
+        "cmd": "MgGraph"
+      }
     },
-    {
-      "type": "multiSelect",
-      "typeLabel": "Select Steps",
-      "prompt": "Select the tasks that are part of cloud group management for this lab.",
-      "options": [
-        "Create security groups",
-        "Configure membership type",
-        "Assign users to assigned groups",
-        "Create a reverse lookup zone",
-        "Promote a server to domain controller"
-      ],
-      "answer": [
-        "Create security groups",
-        "Configure membership type",
-        "Assign users to assigned groups"
-      ]
-    },
+
     {
       "type": "dropdown",
-      "typeLabel": "Dropdown",
-      "prompt": "Select the location used to assign Microsoft 365 licenses to a cloud user.",
+      "title": "Group Type Selection",
+      "prompt": "When organizing employees by department for security permissions, which group type should be used?",
       "options": [
-        "Microsoft 365 Admin Center \u2192 Users \u2192 Active users",
-        "Microsoft Entra Admin Center \u2192 Devices \u2192 All devices",
-        "Intune Admin Center \u2192 Apps \u2192 Monitor",
-        "Exchange Admin Center \u2192 Recipients"
+        "Security group",
+        "Distribution group",
+        "Mail-enabled contact group",
+        "Public folder group"
       ],
-      "answer": "Microsoft 365 Admin Center \u2192 Users \u2192 Active users"
-    },
-    {
-      "type": "matching",
-      "typeLabel": "Matching",
-      "prompt": "Match each administrative goal to the portal most directly used in this activity.",
-      "left": [
-        "Create users",
-        "Create security groups",
-        "Assign Microsoft 365 licenses"
-      ],
-      "right": [
-        "Microsoft Entra Admin Center",
-        "Microsoft Entra Admin Center",
-        "Microsoft 365 Admin Center"
-      ],
-      "answers": [
-        "Microsoft Entra Admin Center",
-        "Microsoft Entra Admin Center",
-        "Microsoft 365 Admin Center"
-      ]
+      "answer": "Security group"
     }
+
   ]
 }
