@@ -205,10 +205,18 @@ function renderScenarioStep(container) {
 }
 
 function renderActivityStep(container, activity, index) {
+  if (activity.taskType) {
+    const typeLabel = document.createElement("p");
+    typeLabel.className = "cardEyebrow";
+    typeLabel.textContent = activity.taskType;
+    container.appendChild(typeLabel);
+  }
+
   const prompt = document.createElement("p");
   prompt.className = "activityPrompt";
   prompt.textContent = activity.prompt;
   container.appendChild(prompt);
+
   container.appendChild(renderActivityWidget(activity, index));
 }
 
@@ -218,6 +226,9 @@ function renderActivityWidget(activity, index) {
       return renderDropdown(activity, index);
     case "scriptDropdown":
       return renderScriptDropdown(activity, index);
+    case "scriptFill":
+    case "script-fill":
+      return renderScriptFill(activity, index);
     case "matching":
       return renderMatching(activity, index);
     case "matchLines":
@@ -271,6 +282,46 @@ function renderScriptDropdown(activity, index) {
       addPlaceholderOption(select, "Select");
 
       part.options.forEach(option => {
+        const opt = document.createElement("option");
+        opt.value = option;
+        opt.textContent = option;
+        select.appendChild(opt);
+      });
+
+      const stored = getStoredScriptDropdownState(index);
+      if (stored[part.id]) select.value = stored[part.id];
+
+      select.addEventListener("change", () => {
+        const current = getStoredScriptDropdownState(index);
+        current[part.id] = select.value;
+        storeScriptDropdownState(index, current);
+      });
+
+      pre.appendChild(select);
+    }
+  });
+
+  wrapper.appendChild(pre);
+  return wrapper;
+}
+
+function renderScriptFill(activity, index) {
+  const wrapper = document.createElement("div");
+  const pre = document.createElement("pre");
+  pre.className = "scriptBlock";
+
+  (activity.script || []).forEach(part => {
+    if (typeof part === "string") {
+      pre.appendChild(document.createTextNode(part));
+    } else if (part && typeof part === "object") {
+      const select = document.createElement("select");
+      select.className = "inlineSelect";
+      select.dataset.activityIndex = index;
+      select.dataset.scriptBlankId = part.id;
+
+      addPlaceholderOption(select, "Select");
+
+      (part.options || []).forEach(option => {
         const opt = document.createElement("option");
         opt.value = option;
         opt.textContent = option;
@@ -352,7 +403,6 @@ function renderMatchLines(activity, index) {
   const rightCol = document.createElement("div");
   rightCol.className = "matchLinesColumn";
 
-  const stored = getStoredMatchLinesState(index);
   const leftItems = activity.left || [];
   const rightItems = activity.right || [];
 
@@ -385,7 +435,7 @@ function renderMatchLines(activity, index) {
       const current = getStoredMatchLinesState(index);
       delete current[item];
       storeMatchLinesState(index, current);
-      updateMatchLinesUI(wrapper, index, activity);
+      updateMatchLinesUI(wrapper, index);
     });
 
     leftCol.appendChild(row);
@@ -426,7 +476,7 @@ function renderMatchLines(activity, index) {
       current[leftValue] = rightValue;
       storeMatchLinesState(index, current);
       selectedLeft.classList.remove("isSelected");
-      updateMatchLinesUI(wrapper, index, activity);
+      updateMatchLinesUI(wrapper, index);
     });
 
     rightCol.appendChild(row);
@@ -437,17 +487,17 @@ function renderMatchLines(activity, index) {
   wrapper.appendChild(rightCol);
 
   requestAnimationFrame(() => {
-    updateMatchLinesUI(wrapper, index, activity);
+    updateMatchLinesUI(wrapper, index);
   });
 
   window.addEventListener("resize", () => {
-    updateMatchLinesUI(wrapper, index, activity);
+    updateMatchLinesUI(wrapper, index);
   });
 
   return wrapper;
 }
 
-function updateMatchLinesUI(wrapper, index, activity) {
+function updateMatchLinesUI(wrapper, index) {
   const svg = wrapper.querySelector(".matchSvg");
   if (!svg) return;
 
@@ -743,6 +793,15 @@ function persistVisibleInputs() {
     storeScriptDropdownState(index, values);
   }
 
+  if (activity.type === "scriptFill" || activity.type === "script-fill") {
+    const selects = [...document.querySelectorAll(`select[data-activity-index="${index}"][data-script-blank-id]`)];
+    const values = {};
+    selects.forEach(select => {
+      values[select.dataset.scriptBlankId] = select.value;
+    });
+    storeScriptDropdownState(index, values);
+  }
+
   if (activity.type === "matching") {
     const selects = [...document.querySelectorAll(`select[data-activity-index="${index}"][data-pair-index]`)];
     const values = [];
@@ -753,7 +812,7 @@ function persistVisibleInputs() {
   }
 
   if (activity.type === "matchLines") {
-    // values are stored live on click
+    /* stored live on click */
   }
 
   if (activity.type === "order") {
@@ -956,6 +1015,9 @@ function evaluateActivity(activity, index) {
       return evaluateDropdown(activity, index);
     case "scriptDropdown":
       return evaluateScriptDropdown(activity, index);
+    case "scriptFill":
+    case "script-fill":
+      return evaluateScriptFill(activity, index);
     case "matching":
       return evaluateMatching(activity, index);
     case "matchLines":
@@ -990,6 +1052,33 @@ function evaluateScriptDropdown(activity, index) {
     correct,
     userAnswer: answerMap,
     correctAnswer: activity.answers || {}
+  };
+}
+
+function evaluateScriptFill(activity, index) {
+  const answerMap = getStoredScriptDropdownState(index);
+  let correct = true;
+
+  const parts = activity.script || [];
+  parts.forEach(part => {
+    if (part && typeof part === "object" && part.id) {
+      if (answerMap[part.id] !== part.correct) {
+        correct = false;
+      }
+    }
+  });
+
+  const correctAnswer = {};
+  parts.forEach(part => {
+    if (part && typeof part === "object" && part.id) {
+      correctAnswer[part.id] = part.correct;
+    }
+  });
+
+  return {
+    correct,
+    userAnswer: answerMap,
+    correctAnswer
   };
 }
 
@@ -1131,7 +1220,7 @@ function formatCorrectAnswer(activity, correctAnswer) {
     return escapeHtml(correctAnswer || "");
   }
 
-  if (activity.type === "scriptDropdown") {
+  if (activity.type === "scriptDropdown" || activity.type === "scriptFill" || activity.type === "script-fill") {
     return Object.entries(correctAnswer || {})
       .map(([key, value]) => `${escapeHtml(key)}: ${escapeHtml(value)}`)
       .join("<br>");
