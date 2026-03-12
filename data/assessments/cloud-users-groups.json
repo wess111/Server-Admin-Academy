@@ -4,34 +4,19 @@
   "retryEnabled": true,
   "revealAnswersAfterFinalAttempt": true,
   "passScore": 70,
-  "scenario": "NewVue Health has completed tenant provisioning and must now prepare the cloud identity environment for administrative use. The system administrator needs to create cloud users, assign licenses, organize users into security groups, and verify that membership assignments support departmental access requirements. Because this is a complementary activity, use the case study and reference information below to complete the required tasks.",
+  "scenario": "NewVue Health has completed tenant provisioning and is now preparing the cloud identity environment for administrative use. The system administrator must create cloud user accounts, assign licenses, organize users into security groups, and confirm that departmental group membership is configured correctly. Because this is a complementary activity, use the case study and reference information below to complete the required tasks.",
   "reference": [
-    {
-      "label": "Organization",
-      "value": "NewVue Health"
-    },
-    {
-      "label": "Tenant Domain",
-      "value": "newvuehealth.onmicrosoft.com"
-    },
-    {
-      "label": "Primary License",
-      "value": "Microsoft 365 Business Premium"
-    },
-    {
-      "label": "Administrative Portal",
-      "value": "Microsoft 365 admin center"
-    },
-    {
-      "label": "Identity Portal",
-      "value": "Microsoft Entra admin center"
-    }
+    { "label": "Organization", "value": "NewVue Health" },
+    { "label": "Tenant Domain", "value": "newvuehealth.onmicrosoft.com" },
+    { "label": "Primary License", "value": "Microsoft 365 Business Premium" },
+    { "label": "Administrative Portal", "value": "Microsoft 365 admin center" },
+    { "label": "Identity Portal", "value": "Microsoft Entra admin center" }
   ],
   "activities": [
     {
       "type": "order",
-      "title": "Creating a Cloud User",
-      "prompt": "You want to create a new cloud user and complete the account setup correctly. Move the required actions into the Answer Area and arrange them in the correct order.",
+      "title": "Task 1 - Create a Cloud User",
+      "prompt": "Drag and Drop Task\nYou want to create a new cloud user and complete the account setup correctly.\nTo answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
       "steps": [
         "Open the Microsoft 365 admin center",
         "Navigate to Users",
@@ -48,12 +33,12 @@
         "Enter the user account information",
         "Assign the required license and create the account"
       ],
-      "explanation": "Cloud user creation follows a defined workflow that begins with the user management interface and ends with account creation and licensing."
+      "explanation": "Cloud user creation begins in the user-management area and ends with licensing and account creation."
     },
     {
       "type": "dropdown",
-      "title": "License Assignment",
-      "prompt": "You want the new user to access Microsoft 365 services immediately after account creation. Select the action that best supports that objective.",
+      "title": "Task 2 - Enable Service Access",
+      "prompt": "Dropdown Task\nYou want the new user to access Microsoft 365 services immediately after account creation.\nTo answer, select the action that best supports that objective.",
       "options": [
         "Assign a license during account creation",
         "Create a local profile on the workstation",
@@ -61,37 +46,33 @@
         "Rename the tenant domain"
       ],
       "answer": "Assign a license during account creation",
-      "explanation": "Without an assigned license, the user account exists but cannot consume Microsoft 365 services."
+      "explanation": "Licensing is required before the cloud user can consume Microsoft 365 services."
     },
     {
-      "type": "matching",
-      "title": "Identity Administration Areas",
-      "prompt": "You want to continue identity administration in the tenant. Match each administrative area to the task it primarily supports.",
-      "options": [
+      "type": "matchLines",
+      "title": "Task 3 - Identify Administration Areas",
+      "prompt": "Matching Task\nYou want to continue user and group administration in the tenant.\nTo answer, match each administrative area on the left with the task it primarily supports on the right.",
+      "left": [
+        "Active users",
+        "Groups",
+        "Licenses"
+      ],
+      "right": [
         "Create and manage user accounts",
         "Manage group membership",
         "Review license assignments"
       ],
-      "pairs": [
-        {
-          "left": "Active users",
-          "right": "Create and manage user accounts"
-        },
-        {
-          "left": "Groups",
-          "right": "Manage group membership"
-        },
-        {
-          "left": "Licenses",
-          "right": "Review license assignments"
-        }
-      ],
-      "explanation": "Different administrative areas are used for user creation, membership management, and license review."
+      "answer": {
+        "Active users": "Create and manage user accounts",
+        "Groups": "Manage group membership",
+        "Licenses": "Review license assignments"
+      },
+      "explanation": "Different administrative areas are used for user creation, membership management, and licensing."
     },
     {
       "type": "dropdown",
-      "title": "Selecting the Correct Group Type",
-      "prompt": "You want to group employees by department so permissions can be managed securely. Select the group type that best supports that objective.",
+      "title": "Task 4 - Select the Correct Group Type",
+      "prompt": "Dropdown Task\nYou want to group employees by department so permissions can be managed securely.\nTo answer, select the group type that best supports that objective.",
       "options": [
         "Security group",
         "Distribution group",
@@ -99,12 +80,12 @@
         "Public folder group"
       ],
       "answer": "Security group",
-      "explanation": "Security groups are designed for permission assignment and access control."
+      "explanation": "Security groups are used for access control and permission assignment."
     },
     {
       "type": "order",
-      "title": "Adding Users to a Group",
-      "prompt": "You want to place the correct users into a departmental security group. Move the required actions into the Answer Area and arrange them in the correct order.",
+      "title": "Task 5 - Add Users to a Department Group",
+      "prompt": "Drag and Drop Task\nYou want to place the correct users into a departmental security group.\nTo answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
       "steps": [
         "Open the Groups area",
         "Select the target security group",
@@ -121,17 +102,17 @@
         "Select the required users",
         "Save the membership changes"
       ],
-      "explanation": "Group membership changes are applied through the group object, followed by member selection and save."
+      "explanation": "Membership changes are performed from the group object and finalized by saving the selected members."
     },
     {
       "type": "scriptDropdown",
-      "title": "Connecting Before Automation",
-      "prompt": "You want to automate user administration with PowerShell. Complete the command used to establish the Microsoft Graph connection before running user-management commands.",
+      "title": "Task 6 - Connect Before Automating",
+      "prompt": "PowerShell Task\nYou want to automate user administration with PowerShell.\nTo answer, select the appropriate value for the missing portion of the command.",
       "scriptParts": [
         "Connect-",
         {
           "type": "dropdown",
-          "id": "cmd",
+          "id": "connect",
           "options": [
             "MgGraph",
             "AzureAD",
@@ -141,9 +122,42 @@
         "\n\n# Authenticate with administrator credentials"
       ],
       "answers": {
-        "cmd": "MgGraph"
+        "connect": "MgGraph"
       },
-      "explanation": "Administrative automation begins by establishing the correct Microsoft Graph connection."
+      "explanation": "Cloud administration through Microsoft Graph begins with Connect-MgGraph."
+    },
+    {
+      "type": "scriptDropdown",
+      "title": "Task 7 - Complete a User Creation Command",
+      "prompt": "PowerShell Task\nYou want to define the sign-in identity and account state for a new cloud user.\nTo answer, select the appropriate value for each blank in the script.",
+      "scriptParts": [
+        "New-MgUser -DisplayName \"Jane Doe\" `\n",
+        "           -",
+        {
+          "type": "dropdown",
+          "id": "upn",
+          "options": [
+            "UserPrincipalName",
+            "GroupName",
+            "DeviceName"
+          ]
+        },
+        " \"jdoe@newvuehealth.onmicrosoft.com\" `\n",
+        "           -AccountEnabled ",
+        {
+          "type": "dropdown",
+          "id": "enabled",
+          "options": [
+            "true",
+            "false"
+          ]
+        }
+      ],
+      "answers": {
+        "upn": "UserPrincipalName",
+        "enabled": "true"
+      },
+      "explanation": "The sign-in identity is defined by UserPrincipalName, and the account must be enabled for use."
     }
   ]
 }
