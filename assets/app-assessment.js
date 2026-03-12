@@ -39,10 +39,10 @@ function renderFatal(message) {
 
 function buildStepModel() {
   assessment._steps = [
-    { type: "scenario", label: "Scenario" },
+    { type: "scenario", label: "Case Study" },
     ...assessment.activities.map((activity, index) => ({
       type: "activity",
-      label: `Activity ${index + 1}`,
+      label: `Task ${index + 1}`,
       activityIndex: index
     })),
     { type: "review", label: "Review & Submit" },
@@ -65,6 +65,7 @@ function buildSidebar() {
 
     btn.addEventListener("click", () => {
       if (step.type === "results" && currentStep !== assessment._steps.length - 1) return;
+      persistVisibleInputs();
       currentStep = index;
       renderCurrentStep();
     });
@@ -126,8 +127,8 @@ function renderCurrentStep() {
   workspaceContent.innerHTML = "";
 
   if (step.type === "scenario") {
-    workspaceEyebrow.textContent = "Scenario";
-    workspaceTitle.textContent = "Assessment Context";
+    workspaceEyebrow.textContent = "Case Study";
+    workspaceTitle.textContent = "Case Study";
     renderScenarioStep(workspaceContent);
     prevBtn.disabled = true;
     nextBtn.disabled = false;
@@ -136,7 +137,7 @@ function renderCurrentStep() {
 
   if (step.type === "activity") {
     const activity = assessment.activities[step.activityIndex];
-    workspaceEyebrow.textContent = `Activity ${step.activityIndex + 1}`;
+    workspaceEyebrow.textContent = `Task ${step.activityIndex + 1}`;
     workspaceTitle.textContent = activity.title || `Task ${step.activityIndex + 1}`;
     renderActivityStep(workspaceContent, activity, step.activityIndex);
     prevBtn.disabled = false;
@@ -552,7 +553,7 @@ function renderReviewStep(container) {
     const item = document.createElement("div");
     item.className = "reviewItem";
     item.innerHTML = `
-      <strong>Activity ${index + 1}:</strong> ${escapeHtml(activity.title || `Task ${index + 1}`)}
+      <strong>Task ${index + 1}:</strong> ${escapeHtml(activity.title || `Task ${index + 1}`)}
       <div style="margin-top:0.45rem; color:#94a3b8;">${escapeHtml(activity.prompt)}</div>
     `;
     list.appendChild(item);
@@ -631,7 +632,7 @@ function renderResultsStep(container) {
   activityResults.forEach((result, index) => {
     const item = document.createElement("div");
     item.className = `resultItem ${result.correct ? "isCorrect" : "isIncorrect"}`;
-    item.textContent = `${result.correct ? "✓" : "✗"} Activity ${index + 1} — ${assessment.activities[index].title || `Task ${index + 1}`}`;
+    item.textContent = `${result.correct ? "✓" : "✗"} Task ${index + 1} — ${assessment.activities[index].title || `Task ${index + 1}`}`;
     resultList.appendChild(item);
   });
 
@@ -673,7 +674,7 @@ function renderAnswerReview() {
     const item = document.createElement("div");
     item.className = "reviewItem";
     item.innerHTML = `
-      <strong>Activity ${index + 1}:</strong> ${escapeHtml(activity.title || `Task ${index + 1}`)}
+      <strong>Task ${index + 1}:</strong> ${escapeHtml(activity.title || `Task ${index + 1}`)}
       <div style="margin-top:0.45rem;"><strong>Correct Answer:</strong><br>${formatCorrectAnswer(activity, result.correctAnswer)}</div>
       ${activity.explanation ? `<div style="margin-top:0.45rem;"><strong>Explanation:</strong> ${escapeHtml(activity.explanation)}</div>` : ""}
     `;
@@ -767,10 +768,10 @@ function generateReport(score, total, percentage, passed) {
       </div>
 
       <div class="section">
-        <h3>Activity Results</h3>
+        <h3>Task Results</h3>
         ${assessment.activities.map((activity, index) => `
           <div class="row">
-            <strong>Activity ${index + 1}:</strong> ${escapeHtml(activity.title || `Task ${index + 1}`)} — ${activityResults[index].correct ? "Correct" : "Incorrect"}
+            <strong>Task ${index + 1}:</strong> ${escapeHtml(activity.title || `Task ${index + 1}`)} — ${activityResults[index].correct ? "Correct" : "Incorrect"}
           </div>
         `).join("")}
       </div>
