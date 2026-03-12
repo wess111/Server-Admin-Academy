@@ -54,8 +54,8 @@
           <p class="assessmentEyebrow">Knowledge Assessment</p>
           <h1 class="heroTitle heroTitleSmall" id="assessmentTitle">Loading assessment...</h1>
           <p class="heroSub" id="assessmentWelcome">
-            Welcome to this assessment activity. Read through the scenario and complete each task carefully.
-            Some tasks require ordering steps, matching administrative concepts, or completing PowerShell commands.
+            Welcome to this assessment activity. Read through the scenario carefully and complete each task in sequence.
+            Some tasks require ordering actions, matching administrative components, or completing PowerShell commands.
             Review your responses before submitting.
           </p>
         </div>
@@ -81,45 +81,36 @@
                   <span class="metaLabel">Pass Score</span>
                   <span class="metaValue" id="passMeta">-</span>
                 </div>
+                <div class="metaRow">
+                  <span class="metaLabel">Current Step</span>
+                  <span class="metaValue" id="stepMeta">-</span>
+                </div>
               </div>
             </div>
           </aside>
 
           <div class="assessmentMain">
-            <section class="assessmentCard" id="scenarioSection" data-section="scenario">
+            <section class="assessmentCard" id="workspaceCard">
               <div class="cardHeader">
-                <p class="cardEyebrow">Scenario</p>
-                <h2 class="cardTitle">Assessment Context</h2>
+                <p class="cardEyebrow" id="workspaceEyebrow">Scenario</p>
+                <h2 class="cardTitle" id="workspaceTitle">Assessment Context</h2>
               </div>
+
               <div class="cardBody">
-                <p id="assessmentScenario" class="scenarioText"></p>
+                <div id="workspaceContent"></div>
               </div>
-            </section>
 
-            <div id="activitiesContainer"></div>
-
-            <section class="assessmentCard" id="submitSection" data-section="submit">
-              <div class="cardHeader">
-                <p class="cardEyebrow">Submit</p>
-                <h2 class="cardTitle">Assessment Submission</h2>
-              </div>
-              <div class="cardBody submitArea">
-                <p class="submitText">
-                  Review your responses, then submit the assessment. If retries are enabled, you will be able to try again after your first attempt.
-                </p>
-                <button id="submitBtn" class="assessmentBtn assessmentBtnPrimary" type="button">
-                  Submit Assessment
+              <div class="workspaceFooter">
+                <button id="prevBtn" class="assessmentBtn assessmentBtnSecondary" type="button">
+                  Previous
                 </button>
-              </div>
-            </section>
 
-            <section class="assessmentCard" id="resultsSection" data-section="results" hidden>
-              <div class="cardHeader">
-                <p class="cardEyebrow">Results</p>
-                <h2 class="cardTitle">Assessment Results</h2>
-              </div>
-              <div class="cardBody">
-                <div id="resultsContent"></div>
+                <div class="workspaceFooterRight">
+                  <span class="workspaceStepText" id="workspaceStepText"></span>
+                  <button id="nextBtn" class="assessmentBtn assessmentBtnPrimary" type="button">
+                    Next
+                  </button>
+                </div>
               </div>
             </section>
           </div>
