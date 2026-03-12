@@ -27,22 +27,49 @@
     "description": "Gamified support tickets focused on Windows installation, storage, user accounts, and file sharing."
   },
   {
-    "title": "Help Desk Triage Knowledge Check (Coming Soon)",
-    "domain": "support-operations",
-    "mode": "knowledge-assessments",
-    "difficulty": "beginner",
-    "status": "upcoming",
-    "link": "#",
-    "description": "Prioritization, symptoms vs. root cause, and escalation cues."
-  },
-  {
-    "title": "Systems Engineering Knowledge Check (Coming Soon)",
+    "title": "Cloud Tenant Provisioning",
     "domain": "systems-engineering",
     "mode": "knowledge-assessments",
     "difficulty": "beginner",
-    "status": "upcoming",
-    "link": "#",
-    "description": "DNS/DHCP fundamentals, record types, options, relays, and troubleshooting patterns."
+    "status": "available",
+    "link": "./assessment.html?lab=cloud-tenant-provisioning",
+    "description": "Provision a Microsoft 365 tenant, verify subscription readiness, identify core administrative portals, and validate branding workflow."
+  },
+  {
+    "title": "Cloud Users and Groups",
+    "domain": "systems-engineering",
+    "mode": "knowledge-assessments",
+    "difficulty": "beginner",
+    "status": "available",
+    "link": "./assessment.html?lab=cloud-users-groups",
+    "description": "Review cloud-based user and group administration, identity structure, role assignment logic, and membership management steps."
+  },
+  {
+    "title": "Microsoft Entra PowerShell Administration",
+    "domain": "systems-engineering",
+    "mode": "knowledge-assessments",
+    "difficulty": "intermediate",
+    "status": "available",
+    "link": "./assessment.html?lab=powershell-entra",
+    "description": "Interpret Microsoft Entra PowerShell commands, module setup steps, connection workflow, and administrative command usage."
+  },
+  {
+    "title": "Hybrid Identity Configuration",
+    "domain": "systems-engineering",
+    "mode": "knowledge-assessments",
+    "difficulty": "intermediate",
+    "status": "available",
+    "link": "./assessment.html?lab=hybrid-identity",
+    "description": "Evaluate the workflow for hybrid identity deployment, synchronization readiness, device registration, and administrative validation."
+  },
+  {
+    "title": "Mobile Device Management",
+    "domain": "systems-engineering",
+    "mode": "knowledge-assessments",
+    "difficulty": "intermediate",
+    "status": "available",
+    "link": "./assessment.html?lab=mobile-device-management",
+    "description": "Assess mobile device management concepts including enrollment workflow, policy targeting, compliance logic, and verification steps."
   },
   {
     "title": "Security Ops Baseline Verification (Coming Soon)",
