@@ -3,135 +3,310 @@
   "attemptsAllowed": 2,
   "retryEnabled": true,
   "revealAnswersAfterFinalAttempt": true,
-  "passScore": 70,
-  "scenario": "NewVue Health plans to manage company-owned endpoints by using Microsoft Intune. Before broader deployment begins, the system administrator must understand the enrollment workflow, the relationship between device registration and management, the purpose of compliance, and how device-management settings are verified in the administrative environment. Because this is a complementary activity, use the case study and reference information below to complete the required tasks.",
+  "passScore": 75,
+  "scenario": "A healthcare organization has already synchronized its on-premises Active Directory environment with Microsoft Entra ID. The next phase is to transition domain-joined Windows endpoints into a hybrid management model by enabling Hybrid Azure AD Join, automatic Microsoft Intune enrollment, application deployment, device compliance evaluation, and update governance. Before the organization can rely on centralized cloud-based endpoint management, the device registration path, automatic enrollment controls, application deployment workflow, compliance configuration, and update-ring settings must all be validated.",
   "reference": [
-    { "label": "Management Platform", "value": "Microsoft Intune" },
-    { "label": "Endpoint Platform", "value": "Windows 11" },
-    { "label": "Device Identity Platform", "value": "Microsoft Entra ID" },
-    { "label": "Administrative Portal", "value": "Intune admin center" }
+    {
+      "label": "Target client device",
+      "value": "NV-CLI"
+    },
+    {
+      "label": "Management platform",
+      "value": "Microsoft Intune"
+    },
+    {
+      "label": "Identity platform",
+      "value": "Microsoft Entra ID"
+    },
+    {
+      "label": "Enrollment type",
+      "value": "Hybrid Azure AD Join with automatic MDM enrollment"
+    },
+    {
+      "label": "MDM user scope",
+      "value": "All"
+    },
+    {
+      "label": "Required GPO setting",
+      "value": "Enable automatic MDM enrollment using default Azure AD credentials"
+    }
   ],
   "activities": [
     {
       "type": "order",
-      "title": "Task 1 - Enroll a Device",
-      "prompt": "Drag and Drop Task\nYou want to enroll a Windows device into the cloud management environment.\nTo answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "taskType": "Drag and Drop Task",
+      "title": "Task 1 - Configure Hybrid Azure AD Join",
+      "prompt": "You want to prepare Azure AD Connect so that domain-joined Windows devices can automatically register with Microsoft Entra ID by using the Service Connection Point. To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
       "steps": [
-        "Sign in to the device with an organizational account",
-        "Access device enrollment settings",
-        "Register the device with Microsoft Entra ID",
-        "Complete Intune enrollment",
-        "Review the device management status"
+        "Open Azure AD Connect and select Configure",
+        "Select Configure device options",
+        "Authenticate with a Global Administrator or Hybrid Identity Administrator account",
+        "Select Configure Hybrid Azure AD Join",
+        "Select Windows 10 or later domain-joined devices",
+        "Select the domain, choose Microsoft Entra ID as the authentication service, and provide Enterprise Admin credentials",
+        "Review the summary and complete the configuration"
       ],
       "answer": [
-        "Sign in to the device with an organizational account",
-        "Access device enrollment settings",
-        "Register the device with Microsoft Entra ID",
-        "Complete Intune enrollment",
-        "Review the device management status"
+        "Open Azure AD Connect and select Configure",
+        "Select Configure device options",
+        "Authenticate with a Global Administrator or Hybrid Identity Administrator account",
+        "Select Configure Hybrid Azure AD Join",
+        "Select Windows 10 or later domain-joined devices",
+        "Select the domain, choose Microsoft Entra ID as the authentication service, and provide Enterprise Admin credentials",
+        "Review the summary and complete the configuration"
       ],
-      "explanation": "Enrollment requires organizational sign-in, registration, management enrollment, and final validation."
+      "explanation": "The lab begins with Azure AD Connect device configuration so the SCP can be published for hybrid registration discovery."
+    },
+    {
+      "type": "dropdown",
+      "taskType": "Dropdown Task",
+      "title": "Task 2 - Configure Automatic MDM Enrollment",
+      "prompt": "You want devices owned by synchronized users to enroll into Intune automatically after registration. To answer, select the MDM user scope setting that best supports that objective.",
+      "options": [
+        "All",
+        "None",
+        "Some",
+        "Devices only"
+      ],
+      "answer": "All",
+      "explanation": "The lab explicitly sets the Intune automatic enrollment scope to All."
     },
     {
       "type": "matchLines",
-      "title": "Task 2 - Identify Management Components",
-      "prompt": "Matching Task\nYou want to explain the role of each cloud management component.\nTo answer, match each component on the left with its primary function on the right.",
+      "taskType": "Matching Task",
+      "title": "Task 3 - Map the GPO Configuration",
+      "prompt": "You want to configure the Group Policy object that enables automatic Microsoft Intune enrollment on the client device. To answer, match each configuration element on the left with the correct value or location on the right.",
       "left": [
-        "Microsoft Intune",
-        "Microsoft Entra ID",
-        "Compliance policy"
+        "Policy path",
+        "Policy name",
+        "Policy state",
+        "Credential type"
       ],
       "right": [
-        "Cloud device management service",
-        "Cloud identity and registration service",
-        "Policy evaluation standard"
+        "Computer Configuration → Administrative Templates → Windows Components → MDM",
+        "Enable automatic MDM enrollment using default Azure AD credentials",
+        "Enabled",
+        "User Credential"
       ],
       "answer": {
-        "Microsoft Intune": "Cloud device management service",
-        "Microsoft Entra ID": "Cloud identity and registration service",
-        "Compliance policy": "Policy evaluation standard"
+        "Policy path": "Computer Configuration → Administrative Templates → Windows Components → MDM",
+        "Policy name": "Enable automatic MDM enrollment using default Azure AD credentials",
+        "Policy state": "Enabled",
+        "Credential type": "User Credential"
       },
-      "explanation": "Successful endpoint management depends on distinguishing identity registration, device management, and compliance evaluation."
+      "explanation": "The lab configures a computer-side MDM policy and explicitly sets the enrollment option to User Credential."
+    },
+    {
+      "type": "scriptFill",
+      "taskType": "PowerShell Task",
+      "title": "Task 4 - Validate Hybrid Join and Enrollment Readiness",
+      "prompt": "You want to refresh policy, verify hybrid device registration, and confirm that the device has an MDM enrollment endpoint. To answer, select the appropriate value for each blank in the command sequence.",
+      "script": [
+        "gpupdate ",
+        {
+          "id": "gpforce",
+          "options": [
+            "/force",
+            "/sync",
+            "/target:user"
+          ],
+          "correct": "/force"
+        },
+        "\n\n",
+        {
+          "id": "dsregcmd",
+          "options": [
+            "dsregcmd",
+            "ipconfig",
+            "gpresult"
+          ],
+          "correct": "dsregcmd"
+        },
+        " ",
+        {
+          "id": "statusswitch",
+          "options": [
+            "/status",
+            "/renew",
+            "/verify"
+          ],
+          "correct": "/status"
+        },
+        "\n\n# Expected results:\nAzureAdJoined : ",
+        {
+          "id": "aadjoined",
+          "options": [
+            "YES",
+            "NO",
+            "PENDING"
+          ],
+          "correct": "YES"
+        },
+        "\nDomainJoined : ",
+        {
+          "id": "domainjoined",
+          "options": [
+            "YES",
+            "NO",
+            "PENDING"
+          ],
+          "correct": "YES"
+        },
+        "\nMDMUrl is ",
+        {
+          "id": "mdmurl",
+          "options": [
+            "populated",
+            "blank",
+            "disabled"
+          ],
+          "correct": "populated"
+        }
+      ],
+      "explanation": "The lab validates successful hybrid registration by checking AzureAdJoined, DomainJoined, and that the MDMUrl field is populated."
     },
     {
       "type": "dropdown",
-      "title": "Task 3 - Explain Compliance",
-      "prompt": "Dropdown Task\nYou want to ensure that managed endpoints meet the organization’s baseline security expectations.\nTo answer, select the reason compliance policies are applied.",
+      "taskType": "Dropdown Task",
+      "title": "Task 5 - Verify the Device in Entra ID",
+      "prompt": "You want to verify that the client device completed hybrid registration in Microsoft Entra ID. To answer, select the join type that should be displayed for NV-CLI in the Entra devices list.",
       "options": [
-        "Ensure devices meet security requirements",
-        "Upgrade device processors",
-        "Install motherboard firmware",
-        "Rename the local administrator account"
+        "Microsoft Entra hybrid joined",
+        "Microsoft Entra registered",
+        "Azure AD B2B device",
+        "Workgroup joined"
       ],
-      "answer": "Ensure devices meet security requirements",
-      "explanation": "Compliance policies are used to measure whether devices satisfy required security conditions."
-    },
-    {
-      "type": "dropdown",
-      "title": "Task 4 - Validate Device Visibility",
-      "prompt": "Dropdown Task\nYou want to confirm that a device is visible in the cloud management environment after enrollment.\nTo answer, select the administrative location that best supports that validation.",
-      "options": [
-        "Devices in the Intune admin center",
-        "Billing in the Microsoft 365 admin center",
-        "Domains in the Microsoft 365 admin center",
-        "Local Users and Groups on the workstation"
-      ],
-      "answer": "Devices in the Intune admin center",
-      "explanation": "Cloud-managed device records are reviewed in the Intune device-management interface."
+      "answer": "Microsoft Entra hybrid joined",
+      "explanation": "The validation step in Entra ID confirms that NV-CLI is listed as Microsoft Entra hybrid joined."
     },
     {
       "type": "order",
-      "title": "Task 5 - Apply a Device Policy",
-      "prompt": "Drag and Drop Task\nYou want to deploy a device policy after enrollment has completed.\nTo answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "taskType": "Drag and Drop Task",
+      "title": "Task 6 - Deploy Microsoft 365 Apps",
+      "prompt": "You want to deploy Microsoft 365 Apps for Windows to all managed users from Intune. To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
       "steps": [
-        "Open the Intune admin center",
-        "Create or select a device policy",
-        "Assign the policy to the target group",
-        "Allow policy processing to occur",
-        "Review the policy deployment status"
+        "Open Intune Admin Center and go to Apps → Windows → Create",
+        "Choose Microsoft 365 Apps for Windows 10 and later",
+        "Review the App suite information page",
+        "Configure the app suite for 64-bit architecture, Open Document Format, and Current Channel",
+        "Assign the deployment to All users",
+        "Review the summary and create the deployment",
+        "Verify that Microsoft 365 applications appear on NV-CLI"
       ],
       "answer": [
-        "Open the Intune admin center",
-        "Create or select a device policy",
-        "Assign the policy to the target group",
-        "Allow policy processing to occur",
-        "Review the policy deployment status"
+        "Open Intune Admin Center and go to Apps → Windows → Create",
+        "Choose Microsoft 365 Apps for Windows 10 and later",
+        "Review the App suite information page",
+        "Configure the app suite for 64-bit architecture, Open Document Format, and Current Channel",
+        "Assign the deployment to All users",
+        "Review the summary and create the deployment",
+        "Verify that Microsoft 365 applications appear on NV-CLI"
       ],
-      "explanation": "Policy deployment begins with policy selection, continues through assignment, and ends with deployment validation."
+      "explanation": "The app deployment workflow in the lab moves from app creation to configuration, assignment, creation, and verification on the client."
     },
     {
-      "type": "scriptDropdown",
-      "title": "Task 6 - Connect Before Device Queries",
-      "prompt": "PowerShell Task\nYou want to query cloud-managed devices by using Microsoft Graph PowerShell.\nTo answer, select the appropriate value for the missing portion of the command.",
-      "scriptParts": [
-        "Connect-",
-        {
-          "type": "dropdown",
-          "id": "connect",
-          "options": [
-            "MgGraph",
-            "AzureAD",
-            "DeviceShell"
-          ]
-        }
+      "type": "matchLines",
+      "taskType": "Matching Task",
+      "title": "Task 7 - Map the Microsoft 365 App Suite Settings",
+      "prompt": "You want the Microsoft 365 app deployment to match the required configuration used in the lab. To answer, match each setting on the left with the correct configured value on the right.",
+      "left": [
+        "Architecture",
+        "Default file format",
+        "Update channel",
+        "Use shared computer activation"
       ],
-      "answers": {
-        "connect": "MgGraph"
+      "right": [
+        "64-bit",
+        "Office Open Document Format",
+        "Current Channel",
+        "No"
+      ],
+      "answer": {
+        "Architecture": "64-bit",
+        "Default file format": "Office Open Document Format",
+        "Update channel": "Current Channel",
+        "Use shared computer activation": "No"
       },
-      "explanation": "Cloud device queries through Microsoft Graph begin with Connect-MgGraph."
+      "explanation": "The app suite is configured with 64-bit architecture, ODF default format, Current Channel, and shared computer activation set to No."
+    },
+    {
+      "type": "order",
+      "taskType": "Drag and Drop Task",
+      "title": "Task 8 - Configure Device Compliance",
+      "prompt": "You want to create a Windows device compliance policy that evaluates hybrid devices against core security requirements. To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "steps": [
+        "Go to Devices → Compliance → Policies and create a new policy",
+        "Select Windows 10 and later with the Windows 10/11 compliance policy profile",
+        "Name the policy NewVue – Windows Device Compliance",
+        "Require encryption, firewall, TPM, and antivirus under System Security",
+        "Keep the default noncompliance action as Mark device noncompliant immediately",
+        "Assign the policy to All users",
+        "Review NV-CLI under Device compliance"
+      ],
+      "answer": [
+        "Go to Devices → Compliance → Policies and create a new policy",
+        "Select Windows 10 and later with the Windows 10/11 compliance policy profile",
+        "Name the policy NewVue – Windows Device Compliance",
+        "Require encryption, firewall, TPM, and antivirus under System Security",
+        "Keep the default noncompliance action as Mark device noncompliant immediately",
+        "Assign the policy to All users",
+        "Review NV-CLI under Device compliance"
+      ],
+      "explanation": "The compliance workflow in the lab is policy creation, security requirement configuration, assignment, and status validation."
     },
     {
       "type": "dropdown",
-      "title": "Task 7 - Relate Registration and Management",
-      "prompt": "Dropdown Task\nYou want to distinguish device identity from device management.\nTo answer, select the statement that best reflects that relationship.",
+      "taskType": "Dropdown Task",
+      "title": "Task 9 - Interpret Compliance Evaluation",
+      "prompt": "You want to interpret the result after opening NV-CLI in Intune and viewing Device compliance. To answer, select the set of states that the lab identifies as possible evaluation outcomes.",
       "options": [
-        "A device can be registered in Microsoft Entra ID and then managed through Intune",
-        "Intune replaces the need for device identity entirely",
-        "Device management happens before cloud registration exists",
-        "Compliance policies create the tenant domain"
+        "Compliant, Not compliant, Pending",
+        "Registered, Unregistered, Expired",
+        "Joined, Synced, Staged",
+        "Applied, Deferred, Removed"
       ],
-      "answer": "A device can be registered in Microsoft Entra ID and then managed through Intune",
-      "explanation": "Cloud device identity and cloud device management are related but distinct functions."
+      "answer": "Compliant, Not compliant, Pending",
+      "explanation": "The lab notes that Intune can show Compliant, Not compliant, or Pending during compliance evaluation."
+    },
+    {
+      "type": "scriptFill",
+      "taskType": "PowerShell Task",
+      "title": "Task 10 - Create the Update Ring Configuration",
+      "prompt": "You want to configure the update management baseline described in the lab. To answer, select the appropriate value for each blank in the configuration statement.",
+      "script": [
+        "Update ring name: NewVue – Update Ring\n",
+        "Feature update deferral period: ",
+        {
+          "id": "featuredays",
+          "options": [
+            "7 days",
+            "2 days",
+            "14 days"
+          ],
+          "correct": "7 days"
+        },
+        "\nQuality update deferral period: ",
+        {
+          "id": "qualitydays",
+          "options": [
+            "2 days",
+            "7 days",
+            "0 days"
+          ],
+          "correct": "2 days"
+        },
+        "\nAssignments: ",
+        {
+          "id": "assignscope",
+          "options": [
+            "All users",
+            "All devices",
+            "Selected administrators only"
+          ],
+          "correct": "All users"
+        }
+      ],
+      "explanation": "The update ring in the lab uses a 7-day feature deferral, 2-day quality deferral, and is assigned to All users."
     }
   ]
 }
