@@ -3,161 +3,261 @@
   "attemptsAllowed": 2,
   "retryEnabled": true,
   "revealAnswersAfterFinalAttempt": true,
-  "passScore": 70,
-  "scenario": "NewVue Health has completed tenant provisioning and is now preparing the cloud identity environment for administrative use. The system administrator must create cloud user accounts, assign licenses, organize users into security groups, and confirm that departmental group membership is configured correctly. Because this is a complementary activity, use the case study and reference information below to complete the required tasks.",
+  "passScore": 75,
+  "scenario": "A healthcare organization has already provisioned its Microsoft 365 tenant and activated licensing. The next phase is to establish a pilot cloud identity set in Microsoft Entra ID and Microsoft 365 by creating cloud-only users, organizing them into department-based security groups, enabling both assigned and attribute-driven membership, assigning Microsoft 365 E5 licenses, and validating that selected users can authenticate to Microsoft 365 services.",
   "reference": [
-    { "label": "Organization", "value": "NewVue Health" },
-    { "label": "Tenant Domain", "value": "newvuehealth.onmicrosoft.com" },
-    { "label": "Primary License", "value": "Microsoft 365 Business Premium" },
-    { "label": "Administrative Portal", "value": "Microsoft 365 admin center" },
-    { "label": "Identity Portal", "value": "Microsoft Entra admin center" }
+    {
+      "label": "Pilot users",
+      "value": "Alice Morgan, Brian Patel, Carla Johnson, Daniel Kim, Evelyn Rodriguez"
+    },
+    {
+      "label": "Tenant sign-in format",
+      "value": "<user>@<yourtenant>.onmicrosoft.com"
+    },
+    {
+      "label": "Assigned groups",
+      "value": "Administration_Cloud, Human_Resources_Cloud, IT_Operations_Cloud"
+    },
+    {
+      "label": "Dynamic groups",
+      "value": "Clinical_Services_Cloud, Finance_Cloud"
+    },
+    {
+      "label": "License to assign",
+      "value": "Microsoft 365 E5"
+    }
   ],
   "activities": [
     {
       "type": "order",
-      "title": "Task 1 - Create a Cloud User",
-      "prompt": "Drag and Drop Task\nYou want to create a new cloud user and complete the account setup correctly.\nTo answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "taskType": "Drag and Drop Task",
+      "title": "Task 1 - Create the First Pilot User",
+      "prompt": "You want to create the first pilot cloud identity in Microsoft Entra ID by using the values provided in the case study. To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
       "steps": [
-        "Open the Microsoft 365 admin center",
-        "Navigate to Users",
-        "Select Active users",
-        "Choose Add a user",
-        "Enter the user account information",
-        "Assign the required license and create the account"
+        "Sign in to Microsoft Entra Admin Center",
+        "Go to Users → All users",
+        "Select New user → Create new user",
+        "Enter Alice Morgan's UPN, display name, job title, and department",
+        "Allow Entra to auto-generate the password",
+        "Create the account"
       ],
       "answer": [
-        "Open the Microsoft 365 admin center",
-        "Navigate to Users",
-        "Select Active users",
-        "Choose Add a user",
-        "Enter the user account information",
-        "Assign the required license and create the account"
+        "Sign in to Microsoft Entra Admin Center",
+        "Go to Users → All users",
+        "Select New user → Create new user",
+        "Enter Alice Morgan's UPN, display name, job title, and department",
+        "Allow Entra to auto-generate the password",
+        "Create the account"
       ],
-      "explanation": "Cloud user creation begins in the user-management area and ends with licensing and account creation."
-    },
-    {
-      "type": "dropdown",
-      "title": "Task 2 - Enable Service Access",
-      "prompt": "Dropdown Task\nYou want the new user to access Microsoft 365 services immediately after account creation.\nTo answer, select the action that best supports that objective.",
-      "options": [
-        "Assign a license during account creation",
-        "Create a local profile on the workstation",
-        "Restart the Microsoft 365 admin center",
-        "Rename the tenant domain"
-      ],
-      "answer": "Assign a license during account creation",
-      "explanation": "Licensing is required before the cloud user can consume Microsoft 365 services."
+      "explanation": "The lab starts in All users, creates Alice Morgan first, and requires the identity attributes listed in the pilot-user table."
     },
     {
       "type": "matchLines",
-      "title": "Task 3 - Identify Administration Areas",
-      "prompt": "Matching Task\nYou want to continue user and group administration in the tenant.\nTo answer, match each administrative area on the left with the task it primarily supports on the right.",
+      "taskType": "Matching Task",
+      "title": "Task 2 - Map the Pilot Users to Departments",
+      "prompt": "You want to verify that the pilot users were created with the correct department attributes because those values will later drive group membership and validation. To answer, match each pilot user on the left with the correct department on the right.",
       "left": [
-        "Active users",
-        "Groups",
-        "Licenses"
+        "Alice Morgan",
+        "Brian Patel",
+        "Carla Johnson",
+        "Daniel Kim",
+        "Evelyn Rodriguez"
       ],
       "right": [
-        "Create and manage user accounts",
-        "Manage group membership",
-        "Review license assignments"
+        "Administration",
+        "Clinical Services",
+        "Human Resources",
+        "IT Operations",
+        "Finance"
       ],
       "answer": {
-        "Active users": "Create and manage user accounts",
-        "Groups": "Manage group membership",
-        "Licenses": "Review license assignments"
+        "Alice Morgan": "Administration",
+        "Brian Patel": "Clinical Services",
+        "Carla Johnson": "Human Resources",
+        "Daniel Kim": "IT Operations",
+        "Evelyn Rodriguez": "Finance"
       },
-      "explanation": "Different administrative areas are used for user creation, membership management, and licensing."
-    },
-    {
-      "type": "dropdown",
-      "title": "Task 4 - Select the Correct Group Type",
-      "prompt": "Dropdown Task\nYou want to group employees by department so permissions can be managed securely.\nTo answer, select the group type that best supports that objective.",
-      "options": [
-        "Security group",
-        "Distribution group",
-        "Mail contact group",
-        "Public folder group"
-      ],
-      "answer": "Security group",
-      "explanation": "Security groups are used for access control and permission assignment."
+      "explanation": "The department attribute is central to both manual group placement and dynamic group membership in the lab."
     },
     {
       "type": "order",
-      "title": "Task 5 - Add Users to a Department Group",
-      "prompt": "Drag and Drop Task\nYou want to place the correct users into a departmental security group.\nTo answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "taskType": "Drag and Drop Task",
+      "title": "Task 3 - Create an Assigned Security Group",
+      "prompt": "You want to create one of the manually managed departmental security groups in Microsoft Entra ID. To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
       "steps": [
-        "Open the Groups area",
-        "Select the target security group",
-        "Open the membership section",
-        "Choose Add members",
-        "Select the required users",
-        "Save the membership changes"
+        "Go to Groups → All groups",
+        "Select New group",
+        "Choose Security as the group type",
+        "Choose Assigned as the membership type",
+        "Enter the group name",
+        "Create the group"
       ],
       "answer": [
-        "Open the Groups area",
-        "Select the target security group",
-        "Open the membership section",
-        "Choose Add members",
-        "Select the required users",
-        "Save the membership changes"
+        "Go to Groups → All groups",
+        "Select New group",
+        "Choose Security as the group type",
+        "Choose Assigned as the membership type",
+        "Enter the group name",
+        "Create the group"
       ],
-      "explanation": "Membership changes are performed from the group object and finalized by saving the selected members."
+      "explanation": "Assigned groups are created manually and use Security + Assigned in the new-group workflow."
     },
     {
-      "type": "scriptDropdown",
-      "title": "Task 6 - Connect Before Automating",
-      "prompt": "PowerShell Task\nYou want to automate user administration with PowerShell.\nTo answer, select the appropriate value for the missing portion of the command.",
-      "scriptParts": [
-        "Connect-",
+      "type": "scriptFill",
+      "taskType": "PowerShell Task",
+      "title": "Task 4 - Build the Dynamic Membership Rule",
+      "prompt": "You want to create the Clinical Services dynamic group so that user membership is determined automatically from the Department attribute. To answer, select the appropriate value for each blank in the rule statement.",
+      "script": [
+        "(",
         {
-          "type": "dropdown",
-          "id": "connect",
+          "id": "attr",
           "options": [
-            "MgGraph",
-            "AzureAD",
-            "MSOnline"
-          ]
+            "user.department",
+            "user.jobTitle",
+            "user.userPrincipalName"
+          ],
+          "correct": "user.department"
         },
-        "\n\n# Authenticate with administrator credentials"
+        " -eq \"",
+        {
+          "id": "value",
+          "options": [
+            "Clinical Services",
+            "Clinical_Services_Cloud",
+            "Registered Nurse"
+          ],
+          "correct": "Clinical Services"
+        },
+        "\")"
       ],
-      "answers": {
-        "connect": "MgGraph"
-      },
-      "explanation": "Cloud administration through Microsoft Graph begins with Connect-MgGraph."
+      "explanation": "The lab uses Dynamic User groups and defines membership by department values such as Clinical Services and Finance."
     },
     {
-      "type": "scriptDropdown",
-      "title": "Task 7 - Complete a User Creation Command",
-      "prompt": "PowerShell Task\nYou want to define the sign-in identity and account state for a new cloud user.\nTo answer, select the appropriate value for each blank in the script.",
-      "scriptParts": [
-        "New-MgUser -DisplayName \"Jane Doe\" `\n",
-        "           -",
-        {
-          "type": "dropdown",
-          "id": "upn",
-          "options": [
-            "UserPrincipalName",
-            "GroupName",
-            "DeviceName"
-          ]
-        },
-        " \"jdoe@newvuehealth.onmicrosoft.com\" `\n",
-        "           -AccountEnabled ",
-        {
-          "type": "dropdown",
-          "id": "enabled",
-          "options": [
-            "true",
-            "false"
-          ]
-        }
+      "type": "matchLines",
+      "taskType": "Matching Task",
+      "title": "Task 5 - Map the Group Membership Model",
+      "prompt": "You want to distinguish which groups require manual membership updates and which groups populate automatically. To answer, match each group on the left with the correct membership model or expected member on the right.",
+      "left": [
+        "Administration_Cloud",
+        "Human_Resources_Cloud",
+        "IT_Operations_Cloud",
+        "Clinical_Services_Cloud",
+        "Finance_Cloud"
       ],
-      "answers": {
-        "upn": "UserPrincipalName",
-        "enabled": "true"
+      "right": [
+        "Assigned group for Alice Morgan",
+        "Assigned group for Carla Johnson",
+        "Assigned group for Daniel Kim",
+        "Dynamic group for Brian Patel",
+        "Dynamic group for Evelyn Rodriguez"
+      ],
+      "answer": {
+        "Administration_Cloud": "Assigned group for Alice Morgan",
+        "Human_Resources_Cloud": "Assigned group for Carla Johnson",
+        "IT_Operations_Cloud": "Assigned group for Daniel Kim",
+        "Clinical_Services_Cloud": "Dynamic group for Brian Patel",
+        "Finance_Cloud": "Dynamic group for Evelyn Rodriguez"
       },
-      "explanation": "The sign-in identity is defined by UserPrincipalName, and the account must be enabled for use."
+      "explanation": "The lab uses manual membership for three assigned groups and automatic membership for the two department-driven dynamic groups."
+    },
+    {
+      "type": "order",
+      "taskType": "Drag and Drop Task",
+      "title": "Task 6 - Add a User to an Assigned Group",
+      "prompt": "You want to place Carla Johnson into the Human_Resources_Cloud assigned group. To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "steps": [
+        "Go to Groups",
+        "Open Human_Resources_Cloud",
+        "Open the Members tab",
+        "Select Add members",
+        "Search for Carla Johnson",
+        "Save the membership change"
+      ],
+      "answer": [
+        "Go to Groups",
+        "Open Human_Resources_Cloud",
+        "Open the Members tab",
+        "Select Add members",
+        "Search for Carla Johnson",
+        "Save the membership change"
+      ],
+      "explanation": "Manual membership changes are performed from the group object by opening Members, adding the user, and saving."
+    },
+    {
+      "type": "dropdown",
+      "taskType": "Dropdown Task",
+      "title": "Task 7 - Verify License Availability",
+      "prompt": "You want to confirm that the required cloud license is available before assigning services to the pilot users. To answer, select the navigation path that should be opened in Microsoft 365 Admin Center.",
+      "options": [
+        "Billing → Licenses",
+        "Users → Active users",
+        "Groups → All groups",
+        "Settings → Domains"
+      ],
+      "answer": "Billing → Licenses",
+      "explanation": "The license-verification step in the lab occurs before assignment and is performed from the Billing area."
+    },
+    {
+      "type": "order",
+      "taskType": "Drag and Drop Task",
+      "title": "Task 8 - Assign Microsoft 365 E5 to a Pilot User",
+      "prompt": "You want to assign Microsoft 365 E5 to one of the pilot users after verifying license availability. To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "steps": [
+        "Open Microsoft 365 Admin Center",
+        "Go to Users → Active users",
+        "Select the pilot user account",
+        "Open Licenses and apps",
+        "Assign Microsoft 365 E5",
+        "Save changes"
+      ],
+      "answer": [
+        "Open Microsoft 365 Admin Center",
+        "Go to Users → Active users",
+        "Select the pilot user account",
+        "Open Licenses and apps",
+        "Assign Microsoft 365 E5",
+        "Save changes"
+      ],
+      "explanation": "The lab separates license availability from license assignment and performs the assignment from the Active users area."
+    },
+    {
+      "type": "matchLines",
+      "taskType": "Matching Task",
+      "title": "Task 9 - Verify Identity Configuration from the User Profile",
+      "prompt": "You want to review a pilot user in Microsoft Entra ID and validate both license and group membership. To answer, match each verification area on the left with the information it should confirm on the right.",
+      "left": [
+        "Licenses tab",
+        "Groups tab",
+        "All users list",
+        "Members tab of an assigned group"
+      ],
+      "right": [
+        "Microsoft 365 E5 is assigned",
+        "Assigned and dynamic memberships are visible",
+        "Cloud-only pilot identities exist",
+        "Manual group membership was added correctly"
+      ],
+      "answer": {
+        "Licenses tab": "Microsoft 365 E5 is assigned",
+        "Groups tab": "Assigned and dynamic memberships are visible",
+        "All users list": "Cloud-only pilot identities exist",
+        "Members tab of an assigned group": "Manual group membership was added correctly"
+      },
+      "explanation": "The lab validates identities from multiple views: all users, group membership, and the user profile’s licenses and groups tabs."
+    },
+    {
+      "type": "dropdown",
+      "taskType": "Dropdown Task",
+      "title": "Task 10 - Complete Sign-In Validation",
+      "prompt": "You want to confirm that one of the pilot users can authenticate successfully into Microsoft 365 and reach cloud services after account creation and license assignment. To answer, select the action that should occur immediately before validating access to Outlook, OneDrive, Teams, and SharePoint.",
+      "options": [
+        "Complete the first sign-in password reset in a private browser session",
+        "Open Active Directory Users and Computers",
+        "Re-run the dynamic membership rule",
+        "Rename the pilot user account"
+      ],
+      "answer": "Complete the first sign-in password reset in a private browser session",
+      "explanation": "The lab’s sign-in validation uses an InPrivate/Incognito browser session and requires completion of the password reset before cloud services are checked."
     }
   ]
 }
