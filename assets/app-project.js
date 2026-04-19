@@ -25,6 +25,10 @@
     resetProgressBtn: document.getElementById('resetProgressBtn')
   };
 
+  function setText(el, value){
+    if (el) el.textContent = value;
+  }
+
   function getProjectId(){
     const params = new URLSearchParams(window.location.search);
     return params.get('id') || 'techcon-gh-infrastructure';
@@ -68,12 +72,12 @@
 
   function renderMeta(){
     const project = state.project;
-    els.projectTitle.textContent = project.title;
-    els.projectSummary.textContent = project.description;
-    els.projectDifficulty.textContent = titleCase(project.difficulty || 'standard');
-    els.projectDomain.textContent = titleCase(project.domain || 'systems-engineering');
-    els.totalSections.textContent = String(state.sections.length);
-    els.reviewedCount.textContent = String(state.reviewed.length);
+    setText(els.projectTitle, project.title);
+    setText(els.projectSummary, project.description);
+    setText(els.projectDifficulty, titleCase(project.difficulty || 'standard'));
+    setText(els.projectDomain, titleCase(project.domain || 'systems-engineering'));
+    setText(els.totalSections, String(state.sections.length));
+    setText(els.reviewedCount, String(state.reviewed.length));
   }
 
   function buildTable(rows){
@@ -200,10 +204,10 @@
 
   function renderSection(){
     const section = state.sections[state.activeIndex];
-    els.sectionKicker.textContent = `Section ${state.activeIndex + 1}`;
-    els.sectionTitle.textContent = section.title;
-    els.sectionIntro.textContent = section.summary || '';
-    els.currentSectionBadge.textContent = section.title;
+    setText(els.sectionKicker, `Section ${state.activeIndex + 1}`);
+    setText(els.sectionTitle, section.title);
+    setText(els.sectionIntro, section.summary || '');
+    setText(els.currentSectionBadge, section.title);
 
     els.sectionBlocks.innerHTML = '';
     (section.blocks || []).forEach(block => {
@@ -241,6 +245,7 @@
       if (state.activeIndex > 0) {
         state.activeIndex -= 1;
         render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
 
@@ -248,6 +253,7 @@
       if (state.activeIndex < state.sections.length - 1) {
         state.activeIndex += 1;
         render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
 
@@ -268,11 +274,11 @@
       bindEvents();
       render();
     } catch (err) {
-      els.projectTitle.textContent = 'Project unavailable';
-      els.projectSummary.textContent = 'The requested project could not be loaded. Check data/projects.json and the project id in the URL.';
-      els.sectionTitle.textContent = 'Unable to load project';
-      els.sectionIntro.textContent = err.message || 'Unknown error';
-      els.sectionBlocks.innerHTML = '';
+      setText(els.projectTitle, 'Project unavailable');
+      setText(els.projectSummary, 'The requested project could not be loaded. Check data/projects.json and the project id in the URL.');
+      setText(els.sectionTitle, 'Unable to load project');
+      setText(els.sectionIntro, err.message || 'Unknown error');
+      if (els.sectionBlocks) els.sectionBlocks.innerHTML = '';
     }
   }
 
