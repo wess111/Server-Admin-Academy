@@ -391,4 +391,27 @@
   .sectionFooterRight > * {
     flex: 1;
   }
+  /* Space between ANY consecutive tables */
+.requirementBlock table + table {
+  margin-top: 20px;
+}
+
+/* Space between titled table sections (like Sales Users, Marketing Users) */
+.requirementBlock .blockTitle + .kvTable {
+  margin-top: 12px;
+}
+
+/* Ensure spacing inside accordion content specifically */
+.accordionBody table + table {
+  margin-top: 20px;
+}
+
+/* Add spacing between table groups inside same block */
+.requirementBlock .kvTable {
+  margin-bottom: 18px;
+}
+
+.requirementBlock .kvTable:last-child {
+  margin-bottom: 0;
+}
 }
