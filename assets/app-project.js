@@ -1,4 +1,4 @@
-(function(){
+(function () {
   const state = {
     project: null,
     sections: [],
@@ -18,40 +18,35 @@
     sectionTitle: document.getElementById('sectionTitle'),
     sectionIntro: document.getElementById('sectionIntro'),
     sectionBlocks: document.getElementById('sectionBlocks'),
-    currentSectionBadge: document.getElementById('currentSectionBadge'),
     prevSectionBtn: document.getElementById('prevSectionBtn'),
     nextSectionBtn: document.getElementById('nextSectionBtn'),
     markReviewedBtn: document.getElementById('markReviewedBtn'),
     resetProgressBtn: document.getElementById('resetProgressBtn')
   };
 
-  function setText(el, value){
-    if (el) el.textContent = value;
-  }
-
-  function getProjectId(){
+  function getProjectId() {
     const params = new URLSearchParams(window.location.search);
     return params.get('id') || 'techcon-gh-infrastructure';
   }
 
-  function storageKey(){
+  function storageKey() {
     return `saa-project-progress:${getProjectId()}`;
   }
 
-  function titleCase(value){
+  function titleCase(value) {
     return String(value || '')
       .split('-')
-      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
       .join(' ');
   }
 
-  async function loadProjects(){
+  async function loadProjects() {
     const res = await fetch('./data/projects.json', { cache: 'no-store' });
     if (!res.ok) throw new Error('Failed to load projects.json');
     return res.json();
   }
 
-  function loadProgress(){
+  function loadProgress() {
     try {
       const raw = localStorage.getItem(storageKey());
       if (!raw) return [];
@@ -62,33 +57,46 @@
     }
   }
 
-  function saveProgress(){
+  function saveProgress() {
     localStorage.setItem(storageKey(), JSON.stringify({ reviewed: state.reviewed }));
   }
 
-  function isReviewed(index){
+  function isReviewed(index) {
     return state.reviewed.includes(index);
   }
 
-  function renderMeta(){
+  function renderMeta() {
     const project = state.project;
-    setText(els.projectTitle, project.title);
-    setText(els.projectSummary, project.description);
-    setText(els.projectDifficulty, titleCase(project.difficulty || 'standard'));
-    setText(els.projectDomain, titleCase(project.domain || 'systems-engineering'));
-    setText(els.totalSections, String(state.sections.length));
-    setText(els.reviewedCount, String(state.reviewed.length));
+    els.projectTitle.textContent = project.title;
+    els.projectSummary.textContent = project.description;
+    els.projectDifficulty.textContent = titleCase(project.difficulty || 'standard');
+    els.projectDomain.textContent = titleCase(project.domain || 'systems-engineering');
+    els.totalSections.textContent = String(state.sections.length);
+    els.reviewedCount.textContent = String(state.reviewed.length);
   }
 
-  function buildTable(rows){
-    const table = document.createElement('table');
-    table.className = 'kvTable';
-    const tbody = document.createElement('tbody');
-    rows.forEach(row => {
-      const tr = document.createElement('tr');
-      const th = document.createElement('th');
+  function createElement(tag, className, html) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (typeof html === 'string') el.innerHTML = html;
+    return el;
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;');
+  }
+
+  function buildTable(rows) {
+    const table = createElement('table', 'kvTable');
+    const tbody = createElement('tbody');
+    (rows || []).forEach((row) => {
+      const tr = createElement('tr');
+      const th = createElement('th');
       th.textContent = row.label;
-      const td = document.createElement('td');
+      const td = createElement('td');
       td.innerHTML = Array.isArray(row.value) ? row.value.join('<br>') : row.value;
       tr.appendChild(th);
       tr.appendChild(td);
@@ -98,154 +106,172 @@
     return table;
   }
 
-  function buildBlock(block){
-    const wrap = document.createElement('section');
-    wrap.className = 'requirementBlock';
+  function buildList(items, ordered = false) {
+    const list = createElement(ordered ? 'ol' : 'ul', 'blockList');
+    (items || []).forEach((item) => {
+      const li = createElement('li');
+      li.innerHTML = item;
+      list.appendChild(li);
+    });
+    return list;
+  }
+
+  function buildTree(content) {
+    const pre = createElement('pre', 'treeBlock');
+    pre.textContent = content || '';
+    return pre;
+  }
+
+  function buildBlock(block) {
+    const wrap = createElement('section', 'requirementBlock');
 
     if (block.title) {
-      const title = document.createElement('h3');
-      title.className = 'blockTitle';
+      const title = createElement('h3', 'blockTitle');
       title.textContent = block.title;
       wrap.appendChild(title);
     }
 
-    if (block.type === 'text') {
-      const p = document.createElement('p');
-      p.className = 'blockText';
-      p.textContent = block.content;
-      wrap.appendChild(p);
+    if (block.lead) {
+      const lead = createElement('p', 'blockLead');
+      lead.textContent = block.lead;
+      wrap.appendChild(lead);
     }
 
-    if (block.type === 'list') {
-      const ul = document.createElement('ul');
-      ul.className = 'blockList';
-      (block.items || []).forEach(item => {
-        const li = document.createElement('li');
-        li.textContent = item;
-        ul.appendChild(li);
-      });
-      wrap.appendChild(ul);
-    }
-
-    if (block.type === 'table') {
-      wrap.appendChild(buildTable(block.rows || []));
-    }
-
-    if (block.type === 'tree') {
-      const pre = document.createElement('pre');
-      pre.className = 'treeBlock';
-      pre.textContent = block.content || '';
-      wrap.appendChild(pre);
-    }
-
-    if (block.type === 'combo') {
-      const grid = document.createElement('div');
-      grid.className = 'blockGrid';
-      if (block.text) {
-        const p = document.createElement('p');
-        p.className = 'blockText';
-        p.textContent = block.text;
-        grid.appendChild(p);
+    switch (block.type) {
+      case 'text': {
+        const p = createElement('p', 'blockText');
+        p.innerHTML = block.content || '';
+        wrap.appendChild(p);
+        break;
       }
-      if (Array.isArray(block.items) && block.items.length) {
-        const ul = document.createElement('ul');
-        ul.className = 'blockList';
-        block.items.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item;
-          ul.appendChild(li);
+      case 'list': {
+        wrap.appendChild(buildList(block.items, false));
+        break;
+      }
+      case 'ordered-list': {
+        wrap.appendChild(buildList(block.items, true));
+        break;
+      }
+      case 'table': {
+        wrap.appendChild(buildTable(block.rows));
+        break;
+      }
+      case 'tree': {
+        wrap.appendChild(buildTree(block.content));
+        break;
+      }
+      case 'combo': {
+        if (block.rows && block.rows.length) {
+          wrap.appendChild(buildTable(block.rows));
+        }
+        if (block.items && block.items.length) {
+          wrap.appendChild(buildList(block.items, false));
+        }
+        break;
+      }
+      case 'accordion': {
+        const accordion = createElement('div', 'accordion');
+        (block.items || []).forEach((item, index) => {
+          const accItem = createElement('section', 'accordionItem');
+          const header = createElement('button', 'accordionHeader');
+          header.type = 'button';
+          header.setAttribute('aria-expanded', index === 0 ? 'true' : 'false');
+          header.innerHTML = `<span>${escapeHtml(item.title || 'Details')}</span><span class="accordionIcon">+</span>`;
+
+          const body = createElement('div', 'accordionBody');
+          if (index === 0) body.classList.add('open');
+
+          if (item.summary) {
+            const summary = createElement('p', 'accordionSummary');
+            summary.textContent = item.summary;
+            body.appendChild(summary);
+          }
+
+          (item.blocks || []).forEach((nestedBlock) => {
+            body.appendChild(buildBlock(nestedBlock));
+          });
+
+          header.addEventListener('click', () => {
+            const isOpen = body.classList.contains('open');
+            body.classList.toggle('open');
+            header.setAttribute('aria-expanded', String(!isOpen));
+            const icon = header.querySelector('.accordionIcon');
+            if (icon) icon.textContent = isOpen ? '+' : '–';
+          });
+
+          accItem.appendChild(header);
+          accItem.appendChild(body);
+          accordion.appendChild(accItem);
         });
-        grid.appendChild(ul);
+        wrap.appendChild(accordion);
+        break;
       }
-      if (Array.isArray(block.rows) && block.rows.length) {
-        grid.appendChild(buildTable(block.rows));
+      default: {
+        const fallback = createElement('p', 'blockText');
+        fallback.textContent = 'Unsupported content block.';
+        wrap.appendChild(fallback);
       }
-      wrap.appendChild(grid);
     }
 
     return wrap;
   }
 
-  function renderSidebar(){
+  function renderSidebar() {
     els.sidebarNav.innerHTML = '';
+
     state.sections.forEach((section, index) => {
-      const btn = document.createElement('button');
+      const btn = createElement('button', 'sidebarItem');
       btn.type = 'button';
-      btn.className = 'sidebarItem';
       if (index === state.activeIndex) btn.classList.add('isActive');
       if (isReviewed(index)) btn.classList.add('isReviewed');
+
+      btn.innerHTML = `
+        <span class="sidebarItemMain">
+          <span class="sidebarIndex">${index + 1}</span>
+          <span class="sidebarLabel">${section.title}</span>
+        </span>
+        <span class="sidebarState">${isReviewed(index) ? 'Reviewed' : 'Open'}</span>
+      `;
+
       btn.addEventListener('click', () => {
         state.activeIndex = index;
         render();
       });
 
-      const top = document.createElement('div');
-      top.className = 'sidebarItemTop';
-
-      const title = document.createElement('div');
-      title.className = 'sidebarItemTitle';
-      title.textContent = section.title;
-
-      const idx = document.createElement('div');
-      idx.className = 'sidebarItemIndex';
-      idx.textContent = `${index + 1}/${state.sections.length}`;
-
-      const status = document.createElement('div');
-      status.className = 'sidebarItemStatus';
-      status.textContent = isReviewed(index) ? 'Reviewed' : (index === state.activeIndex ? 'Active' : 'Not reviewed');
-
-      top.appendChild(title);
-      top.appendChild(idx);
-      btn.appendChild(top);
-      btn.appendChild(status);
       els.sidebarNav.appendChild(btn);
     });
   }
 
-  function renderSection(){
+  function renderSection() {
     const section = state.sections[state.activeIndex];
-    setText(els.sectionKicker, `Section ${state.activeIndex + 1}`);
-    setText(els.sectionTitle, section.title);
-    setText(els.sectionIntro, section.summary || '');
-    setText(els.currentSectionBadge, section.title);
-
+    els.sectionKicker.textContent = `Section ${state.activeIndex + 1}`;
+    els.sectionTitle.textContent = section.title;
+    els.sectionIntro.textContent = section.summary || '';
     els.sectionBlocks.innerHTML = '';
-    (section.blocks || []).forEach(block => {
+
+    (section.blocks || []).forEach((block) => {
       els.sectionBlocks.appendChild(buildBlock(block));
     });
 
     els.prevSectionBtn.disabled = state.activeIndex === 0;
     els.nextSectionBtn.disabled = state.activeIndex === state.sections.length - 1;
     els.markReviewedBtn.textContent = isReviewed(state.activeIndex) ? 'Reviewed' : 'Mark as Reviewed';
+    els.markReviewedBtn.disabled = isReviewed(state.activeIndex);
   }
 
-  function render(){
+  function render() {
     renderMeta();
     renderSidebar();
     renderSection();
-  }
-
-  function markReviewed(){
-    if (!isReviewed(state.activeIndex)) {
-      state.reviewed.push(state.activeIndex);
-      state.reviewed.sort((a,b) => a-b);
-      saveProgress();
-      render();
-    }
-  }
-
-  function resetReviewed(){
-    state.reviewed = [];
     saveProgress();
-    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function bindEvents(){
+  function bindEvents() {
     els.prevSectionBtn.addEventListener('click', () => {
       if (state.activeIndex > 0) {
         state.activeIndex -= 1;
         render();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
 
@@ -253,32 +279,46 @@
       if (state.activeIndex < state.sections.length - 1) {
         state.activeIndex += 1;
         render();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
 
-    els.markReviewedBtn.addEventListener('click', markReviewed);
-    els.resetProgressBtn.addEventListener('click', resetReviewed);
+    els.markReviewedBtn.addEventListener('click', () => {
+      if (!isReviewed(state.activeIndex)) {
+        state.reviewed.push(state.activeIndex);
+        state.reviewed.sort((a, b) => a - b);
+        render();
+      }
+    });
+
+    els.resetProgressBtn.addEventListener('click', () => {
+      state.reviewed = [];
+      saveProgress();
+      render();
+    });
   }
 
-  async function init(){
+  async function init() {
     try {
       const data = await loadProjects();
       const projectId = getProjectId();
-      const project = (data.projects || []).find(item => item.id === projectId);
-      if (!project) throw new Error('Project not found');
+      const project = (data.projects || []).find((item) => item.id === projectId);
+
+      if (!project) {
+        els.projectTitle.textContent = 'Project not found';
+        els.projectSummary.textContent = 'The requested project definition could not be loaded.';
+        return;
+      }
 
       state.project = project;
       state.sections = project.sections || [];
-      state.reviewed = loadProgress().filter(index => index >= 0 && index < state.sections.length);
+      state.reviewed = loadProgress().filter((index) => index >= 0 && index < state.sections.length);
+
       bindEvents();
       render();
-    } catch (err) {
-      setText(els.projectTitle, 'Project unavailable');
-      setText(els.projectSummary, 'The requested project could not be loaded. Check data/projects.json and the project id in the URL.');
-      setText(els.sectionTitle, 'Unable to load project');
-      setText(els.sectionIntro, err.message || 'Unknown error');
-      if (els.sectionBlocks) els.sectionBlocks.innerHTML = '';
+    } catch (error) {
+      console.error(error);
+      els.projectTitle.textContent = 'Unable to load project';
+      els.projectSummary.textContent = 'An error occurred while loading the project definition.';
     }
   }
 
