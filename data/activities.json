@@ -6,7 +6,7 @@
     "difficulty": "beginner",
     "status": "available",
     "link": "./activity.html?lab=dns",
-    "description": "10 everyday DNS troubleshooting scenarios using progressive triage → diagnosis → fix workflow."
+    "description": "10 everyday DNS troubleshooting scenarios using progressive triage \u2192 diagnosis \u2192 fix workflow."
   },
   {
     "title": "DHCP Concepts Practice",
@@ -15,7 +15,7 @@
     "difficulty": "beginner",
     "status": "available",
     "link": "./activity.html?lab=dhcp",
-    "description": "10 everyday DHCP troubleshooting scenarios using progressive triage → diagnosis → fix workflow."
+    "description": "10 everyday DHCP troubleshooting scenarios using progressive triage \u2192 diagnosis \u2192 fix workflow."
   },
   {
     "title": "Windows Support I",
@@ -81,12 +81,12 @@
     "description": "Least privilege validation steps, access review, and evidence-based documentation."
   },
   {
-    "title": "Capstone Project (Coming Soon)",
-    "domain": "security-operations",
+    "title": "Techcon GH LLC \u2013 Infrastructure Deployment",
+    "domain": "systems-engineering",
     "mode": "capstone-projects",
     "difficulty": "advanced",
-    "status": "upcoming",
-    "link": "#",
-    "description": "Plan and implement a secure service with validation and documentation deliverables."
+    "status": "available",
+    "link": "./project.html?id=techcon-gh-infrastructure",
+    "description": "Deploy a two-server Windows Server environment with Active Directory, DNS, DHCP, file services, storage replication, and Group Policy using exact project requirements without guided steps."
   }
 ]
