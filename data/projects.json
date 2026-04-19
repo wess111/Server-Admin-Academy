@@ -1,76 +1,133 @@
 {
-  "updated": "2026-04-19",
   "projects": [
     {
       "id": "techcon-gh-infrastructure",
-      "title": "Techcon GH LLC – Infrastructure Deployment",
+      "title": "Techcon GH LLC \u2013 Infrastructure Deployment",
       "domain": "systems-engineering",
       "difficulty": "advanced",
-      "description": "Design and deploy a two-server Windows Server environment for Techcon GH LLC using exact infrastructure requirements, but without implementation steps.",
+      "description": "Review the project requirements, build the environment on your own system, and use each section as the technical specification for the deployment.",
       "sections": [
         {
-          "id": "scenario",
-          "title": "Scenario",
-          "summary": "This section defines the organization, operating environment, and the overall mission of the project.",
+          "id": "instructions",
+          "title": "Instructions",
+          "summary": "This project is requirement-driven. You are expected to determine the implementation method, build order, and validation approach on your own system.",
           "blocks": [
             {
-              "type": "text",
-              "title": "Organization Overview",
-              "content": "Techcon GH LLC is a growing technology consulting firm deploying a centralized Windows Server infrastructure for its New York office. The organization is transitioning from a decentralized environment to a domain-based architecture to support identity management, resource access, storage administration, and operational consistency."
-            },
-            {
-              "type": "table",
-              "title": "Environment Summary",
-              "rows": [
-                { "label": "Office Location", "value": "New York" },
-                { "label": "Network", "value": "172.16.1.0/24" },
-                { "label": "Domain Name", "value": "techcongh.local" },
-                { "label": "Departments", "value": ["Sales", "Marketing", "Operations", "Human Resources"] }
+              "type": "list",
+              "title": "How to Use This Project",
+              "items": [
+                "Read the active section carefully before making configuration decisions.",
+                "Use the requirements as the build specification for your environment.",
+                "Return to the relevant section whenever you need to confirm naming, counts, limits, or service expectations.",
+                "Mark a section reviewed only after you are satisfied that your environment reflects that section's requirements."
               ]
             },
             {
               "type": "list",
-              "title": "Project Objective",
+              "title": "Design Standard",
               "items": [
-                "Deploy a functional Active Directory environment with two Domain Controllers.",
-                "Provide centralized DNS and DHCP services for the office network.",
-                "Implement structured file services, quotas, file screening, and storage replication.",
-                "Apply Group Policy settings for security, desktop configuration, and user environment control.",
-                "Join a client system to the domain and validate that the infrastructure behaves as designed."
+                "This project gives exact specifications, but it does not provide procedural steps.",
+                "You are responsible for selecting the tools, management consoles, commands, and workflow needed to complete the build.",
+                "The goal is not only to produce a working environment, but to demonstrate that you can translate requirements into implementation."
+              ]
+            },
+            {
+              "type": "combo",
+              "title": "General Build Expectations",
+              "items": [
+                "Use consistent naming across servers, client systems, users, groups, folders, and shares.",
+                "Keep service placement aligned to the server role assignments defined in this project.",
+                "Validate the environment as you build so that earlier design decisions do not create downstream issues.",
+                "Treat every section as part of one connected environment rather than as isolated configuration tasks."
               ]
             }
           ]
         },
         {
-          "id": "server-configuration",
+          "id": "scenario",
+          "title": "Scenario",
+          "summary": "This section introduces the organization, the operating environment, and the overall mission of the project.",
+          "blocks": [
+            {
+              "type": "text",
+              "title": "Organization Overview",
+              "content": "Techcon GH LLC is a growing technology consulting firm establishing a structured Windows Server environment for its New York office. The organization needs centralized identity management, dependable network services, controlled access to shared data, and a consistent desktop experience for staff across its major departments."
+            },
+            {
+              "type": "text",
+              "title": "Project Objective",
+              "content": "Your task is to build the first production-style infrastructure for the office based on the requirements in this project. The completed environment must support directory services, address management, file services, security policy enforcement, and client integration in a way that is organized, scalable, and easy to administer."
+            },
+            {
+              "type": "table",
+              "title": "Environment Summary",
+              "rows": [
+                {
+                  "label": "Office Location",
+                  "value": "New York"
+                },
+                {
+                  "label": "Network",
+                  "value": "172.16.1.0/24"
+                },
+                {
+                  "label": "Domain Name",
+                  "value": "techcongh.local"
+                },
+                {
+                  "label": "Departments",
+                  "value": [
+                    "Sales",
+                    "Marketing",
+                    "Operations",
+                    "Human Resources"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "server-config",
           "title": "Server Configuration Requirements",
-          "summary": "This section defines the server inventory, server roles, addressing, and storage configuration for the build.",
+          "summary": "This section defines the server inventory, addressing, role placement, and storage expectations for the environment.",
           "blocks": [
             {
               "type": "table",
               "title": "Server Inventory",
               "rows": [
-                { "label": "TC-DC1", "value": "172.16.1.10 — AD DS, DNS, DHCP" },
-                { "label": "TC-DC2", "value": "172.16.1.11 — AD DS, DNS, File Services, FSRM, Storage Replica" }
+                {
+                  "label": "TC-DC1",
+                  "value": "172.16.1.10 \u2014 Active Directory Domain Services, DNS, DHCP"
+                },
+                {
+                  "label": "TC-DC2",
+                  "value": "172.16.1.11 \u2014 Active Directory Domain Services, DNS, File Services, Storage Replica"
+                }
               ]
             },
             {
-              "type": "combo",
-              "title": "General Server Standards",
+              "type": "list",
+              "title": "General Server Requirements",
               "items": [
-                "Both servers must be configured with static IPv4 addresses.",
-                "Server names must be assigned before role installation.",
-                "Both servers must be able to communicate with one another on the network.",
-                "Each server must have an operating system disk and one additional data disk.",
-                "The minimum size of the additional data disk on each server is 50 GB."
+                "Both servers must use static IPv4 addressing.",
+                "Both servers must be named correctly before server roles are installed.",
+                "Both servers must be able to communicate with each other across the network.",
+                "Server role placement must follow the assignments defined in this project."
               ]
             },
             {
               "type": "table",
               "title": "Storage Assignment",
               "rows": [
-                { "label": "TC-DC1 Data Volume", "value": "One additional 50 GB data disk to support shared data replication target requirements." },
-                { "label": "TC-DC2 Data Volume", "value": "One additional 50 GB data disk to host departmental shares, home directories, and replicated storage." }
+                {
+                  "label": "TC-DC1 Data Volume",
+                  "value": "One additional 50 GB data disk to support replicated shared data requirements."
+                },
+                {
+                  "label": "TC-DC2 Data Volume",
+                  "value": "One additional 50 GB data disk to host departmental shares, home directories, and replicated storage."
+                }
               ]
             }
           ]
@@ -78,21 +135,21 @@
         {
           "id": "active-directory",
           "title": "Active Directory Requirements",
-          "summary": "This section defines the directory services design, domain controller expectations, FSMO handling, and the organizational structure of the environment.",
+          "summary": "This section defines the forest, domain controller placement, FSMO role handling, directory hierarchy, and principal object requirements.",
           "blocks": [
             {
-              "type": "combo",
-              "title": "Domain and Domain Controller Requirements",
+              "type": "list",
+              "title": "Forest and Domain Controller Requirements",
               "items": [
-                "Deploy a new forest named techcongh.local.",
+                "Create a new forest named techcongh.local.",
                 "Promote TC-DC1 as the first Domain Controller in the forest.",
                 "Promote TC-DC2 as an additional Domain Controller in the same domain.",
-                "Active Directory replication must be functional between both Domain Controllers.",
-                "The environment must support normal authentication and directory replication operations after both promotions are complete."
+                "Active Directory replication must be operational between both Domain Controllers.",
+                "The final environment must support normal authentication and directory operations after both promotions are complete."
               ]
             },
             {
-              "type": "combo",
+              "type": "list",
               "title": "FSMO Requirements",
               "items": [
                 "Identify all five FSMO roles in the environment.",
@@ -104,25 +161,37 @@
             {
               "type": "tree",
               "title": "OU Structure",
-              "content": "TechconGH\n│\n├── Sales-Dep\n│   ├── Sales-Users\n│   ├── Sales-Groups\n│   └── Sales-PCs\n│\n├── Marketing-Dep\n│   ├── Marketing-Users\n│   ├── Marketing-Groups\n│   └── Marketing-PCs\n│\n├── Operations-Dep\n│   ├── Operations-Users\n│   ├── Operations-Groups\n│   └── Operations-PCs\n│\n├── HR-Dep\n│   ├── HR-Users\n│   ├── HR-Groups\n│   └── HR-PCs\n│\n└── IT-Admins"
+              "content": "TechconGH\n\u2502\n\u251c\u2500\u2500 Sales-Dep\n\u2502   \u251c\u2500\u2500 Sales-Users\n\u2502   \u251c\u2500\u2500 Sales-Groups\n\u2502   \u2514\u2500\u2500 Sales-PCs\n\u2502\n\u251c\u2500\u2500 Marketing-Dep\n\u2502   \u251c\u2500\u2500 Marketing-Users\n\u2502   \u251c\u2500\u2500 Marketing-Groups\n\u2502   \u2514\u2500\u2500 Marketing-PCs\n\u2502\n\u251c\u2500\u2500 Operations-Dep\n\u2502   \u251c\u2500\u2500 Operations-Users\n\u2502   \u251c\u2500\u2500 Operations-Groups\n\u2502   \u2514\u2500\u2500 Operations-PCs\n\u2502\n\u251c\u2500\u2500 HR-Dep\n\u2502   \u251c\u2500\u2500 HR-Users\n\u2502   \u251c\u2500\u2500 HR-Groups\n\u2502   \u2514\u2500\u2500 HR-PCs\n\u2502\n\u2514\u2500\u2500 IT-Admins"
             },
             {
               "type": "table",
               "title": "User and Group Requirements",
               "rows": [
-                { "label": "Sales", "value": "5 users, plus Sales-Users, Sales-FileAccess, Sales-Managers" },
-                { "label": "Marketing", "value": "8 users, plus Marketing-Users, Marketing-FileAccess, Marketing-Managers" },
-                { "label": "Operations", "value": "10 users, plus Operations-Users, Operations-FileAccess, Operations-Managers" },
-                { "label": "HR", "value": "6 users, plus HR-Users, HR-FileAccess, HR-Managers" }
+                {
+                  "label": "Sales",
+                  "value": "5 users, plus Sales-Users, Sales-FileAccess, Sales-Managers"
+                },
+                {
+                  "label": "Marketing",
+                  "value": "8 users, plus Marketing-Users, Marketing-FileAccess, Marketing-Managers"
+                },
+                {
+                  "label": "Operations",
+                  "value": "10 users, plus Operations-Users, Operations-FileAccess, Operations-Managers"
+                },
+                {
+                  "label": "HR",
+                  "value": "6 users, plus HR-Users, HR-FileAccess, HR-Managers"
+                }
               ]
             },
             {
-              "type": "combo",
+              "type": "list",
               "title": "Naming Standards",
               "items": [
                 "User accounts must follow the firstname.lastname naming format.",
                 "Department groups must follow the <Department>-<Function> format.",
-                "Computer accounts must follow the TC-CL naming pattern for client systems.",
+                "Client computer accounts must follow the TC-CL naming pattern.",
                 "Permissions must be assigned using groups rather than direct user assignments."
               ]
             }
@@ -131,10 +200,32 @@
         {
           "id": "network",
           "title": "Network Requirements",
-          "summary": "This section defines the DNS and DHCP requirements for the office network, including exclusions and reservation behavior.",
+          "summary": "This section defines the addressing model, DNS requirements, DHCP scope design, and client lease behavior for the office network.",
           "blocks": [
             {
-              "type": "combo",
+              "type": "table",
+              "title": "IP Addressing Plan",
+              "rows": [
+                {
+                  "label": "Network ID",
+                  "value": "172.16.1.0/24"
+                },
+                {
+                  "label": "Infrastructure Addresses",
+                  "value": "172.16.1.1 \u2013 172.16.1.20"
+                },
+                {
+                  "label": "DHCP Scope",
+                  "value": "172.16.1.1 \u2013 172.16.1.100"
+                },
+                {
+                  "label": "Excluded Range",
+                  "value": "172.16.1.1 \u2013 172.16.1.20"
+                }
+              ]
+            },
+            {
+              "type": "list",
               "title": "DNS Requirements",
               "items": [
                 "Install DNS on both Domain Controllers.",
@@ -147,21 +238,42 @@
               "type": "table",
               "title": "DHCP Scope Configuration",
               "rows": [
-                { "label": "DHCP Host", "value": "TC-DC1" },
-                { "label": "Scope Name", "value": "NY-Scope" },
-                { "label": "Scope Range", "value": "172.16.1.1 – 172.16.1.100" },
-                { "label": "Excluded Range", "value": "172.16.1.1 – 172.16.1.20" },
-                { "label": "DNS Servers", "value": ["172.16.1.10", "172.16.1.11"] },
-                { "label": "Domain Name Option", "value": "techcongh.local" }
+                {
+                  "label": "DHCP Host",
+                  "value": "TC-DC1"
+                },
+                {
+                  "label": "Scope Name",
+                  "value": "NY-Scope"
+                },
+                {
+                  "label": "Scope Range",
+                  "value": "172.16.1.1 \u2013 172.16.1.100"
+                },
+                {
+                  "label": "Excluded Range",
+                  "value": "172.16.1.1 \u2013 172.16.1.20"
+                },
+                {
+                  "label": "DNS Servers",
+                  "value": [
+                    "172.16.1.10",
+                    "172.16.1.11"
+                  ]
+                },
+                {
+                  "label": "Domain Name Option",
+                  "value": "techcongh.local"
+                }
               ]
             },
             {
-              "type": "combo",
+              "type": "list",
               "title": "Addressing and Lease Behavior",
               "items": [
                 "Server IP addresses must not be assigned through DHCP.",
                 "The client system TC-CL1 must always receive the same IP address from DHCP.",
-                "That consistent address assignment must be implemented through DHCP rather than static addressing on the client.",
+                "That consistent address assignment must be implemented through DHCP rather than through static addressing on the client.",
                 "The network must support normal client lease issuance, renewal, and DNS registration behavior."
               ]
             }
@@ -170,46 +282,77 @@
         {
           "id": "file-storage",
           "title": "File and Storage Requirements",
-          "summary": "This section defines the file services model, departmental shares, home folders, quotas, file screening, and storage replication expectations.",
+          "summary": "This section defines the storage layout, departmental shares, home directory model, FSRM controls, and replication requirements for shared data.",
           "blocks": [
             {
               "type": "tree",
               "title": "Folder Structure on TC-DC2",
-              "content": "D:\\Shares\\\n│\n├── Sales\n├── Marketing\n├── Operations\n├── HR\n│\n└── Home\n    ├── <one folder per user>"
+              "content": "D:\\Shares\\\n\u2502\n\u251c\u2500\u2500 Sales\n\u251c\u2500\u2500 Marketing\n\u251c\u2500\u2500 Operations\n\u251c\u2500\u2500 HR\n\u2502\n\u2514\u2500\u2500 Home\n    \u251c\u2500\u2500 <one folder per user>"
             },
             {
               "type": "table",
               "title": "Department Shares",
               "rows": [
-                { "label": "Sales-Share", "value": "D:\\Shares\\Sales — accessible through Sales-FileAccess" },
-                { "label": "Marketing-Share", "value": "D:\\Shares\\Marketing — accessible through Marketing-FileAccess" },
-                { "label": "Operations-Share", "value": "D:\\Shares\\Operations — accessible through Operations-FileAccess" },
-                { "label": "HR-Share", "value": "D:\\Shares\\HR — accessible through HR-FileAccess" }
+                {
+                  "label": "Sales-Share",
+                  "value": "D:\\Shares\\Sales \u2014 accessible through Sales-FileAccess"
+                },
+                {
+                  "label": "Marketing-Share",
+                  "value": "D:\\Shares\\Marketing \u2014 accessible through Marketing-FileAccess"
+                },
+                {
+                  "label": "Operations-Share",
+                  "value": "D:\\Shares\\Operations \u2014 accessible through Operations-FileAccess"
+                },
+                {
+                  "label": "HR-Share",
+                  "value": "D:\\Shares\\HR \u2014 accessible through HR-FileAccess"
+                }
               ]
             },
             {
-              "type": "combo",
+              "type": "list",
               "title": "Access Model",
               "items": [
                 "Create one departmental folder for each department listed in the scenario.",
                 "Create one home folder for each user under D:\\Shares\\Home.",
                 "Use group-based access assignments rather than direct user permissions.",
-                "Implement both share permissions and NTFS permissions in a way that supports departmental access control."
+                "Implement share permissions and NTFS permissions in a way that supports departmental access control."
               ]
             },
             {
               "type": "table",
               "title": "FSRM Requirements",
               "rows": [
-                { "label": "Sales Quota", "value": "2 GB" },
-                { "label": "Marketing Quota", "value": "3 GB" },
-                { "label": "Operations Quota", "value": "5 GB" },
-                { "label": "HR Quota", "value": "2 GB" },
-                { "label": "Blocked File Types", "value": [".mp3", ".mp4", ".exe"] }
+                {
+                  "label": "Sales Quota",
+                  "value": "2 GB"
+                },
+                {
+                  "label": "Marketing Quota",
+                  "value": "3 GB"
+                },
+                {
+                  "label": "Operations Quota",
+                  "value": "5 GB"
+                },
+                {
+                  "label": "HR Quota",
+                  "value": "2 GB"
+                },
+                {
+                  "label": "Blocked File Types",
+                  "value": [
+                    ".mp3",
+                    ".mp4",
+                    ".exe"
+                  ]
+                }
               ]
             },
             {
-              "type": "combo",
+              "type": "list",
               "title": "Storage Replica Requirement",
               "items": [
                 "Configure storage replication between TC-DC1 and TC-DC2.",
@@ -222,15 +365,15 @@
         {
           "id": "gpo",
           "title": "GPO Requirements",
-          "summary": "This section defines the required Group Policy configuration for security, user environment control, drive mapping, and folder redirection.",
+          "summary": "This section defines the policy design, security settings, user restrictions, mapped drives, and folder redirection standards for the environment.",
           "blocks": [
             {
-              "type": "combo",
+              "type": "list",
               "title": "GPO Design Standards",
               "items": [
                 "GPOs must be clearly named and linked at appropriate levels.",
-                "Policies must not be linked at the domain root unless the policy scope requires domain-level application.",
-                "User-focused and computer-focused settings must be targeted in a way that aligns to the relevant OU structure.",
+                "Policies must not be linked at the domain root unless the scope requires domain-level application.",
+                "User and computer settings must be targeted in a way that aligns with the OU structure.",
                 "The IT-Admins OU must not receive the workstation restrictions or standard user environment controls defined in this project."
               ]
             },
@@ -238,62 +381,94 @@
               "type": "table",
               "title": "Domain-Level Security Policy",
               "rows": [
-                { "label": "Minimum Password Length", "value": "8 characters" },
-                { "label": "Password Complexity", "value": "Enabled" },
-                { "label": "Maximum Password Age", "value": "60 days" },
-                { "label": "Minimum Password Age", "value": "1 day" },
-                { "label": "Password History", "value": "5 remembered passwords" },
-                { "label": "Lockout Threshold", "value": "5 invalid attempts" },
-                { "label": "Lockout Duration", "value": "15 minutes" },
-                { "label": "Reset Counter", "value": "15 minutes" }
+                {
+                  "label": "Minimum Password Length",
+                  "value": "8 characters"
+                },
+                {
+                  "label": "Password Complexity",
+                  "value": "Enabled"
+                },
+                {
+                  "label": "Maximum Password Age",
+                  "value": "60 days"
+                },
+                {
+                  "label": "Minimum Password Age",
+                  "value": "1 day"
+                },
+                {
+                  "label": "Password History",
+                  "value": "5 remembered passwords"
+                },
+                {
+                  "label": "Lockout Threshold",
+                  "value": "5 invalid attempts"
+                },
+                {
+                  "label": "Lockout Duration",
+                  "value": "15 minutes"
+                },
+                {
+                  "label": "Reset Counter",
+                  "value": "15 minutes"
+                }
               ]
             },
             {
               "type": "list",
               "title": "Audit Policy Requirements",
               "items": [
-                "Audit Logon/Logoff — Success and Failure",
-                "Audit Account Logon — Success and Failure",
-                "Audit Object Access — Success",
-                "Audit Policy Change — Success",
-                "Audit Account Management — Success"
+                "Audit Logon/Logoff \u2014 Success and Failure",
+                "Audit Account Logon \u2014 Success and Failure",
+                "Audit Object Access \u2014 Success",
+                "Audit Policy Change \u2014 Success",
+                "Audit Account Management \u2014 Success"
               ]
             },
             {
               "type": "list",
-              "title": "Workstation Restrictions",
+              "title": "User Environment and Restriction Policies",
               "items": [
-                "Disable Control Panel",
-                "Disable PC Settings",
-                "Prevent access to Command Prompt",
-                "Prevent access to Registry Editor"
-              ]
-            },
-            {
-              "type": "combo",
-              "title": "Desktop, Drive Mapping, and Folder Redirection",
-              "items": [
+                "Disable Control Panel.",
+                "Disable PC Settings.",
+                "Prevent access to Command Prompt.",
+                "Prevent access to Registry Editor.",
                 "Configure a standard company wallpaper.",
-                "Prevent users from changing the wallpaper.",
-                "Map departmental drives automatically based on department membership.",
-                "Redirect Desktop and Documents to the user home folder structure on TC-DC2.",
-                "The redirected path must be based on the individual user home location."
-              ],
+                "Prevent users from changing the wallpaper."
+              ]
+            },
+            {
+              "type": "table",
+              "title": "Drive Mapping Requirements",
               "rows": [
-                { "label": "Sales Drive", "value": "S: → \\\\TC-DC2\\Sales-Share" },
-                { "label": "Marketing Drive", "value": "M: → \\\\TC-DC2\\Marketing-Share" },
-                { "label": "Operations Drive", "value": "O: → \\\\TC-DC2\\Operations-Share" },
-                { "label": "HR Drive", "value": "H: → \\\\TC-DC2\\HR-Share" },
-                { "label": "Redirected User Path", "value": "\\\\TC-DC2\\Home\\%USERNAME%" }
+                {
+                  "label": "Sales",
+                  "value": "S: mapped to \\\\TC-DC2\\Sales-Share"
+                },
+                {
+                  "label": "Marketing",
+                  "value": "M: mapped to \\\\TC-DC2\\Marketing-Share"
+                },
+                {
+                  "label": "Operations",
+                  "value": "O: mapped to \\\\TC-DC2\\Operations-Share"
+                },
+                {
+                  "label": "HR",
+                  "value": "H: mapped to \\\\TC-DC2\\HR-Share"
+                }
               ]
             },
             {
               "type": "list",
-              "title": "Additional Security Settings",
+              "title": "Folder Redirection and Session Security",
               "items": [
-                "Disable removable storage access.",
-                "Enforce screen lock after 10 minutes of inactivity.",
-                "Require password on resume from screen saver."
+                "Redirect Desktop to \\\\TC-DC2\\Home\\%USERNAME%.",
+                "Redirect Documents to \\\\TC-DC2\\Home\\%USERNAME%.",
+                "Enforce a screen lock after 10 minutes of inactivity.",
+                "Require a password when the workstation resumes from the lock screen.",
+                "Disable access to removable storage devices."
               ]
             }
           ]
@@ -301,27 +476,48 @@
         {
           "id": "client",
           "title": "Client Requirements",
-          "summary": "This section defines the endpoint requirements used to validate whether the infrastructure works correctly from the client perspective.",
+          "summary": "This section defines the endpoint configuration and the expected user experience after the server-side build is complete.",
           "blocks": [
             {
               "type": "table",
-              "title": "Client Configuration",
+              "title": "Client System Profile",
               "rows": [
-                { "label": "Client Name", "value": "TC-CL1" },
-                { "label": "Operating System", "value": "Windows 10 or Windows 11" },
-                { "label": "IP Assignment", "value": "DHCP" },
-                { "label": "Domain Join Target", "value": "techcongh.local" }
+                {
+                  "label": "Client Name",
+                  "value": "TC-CL1"
+                },
+                {
+                  "label": "Operating System",
+                  "value": "Windows 10 or Windows 11"
+                },
+                {
+                  "label": "IP Assignment",
+                  "value": "DHCP with a consistent reserved address"
+                },
+                {
+                  "label": "Domain Join Target",
+                  "value": "techcongh.local"
+                }
               ]
             },
             {
-              "type": "combo",
-              "title": "Client Expectations",
+              "type": "list",
+              "title": "Client Integration Requirements",
               "items": [
-                "The client must join the domain techcongh.local.",
-                "The client computer account must be placed in the appropriate departmental OU.",
-                "The client must log in using an HR department user account.",
-                "The client must receive the reserved DHCP address intended for TC-CL1.",
-                "The client experience must reflect the expected GPO settings, mapped drives, and redirected folders."
+                "Join the client system to the techcongh.local domain.",
+                "Place the client computer account in the appropriate departmental Computers OU.",
+                "Log on to the client using a user account from the HR department.",
+                "The client must receive the correct policies, mapped drives, and redirected folders after sign-in."
+              ]
+            },
+            {
+              "type": "list",
+              "title": "Expected Client Experience",
+              "items": [
+                "The client receives its address information from DHCP.",
+                "The client resolves internal resources through the domain DNS infrastructure.",
+                "The user can access the correct departmental resources based on group membership.",
+                "The user environment reflects the restrictions and standardization settings defined in Group Policy."
               ]
             }
           ]
@@ -329,24 +525,19 @@
         {
           "id": "final-review",
           "title": "Final Review",
-          "summary": "This section summarizes what must be true before the project can be considered complete.",
+          "summary": "Use this section as your closeout check before you consider the project finished.",
           "blocks": [
             {
               "type": "list",
-              "title": "Completion Standard",
+              "title": "Environment Review Checklist",
               "items": [
-                "Both Domain Controllers are operational and replication is healthy.",
-                "DNS and DHCP services function according to the project requirements.",
-                "Organizational Units, users, groups, and access assignments are in place.",
-                "Departmental shares, home folders, quotas, file screening, and storage replication are configured.",
-                "Required Group Policies are implemented and scoped appropriately.",
-                "The client can join the domain, receive the correct DHCP behavior, and reflect the intended user environment."
+                "The domain and both Domain Controllers are functioning correctly.",
+                "DNS and DHCP support normal client connectivity and name resolution.",
+                "The directory structure, users, groups, and client placement match the project specification.",
+                "Departmental shares, home folders, quotas, file screening, and storage replication are configured as required.",
+                "Group Policy settings apply to the intended users and systems without affecting the IT-Admins OU.",
+                "The client system integrates successfully into the environment and reflects the expected user experience."
               ]
-            },
-            {
-              "type": "text",
-              "title": "Project Standard",
-              "content": "This project is considered complete when the environment behaves according to specification. The project page defines what must exist and how the environment must behave, but the implementation workflow is intentionally left to the learner."
             }
           ]
         }
