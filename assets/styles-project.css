@@ -414,4 +414,24 @@
 .requirementBlock .kvTable:last-child {
   margin-bottom: 0;
 }
+  /* Force spacing between ALL blocks inside accordion */
+.accordionBody > * + * {
+  margin-top: 20px;
+}
+
+/* Ensure tables inside accordion have spacing */
+.accordionBody .kvTable {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+/* Prevent double spacing on last element */
+.accordionBody .kvTable:last-child {
+  margin-bottom: 0;
+}
+
+/* Add spacing between requirement blocks globally */
+.requirementBlock + .requirementBlock {
+  margin-top: 24px;
+}
 }
