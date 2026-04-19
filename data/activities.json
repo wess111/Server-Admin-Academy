@@ -87,6 +87,6 @@
     "difficulty": "advanced",
     "status": "available",
     "link": "./project.html?id=techcon-gh-infrastructure",
-    "description": "Deploy a two-server Windows Server environment with Active Directory, DNS, DHCP, file services, storage replication, and Group Policy using exact project requirements without guided steps."
+    "description": "Build the infrastructure for Techcon GH LLC by designing and deploying a centralized Windows Server environment that supports identity, networking, storage, policy, and client management."
   }
 ]
