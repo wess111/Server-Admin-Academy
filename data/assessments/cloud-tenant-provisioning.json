@@ -1,0 +1,260 @@
+{
+  "title": "Cloud Tenant Provisioning",
+  "attemptsAllowed": 2,
+  "retryEnabled": true,
+  "revealAnswersAfterFinalAttempt": true,
+  "passScore": 75,
+  "scenario": "A healthcare organization has completed the on-premises phase of its infrastructure modernization and must now establish the Microsoft 365 tenant that will serve as the cloud identity authority for all later hybrid identity and Intune-based activities. Before the environment can be used for synchronization, cloud identity administration, and device management, the tenant must be provisioned, administrative access must be confirmed, tenant properties must be captured, service availability must be validated, administrative portals must be tested, and sign-in branding must be configured and verified.",
+  "reference": [
+    {
+      "label": "Cloud subscription",
+      "value": "Microsoft 365 Business Premium"
+    },
+    {
+      "label": "Default cloud namespace",
+      "value": "<tenant>.onmicrosoft.com"
+    },
+    {
+      "label": "Primary admin portal",
+      "value": "https://admin.microsoft.com"
+    },
+    {
+      "label": "Identity portal",
+      "value": "https://entra.microsoft.com"
+    },
+    {
+      "label": "Device management portal",
+      "value": "https://intune.microsoft.com"
+    },
+    {
+      "label": "Required branding color",
+      "value": "#003D79"
+    }
+  ],
+  "activities": [
+    {
+      "type": "order",
+      "taskType": "Drag and Drop Task",
+      "title": "Task 1 - Provision the Tenant",
+      "prompt": "You want to complete the initial Microsoft 365 Business Premium tenant setup and reach a usable administrative state. To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "steps": [
+        "Navigate to the Microsoft 365 Business page and choose the Business Premium trial",
+        "Sign in with a personal Microsoft account and complete phone and payment verification",
+        "Enter the organization name and define the default .onmicrosoft.com domain",
+        "Complete the setup process and allow provisioning to finish",
+        "Open https://admin.microsoft.com and confirm successful administrator access"
+      ],
+      "answer": [
+        "Navigate to the Microsoft 365 Business page and choose the Business Premium trial",
+        "Sign in with a personal Microsoft account and complete phone and payment verification",
+        "Enter the organization name and define the default .onmicrosoft.com domain",
+        "Complete the setup process and allow provisioning to finish",
+        "Open https://admin.microsoft.com and confirm successful administrator access"
+      ],
+      "explanation": "The lab begins with trial registration, organization setup, completion of tenant provisioning, and then first administrative access through the Microsoft 365 Admin Center."
+    },
+    {
+      "type": "dropdown",
+      "taskType": "Dropdown Task",
+      "title": "Task 2 - Protect the Default Cloud Namespace Decision",
+      "prompt": "You want to avoid making a naming mistake during tenant creation. To answer, select the statement that best reflects the lab requirement for the default cloud domain.",
+      "options": [
+        "Once created, the default .onmicrosoft.com domain cannot be renamed",
+        "The default .onmicrosoft.com domain can be edited later from Intune",
+        "The default domain automatically changes to match the first user account created",
+        "The default domain can only be renamed after Hybrid Azure AD Join is enabled"
+      ],
+      "answer": "Once created, the default .onmicrosoft.com domain cannot be renamed",
+      "explanation": "The lab explicitly warns that the default .onmicrosoft.com domain must be reviewed carefully because it cannot be renamed after creation."
+    },
+    {
+      "type": "matchLines",
+      "taskType": "Matching Task",
+      "title": "Task 3 - Map Tenant Identity Information",
+      "prompt": "You want to capture the key tenant properties from Microsoft Entra Admin Center after initial provisioning. To answer, match each property on the left with the location or meaning it represents on the right.",
+      "left": [
+        "Tenant Name",
+        "Tenant ID",
+        "Primary Domain",
+        "License"
+      ],
+      "right": [
+        "Basic information on Entra ID Overview",
+        "Basic information on Entra ID Overview",
+        "Basic information on Entra ID Overview",
+        "Basic information on Entra ID Overview"
+      ],
+      "answer": {
+        "Tenant Name": "Basic information on Entra ID Overview",
+        "Tenant ID": "Basic information on Entra ID Overview",
+        "Primary Domain": "Basic information on Entra ID Overview",
+        "License": "Basic information on Entra ID Overview"
+      },
+      "explanation": "The lab requires the tenant name, tenant ID, primary domain, and license to be captured specifically from the Basic information section of the Entra ID Overview page."
+    },
+    {
+      "type": "dropdown",
+      "taskType": "Dropdown Task",
+      "title": "Task 4 - Verify the Default Domain",
+      "prompt": "You want to confirm that the default cloud namespace created during provisioning is actually registered in the Microsoft 365 tenant. To answer, select the navigation path that should be opened in Microsoft 365 Admin Center.",
+      "options": [
+        "Settings → Domains",
+        "Users → Active users",
+        "Billing → Your products",
+        "Admin centers → Intune"
+      ],
+      "answer": "Settings → Domains",
+      "explanation": "The lab validates the default .onmicrosoft.com namespace by returning to Microsoft 365 Admin Center and opening Settings → Domains."
+    },
+    {
+      "type": "dropdown",
+      "taskType": "Dropdown Task",
+      "title": "Task 5 - Validate Subscription Readiness",
+      "prompt": "You want to confirm that the tenant is actually ready for use before continuing into later hybrid and Intune tasks. To answer, select the combination that best confirms Business Premium service readiness.",
+      "options": [
+        "Microsoft 365 Business Premium shows Active and a visible license count",
+        "The tenant has a custom logo but no subscription status",
+        "A user object exists in Entra ID and the Devices pane opens",
+        "The portal allows sign-in but Billing is empty"
+      ],
+      "answer": "Microsoft 365 Business Premium shows Active and a visible license count",
+      "explanation": "The lab defines subscription readiness as seeing Microsoft 365 Business Premium with Status: Active and a visible license count in Billing → Your products."
+    },
+    {
+      "type": "order",
+      "taskType": "Drag and Drop Task",
+      "title": "Task 6 - Validate Administrative Portal Access",
+      "prompt": "You want to verify that the three administrative surfaces required for later identity and device-management work are available. To answer, move the appropriate validation actions from the list of actions to the answer area and arrange them in the correct order.",
+      "steps": [
+        "From Microsoft 365 Admin Center, open Show all and select Identity",
+        "Confirm that the Microsoft Entra Admin Center loads and shows Users, Groups, and Devices",
+        "Return to Microsoft 365 Admin Center and open Show all again",
+        "Select Intune and confirm that the Intune Dashboard loads",
+        "Verify that dashboard tiles such as Device enrollment and Device compliance are visible"
+      ],
+      "answer": [
+        "From Microsoft 365 Admin Center, open Show all and select Identity",
+        "Confirm that the Microsoft Entra Admin Center loads and shows Users, Groups, and Devices",
+        "Return to Microsoft 365 Admin Center and open Show all again",
+        "Select Intune and confirm that the Intune Dashboard loads",
+        "Verify that dashboard tiles such as Device enrollment and Device compliance are visible"
+      ],
+      "explanation": "The lab requires validation of both Microsoft Entra Admin Center and Intune Admin Center accessibility before moving into later hybrid and device-management work."
+    },
+    {
+      "type": "matchLines",
+      "taskType": "Matching Task",
+      "title": "Task 7 - Map the Branding Wizard Stages",
+      "prompt": "You want to configure the default sign-in experience by using the Company Branding wizard in Microsoft Entra Admin Center. To answer, match each wizard stage on the left with the branding element it primarily controls on the right.",
+      "left": [
+        "Basic",
+        "Layout",
+        "Header",
+        "Footer",
+        "Sign-in form",
+        "Review"
+      ],
+      "right": [
+        "Background image, favicon, and page background color",
+        "Template placement and accent color",
+        "Header logo and optional header text",
+        "Footer text, hyperlinks, and optional footer images",
+        "Banner logo, square logos, and help text",
+        "Final verification before saving"
+      ],
+      "answer": {
+        "Basic": "Background image, favicon, and page background color",
+        "Layout": "Template placement and accent color",
+        "Header": "Header logo and optional header text",
+        "Footer": "Footer text, hyperlinks, and optional footer images",
+        "Sign-in form": "Banner logo, square logos, and help text",
+        "Review": "Final verification before saving"
+      },
+      "explanation": "The lab breaks the branding configuration into distinct stages, each responsible for a specific part of the sign-in experience."
+    },
+    {
+      "type": "scriptFill",
+      "taskType": "Branding Configuration Task",
+      "title": "Task 8 - Complete the Required Branding Values",
+      "prompt": "You want the organization’s sign-in page to reflect the required NewVue branding values used in the lab. To answer, select the appropriate value for each blank in the configuration statement.",
+      "script": [
+        "Page background color: ",
+        {
+          "id": "color",
+          "options": [
+            "#003D79",
+            "#0078D4",
+            "#1E1E1E"
+          ],
+          "correct": "#003D79"
+        },
+        "\nHeader text: ",
+        {
+          "id": "headertext",
+          "options": [
+            "NewVue Health Secure Access Portal",
+            "Microsoft 365 Admin Access",
+            "Welcome to Cloud Services"
+          ],
+          "correct": "NewVue Health Secure Access Portal"
+        },
+        "\nFooter text: ",
+        {
+          "id": "footertext",
+          "options": [
+            "© NewVue Health – Authorized Access Only",
+            "All rights reserved – Microsoft",
+            "Hybrid access portal"
+          ],
+          "correct": "© NewVue Health – Authorized Access Only"
+        },
+        "\nHelp text: ",
+        {
+          "id": "helptext",
+          "options": [
+            "Welcome to NewVue Health – Authorized Users Only",
+            "Use your local domain password to proceed",
+            "Guest access only"
+          ],
+          "correct": "Welcome to NewVue Health – Authorized Users Only"
+        }
+      ],
+      "explanation": "The lab specifies the required NewVue blue accent, Secure Access Portal header text, Authorized Access footer text, and Authorized Users help text."
+    },
+    {
+      "type": "dropdown",
+      "taskType": "Dropdown Task",
+      "title": "Task 9 - Choose the Correct Layout Requirement",
+      "prompt": "You want the sign-in page to match the required structure from the branding instructions. To answer, select the layout requirement that best matches the lab.",
+      "options": [
+        "Choose the template that positions the sign-in form on the right",
+        "Choose the centered template with no visual branding",
+        "Enable high contrast mode and move the form to the left",
+        "Use only the mobile sign-in template"
+      ],
+      "answer": "Choose the template that positions the sign-in form on the right",
+      "explanation": "The branding instructions in the lab explicitly require the sign-in form layout to be positioned on the right."
+    },
+    {
+      "type": "order",
+      "taskType": "Drag and Drop Task",
+      "title": "Task 10 - Validate the Branding",
+      "prompt": "You want to confirm that the organization’s branding changes are visible on the Microsoft sign-in experience after the wizard is saved. To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "steps": [
+        "Allow a few minutes for branding propagation",
+        "Open a private or incognito browser window",
+        "Go to https://login.microsoftonline.com",
+        "Enter the tenant domain and continue to the sign-in page",
+        "Verify that at least one branding element such as the logo, background image, color theme, footer text, or help text is visible"
+      ],
+      "answer": [
+        "Allow a few minutes for branding propagation",
+        "Open a private or incognito browser window",
+        "Go to https://login.microsoftonline.com",
+        "Enter the tenant domain and continue to the sign-in page",
+        "Verify that at least one branding element such as the logo, background image, color theme, footer text, or help text is visible"
+      ],
+      "explanation": "The lab’s final validation step is to allow propagation time, use a private browser session, and confirm that the customized sign-in experience is actually visible."
+    }
+  ]
+}

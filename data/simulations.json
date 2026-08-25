@@ -1,0 +1,60 @@
+[
+  {
+    "id": "pc-hardware",
+    "title": "Finance Department Workstation Replacement",
+    "shortTitle": "PC Hardware Simulator",
+    "domain": "Support Operations",
+    "summary": "Select compatible components, assemble a business workstation, connect required power, and validate the finished system through POST.",
+    "story": "A finance department workstation has failed and must be replaced before the next business day. The employee uses Microsoft 365, QuickBooks, browser-based finance applications, and two office monitors. Build a reliable replacement without purchasing unnecessary hardware.",
+    "requirements": {
+      "memoryGB": 16,
+      "storageGB": 1000,
+      "storageType": "ssd",
+      "displayOutputs": 2,
+      "budget": 700,
+      "dedicatedGpuRequired": false
+    },
+    "requirementLabels": [
+      "At least 16 GB RAM",
+      "At least 1 TB SSD storage",
+      "Two display outputs",
+      "Budget: $700 maximum",
+      "Compatible hardware",
+      "Successful POST"
+    ],
+    "components": [
+      {"id":"mb-b760","type":"motherboard","name":"Atlas B760 DDR5","detail":"LGA 1700 • DDR5 • 2 display outputs","socket":"LGA1700","memoryType":"DDR5","displayOutputs":2,"price":145},
+      {"id":"mb-b560","type":"motherboard","name":"Legacy B560 DDR4","detail":"LGA 1200 • DDR4 • 2 display outputs","socket":"LGA1200","memoryType":"DDR4","displayOutputs":2,"price":95},
+      {"id":"mb-b650","type":"motherboard","name":"Horizon B650 DDR5","detail":"AM5 • DDR5 • 2 display outputs","socket":"AM5","memoryType":"DDR5","displayOutputs":2,"price":160},
+
+      {"id":"cpu-i5-14400","type":"cpu","name":"Intel Core i5-14400","detail":"LGA 1700 • integrated graphics","socket":"LGA1700","integratedGraphics":true,"price":215},
+      {"id":"cpu-i5-10400","type":"cpu","name":"Intel Core i5-10400","detail":"LGA 1200 • integrated graphics","socket":"LGA1200","integratedGraphics":true,"price":120},
+      {"id":"cpu-r5-7600","type":"cpu","name":"AMD Ryzen 5 7600","detail":"AM5 • integrated graphics","socket":"AM5","integratedGraphics":true,"price":195},
+
+      {"id":"paste-standard","type":"paste","name":"Thermal Compound","detail":"Single CPU application","price":6},
+
+      {"id":"cooler-1700","type":"cooler","name":"Arctic Tower 120","detail":"LGA 1700 cooler","sockets":["LGA1700"],"price":35},
+      {"id":"cooler-1200","type":"cooler","name":"Classic Tower 92","detail":"LGA 1200 cooler","sockets":["LGA1200"],"price":25},
+      {"id":"cooler-am5","type":"cooler","name":"Flow AM5 120","detail":"AM5 cooler","sockets":["AM5"],"price":32},
+
+      {"id":"ram-8-d5","type":"ram","name":"8 GB DDR5","detail":"DDR5 DIMM • 8 GB","memoryType":"DDR5","capacityGB":8,"price":28},
+      {"id":"ram-16-d5","type":"ram","name":"16 GB DDR5","detail":"DDR5 DIMM • 16 GB","memoryType":"DDR5","capacityGB":16,"price":45},
+      {"id":"ram-32-d5","type":"ram","name":"32 GB DDR5","detail":"DDR5 DIMM • 32 GB","memoryType":"DDR5","capacityGB":32,"price":82},
+      {"id":"ram-16-d4","type":"ram","name":"16 GB DDR4","detail":"DDR4 DIMM • 16 GB","memoryType":"DDR4","capacityGB":16,"price":34},
+
+      {"id":"storage-512-nvme","type":"storage","name":"512 GB NVMe SSD","detail":"M.2 NVMe • 512 GB","storageType":"ssd","interface":"NVMe","capacityGB":512,"price":39},
+      {"id":"storage-1tb-nvme","type":"storage","name":"1 TB NVMe SSD","detail":"M.2 NVMe • 1 TB","storageType":"ssd","interface":"NVMe","capacityGB":1000,"price":65},
+      {"id":"storage-1tb-sata","type":"storage","name":"1 TB SATA SSD","detail":"2.5-inch SATA SSD • 1 TB","storageType":"ssd","interface":"SATA","capacityGB":1000,"price":58},
+      {"id":"storage-1tb-hdd","type":"storage","name":"1 TB Hard Drive","detail":"3.5-inch SATA HDD • 1 TB","storageType":"hdd","interface":"SATA","capacityGB":1000,"price":35},
+
+      {"id":"gpu-basic","type":"gpu","name":"Entry Graphics Card","detail":"PCIe x16 • 2 display outputs • 120 W","displayOutputs":2,"wattage":120,"requiresPower":true,"price":135},
+      {"id":"gpu-mid","type":"gpu","name":"Performance Graphics Card","detail":"PCIe x16 • 4 display outputs • 220 W","displayOutputs":4,"wattage":220,"requiresPower":true,"price":260},
+
+      {"id":"psu-450","type":"psu","name":"450 W ATX PSU","detail":"80+ Bronze • PCIe power","wattage":450,"hasGpuPower":true,"price":48},
+      {"id":"psu-550","type":"psu","name":"550 W ATX PSU","detail":"80+ Bronze • PCIe power","wattage":550,"hasGpuPower":true,"price":55},
+      {"id":"psu-750","type":"psu","name":"750 W ATX PSU","detail":"80+ Gold • PCIe power","wattage":750,"hasGpuPower":true,"price":92},
+
+      {"id":"fan-120","type":"casefan","name":"120 mm PWM Case Fan","detail":"Rear exhaust fan","price":15}
+    ]
+  }
+]

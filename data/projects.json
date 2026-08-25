@@ -1,0 +1,856 @@
+{
+  "projects": [
+    {
+      "id": "techcon-gh-infrastructure",
+      "title": "Techcon GH LLC – Infrastructure Deployment",
+      "domain": "Systems Engineering",
+      "difficulty": "Advanced",
+      "summary": "Build the core infrastructure for Techcon GH LLC by designing and deploying a centralized Windows Server environment that supports identity, networking, storage, policy, and client management.",
+      "sections": [
+        {
+          "id": "instructions",
+          "title": "Instructions",
+          "summary": "Project usage guidance and implementation expectations.",
+          "blocks": [
+            {
+              "type": "text",
+              "paragraphs": [
+                "This project defines the technical requirements for deploying a centralized Windows Server infrastructure for Techcon GH LLC.",
+                "Each section represents a domain of responsibility within the environment.",
+                "The requirements specify what must be implemented. The method of implementation is not provided.",
+                "The environment must be built on a local lab system using virtualization or equivalent infrastructure.",
+                "All configuration must align with the specifications defined in each section."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "scenario",
+          "title": "Scenario",
+          "summary": "Business context for the Techcon GH LLC infrastructure deployment.",
+          "blocks": [
+            {
+              "type": "text",
+              "paragraphs": [
+                "Techcon GH LLC is a technology consulting firm standardizing the infrastructure for its New York office. The current environment lacks centralized identity management, structured data access, and consistent system configuration.",
+                "The organization requires a domain-based environment that supports controlled access to resources, organized administration, centralized storage, and policy-based configuration.",
+                "The infrastructure must support the following departments: Sales, Marketing, Operations, Human Resources, and IT.",
+                "The IT department includes the following operational teams: Network Operations Center (NOC), Security Operations Center (SOC), and Datacenter Operations.",
+                "The completed environment must provide centralized authentication, structured directory services, secure file access, and consistent endpoint configuration."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "server-configuration",
+          "title": "Server Configuration Requirements",
+          "summary": "Server inventory, core standards, storage layout, and service placement.",
+          "blocks": [
+            {
+              "type": "table",
+              "title": "Server Inventory",
+              "headers": ["Server Name", "IPv4 Address", "Roles"],
+              "rows": [
+                ["TC-DC1", "172.16.1.10", "AD DS, DNS, DHCP"],
+                ["TC-DC2", "172.16.1.11", "AD DS, DNS, File Services, FSRM, Storage Replica"]
+              ]
+            },
+            {
+              "type": "table",
+              "title": "Base Standards",
+              "headers": ["Requirement", "Specification"],
+              "rows": [
+                ["Domain Name", "techcongh.local"],
+                ["Network", "172.16.1.0/24"],
+                ["Site", "New York"],
+                ["IP Assignment", "Static (servers only)"],
+                ["DNS", "Internal, AD-integrated"]
+              ]
+            },
+            {
+              "type": "table",
+              "title": "Storage Layout (Both Servers)",
+              "headers": ["Volume", "Size", "Purpose"],
+              "rows": [
+                ["OS", "50 GB", "Operating system and installed roles"],
+                ["Data", "50 GB", "All business data, shares, home folders, redirected folders, and replicated data"],
+                ["Logs", "50 GB", "Storage Replica log volume"]
+              ]
+            },
+            {
+              "type": "list",
+              "title": "Storage Expectations",
+              "items": [
+                "Each server must have three separate volumes.",
+                "Each volume must be 50 GB.",
+                "The OS volume must host only the operating system and installed roles.",
+                "The Data volume must host all project data.",
+                "The Logs volume must be reserved for Storage Replica logs."
+              ]
+            },
+            {
+              "type": "list",
+              "title": "Server Expectations",
+              "items": [
+                "Both servers must participate in Active Directory replication.",
+                "Both servers must host DNS.",
+                "DHCP must be hosted on TC-DC1.",
+                "File Services must be hosted on TC-DC2.",
+                "Storage Replica must be configured between both servers."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "active-directory",
+          "title": "Active Directory Requirements",
+          "summary": "Domain structure, FSMO placement, OU design, naming standards, users, groups, and computer placement.",
+          "blocks": [
+            {
+              "type": "accordion",
+              "items": [
+                {
+                  "title": "Domain and Domain Controller Requirements",
+                  "blocks": [
+                    {
+                      "type": "table",
+                      "headers": ["Requirement Area", "Specification"],
+                      "rows": [
+                        ["Forest Model", "Single forest"],
+                        ["Domain Model", "Single domain"],
+                        ["Domain Name", "techcongh.local"],
+                        ["Site Name", "New York"],
+                        ["Initial Domain Controller", "TC-DC1"],
+                        ["Additional Domain Controller", "TC-DC2"],
+                        ["DNS Integration", "Active Directory integrated"]
+                      ]
+                    },
+                    {
+                      "type": "list",
+                      "title": "Domain Controller Expectations",
+                      "items": [
+                        "TC-DC1 must host the initial forest deployment.",
+                        "TC-DC2 must be added as an additional domain controller in the same domain.",
+                        "Both domain controllers must participate in Active Directory replication.",
+                        "DNS data must replicate between both domain controllers.",
+                        "The environment must support authentication and name resolution through both domain controllers."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "FSMO Role Requirements",
+                  "blocks": [
+                    {
+                      "type": "table",
+                      "headers": ["FSMO Role", "Required Placement"],
+                      "rows": [
+                        ["Schema Master", "TC-DC1"],
+                        ["Domain Naming Master", "TC-DC1"],
+                        ["Infrastructure Master", "TC-DC1"],
+                        ["RID Master", "TC-DC2"],
+                        ["PDC Emulator", "TC-DC2"]
+                      ]
+                    },
+                    {
+                      "type": "list",
+                      "title": "FSMO Expectations",
+                      "items": [
+                        "All five FSMO roles must be identified after domain deployment.",
+                        "RID Master and PDC Emulator must be transferred to TC-DC2.",
+                        "Final FSMO placement must match the required placement table."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Organizational Unit Structure",
+                  "blocks": [
+                    {
+                      "type": "code",
+                      "title": "Required OU Structure",
+                      "code": "TechconGH\n│\n├── Sales-Dep\n│   ├── Sales-Users\n│   ├── Sales-Groups\n│   └── Sales-PCs\n│\n├── Marketing-Dep\n│   ├── Marketing-Users\n│   ├── Marketing-Groups\n│   └── Marketing-PCs\n│\n├── Operations-Dep\n│   ├── Operations-Users\n│   ├── Operations-Groups\n│   └── Operations-PCs\n│\n├── HR-Dep\n│   ├── HR-Users\n│   ├── HR-Groups\n│   └── HR-PCs\n│\n└── IT-Dep\n    ├── IT-Users\n    ├── IT-Groups\n    └── IT-PCs"
+                    },
+                    {
+                      "type": "list",
+                      "title": "OU Design Expectations",
+                      "items": [
+                        "User accounts must be created in the appropriate departmental Users OU.",
+                        "Group objects must be created in the appropriate departmental Groups OU.",
+                        "Domain-joined client computer accounts must be moved into the appropriate departmental PCs OU.",
+                        "The OU structure must support organized administration and policy targeting."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Account Naming Standards",
+                  "blocks": [
+                    {
+                      "type": "table",
+                      "headers": ["Object Type", "Standard"],
+                      "rows": [
+                        ["User logon name", "firstname.lastname"],
+                        ["User display name", "FirstName LastName"],
+                        ["Department group", "Department-Department"],
+                        ["Role group", "Functional role in plural form"],
+                        ["Client computer", "TC-CL1, TC-CL2"],
+                        ["Server computer", "TC-DC1, TC-DC2"]
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "User Definitions",
+                  "blocks": [
+                    {
+                      "type": "table",
+                      "title": "Sales Users",
+                      "headers": ["First Name", "Last Name", "Role"],
+                      "rows": [
+                        ["Daniel", "Mensah", "Sales Manager"],
+                        ["Anita", "Boateng", "Account Executive"],
+                        ["Michael", "Asare", "Account Executive"],
+                        ["Priscilla", "Addo", "Sales Coordinator"],
+                        ["Richard", "Lartey", "Account Executive"]
+                      ]
+                    },
+                    {
+                      "type": "table",
+                      "title": "Marketing Users",
+                      "headers": ["First Name", "Last Name", "Role"],
+                      "rows": [
+                        ["Esther", "Owusu", "Marketing Manager"],
+                        ["Linda", "Agyeman", "Content Specialist"],
+                        ["Yaw", "Ofori", "Digital Marketing Specialist"],
+                        ["Nana", "Adjei", "Content Specialist"],
+                        ["Abigail", "Tetteh", "Digital Marketing Specialist"]
+                      ]
+                    },
+                    {
+                      "type": "table",
+                      "title": "Operations Users",
+                      "headers": ["First Name", "Last Name", "Role"],
+                      "rows": [
+                        ["Samuel", "Antwi", "Operations Manager"],
+                        ["Eunice", "Frimpong", "Project Coordinator"],
+                        ["David", "Oppong", "Service Desk Analyst"],
+                        ["Gloria", "Badu", "Logistics Coordinator"],
+                        ["Kelvin", "Amoako", "Service Desk Analyst"],
+                        ["Irene", "Appiah", "Project Coordinator"]
+                      ]
+                    },
+                    {
+                      "type": "table",
+                      "title": "Human Resources Users",
+                      "headers": ["First Name", "Last Name", "Role"],
+                      "rows": [
+                        ["Grace", "Ampofo", "HR Manager"],
+                        ["Lydia", "Quaye", "HR Officer"],
+                        ["Benedicta", "Mensima", "Payroll Coordinator"],
+                        ["Ruth", "Nkrumah", "HR Officer"],
+                        ["Deborah", "Aidoo", "Payroll Coordinator"]
+                      ]
+                    },
+                    {
+                      "type": "table",
+                      "title": "IT Users",
+                      "headers": ["First Name", "Last Name", "Role"],
+                      "rows": [
+                        ["Kwame", "Asiedu", "IT Manager"],
+                        ["Irene", "Baffoe", "NOC Engineer"],
+                        ["Michael", "Tandoh", "SOC Analyst"],
+                        ["Joseph", "Kwarteng", "Datacenter Technician"],
+                        ["Evelyn", "Osei", "NOC Engineer"],
+                        ["Sandra", "Koomson", "SOC Analyst"]
+                      ]
+                    },
+                    {
+                      "type": "list",
+                      "title": "User Definition Expectations",
+                      "items": [
+                        "Each user must be created in the correct departmental Users OU.",
+                        "Each user must be assigned to the appropriate role group based on the Role value.",
+                        "Usernames must be generated from the naming standard."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Department Groups",
+                  "blocks": [
+                    {
+                      "type": "list",
+                      "title": "Required Department Groups",
+                      "items": [
+                        "Sales-Department",
+                        "Marketing-Department",
+                        "Operations-Department",
+                        "HR-Department",
+                        "IT-Department"
+                      ]
+                    },
+                    {
+                      "type": "list",
+                      "title": "Department Group Expectations",
+                      "items": [
+                        "Department groups must serve as the broad membership container for each department.",
+                        "Department-wide access must be assigned through department groups.",
+                        "Department groups must contain role groups rather than direct user accounts."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Role Groups",
+                  "blocks": [
+                    {
+                      "type": "text",
+                      "title": "Sales Role Groups",
+                      "paragraphs": [
+                        "Sales-Managers",
+                        "Account-Executives",
+                        "Sales-Coordinators"
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "title": "Marketing Role Groups",
+                      "paragraphs": [
+                        "Marketing-Managers",
+                        "Content-Specialists",
+                        "Digital-Marketing-Specialists"
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "title": "Operations Role Groups",
+                      "paragraphs": [
+                        "Operations-Managers",
+                        "Project-Coordinators",
+                        "Service-Desk-Analysts",
+                        "Logistics-Coordinators"
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "title": "Human Resources Role Groups",
+                      "paragraphs": [
+                        "HR-Managers",
+                        "HR-Officers",
+                        "Payroll-Coordinators"
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "title": "IT Role Groups",
+                      "paragraphs": [
+                        "IT-Managers",
+                        "NOC-Engineers",
+                        "SOC-Analysts",
+                        "Datacenter-Technicians"
+                      ]
+                    },
+                    {
+                      "type": "list",
+                      "title": "Role Group Expectations",
+                      "items": [
+                        "Users must be assigned to role groups first.",
+                        "Role groups must be nested into the corresponding department group.",
+                        "Role groups must represent actual job functions.",
+                        "Permissions must be assigned to groups only."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Computer Accounts",
+                  "blocks": [
+                    {
+                      "type": "table",
+                      "headers": ["Computer Name", "Type", "Departmental OU"],
+                      "rows": [
+                        ["TC-CL1", "Windows 10/11 Client", "HR-PCs"]
+                      ]
+                    },
+                    {
+                      "type": "list",
+                      "title": "Computer Account Expectations",
+                      "items": [
+                        "TC-CL1 is required for project completion.",
+                        "Domain-joined clients must be moved into the correct departmental PCs OU after the join process is completed."
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "network",
+          "title": "Network Requirements",
+          "summary": "IP addressing, DNS, DHCP scope design, exclusions, reservation, and failover.",
+          "blocks": [
+            {
+              "type": "table",
+              "title": "IP Addressing Plan",
+              "headers": ["Range", "Purpose"],
+              "rows": [
+                ["172.16.1.1–172.16.1.20", "Infrastructure and static assignments"],
+                ["172.16.1.1–172.16.1.100", "DHCP scope"],
+                ["172.16.1.101–172.16.1.200", "Future growth"]
+              ]
+            },
+            {
+              "type": "table",
+              "title": "DNS Requirements",
+              "headers": ["Item", "Value"],
+              "rows": [
+                ["DNS Servers", "TC-DC1 and TC-DC2"],
+                ["Forward Lookup Zone", "techcongh.local"],
+                ["Zone Type", "Active Directory integrated"],
+                ["Reverse Lookup Zone", "1.16.172.in-addr.arpa"],
+                ["Dynamic Updates", "Secure only"]
+              ]
+            },
+            {
+              "type": "list",
+              "title": "DNS Expectations",
+              "items": [
+                "DNS must be installed on both domain controllers.",
+                "The forward lookup zone must be Active Directory integrated.",
+                "A reverse lookup zone for the 172.16.1.0/24 network must be created.",
+                "DNS data must replicate between both domain controllers.",
+                "Domain clients must register and resolve their records correctly.",
+                "Both forward and reverse name resolution must function correctly."
+              ]
+            },
+            {
+              "type": "list",
+              "title": "Name Resolution Requirements",
+              "items": [
+                "TC-DC1 and TC-DC2 must resolve each other by hostname.",
+                "Domain-joined clients must resolve domain controllers, the Active Directory domain, and internal hosts by name.",
+                "Reverse lookups must return the expected PTR records for infrastructure systems and clients.",
+                "SRV records required for Active Directory service location must be present and functional."
+              ]
+            },
+            {
+              "type": "table",
+              "title": "DHCP Requirements",
+              "headers": ["Item", "Value"],
+              "rows": [
+                ["DHCP Server Role", "TC-DC1 and TC-DC2"],
+                ["Primary Scope Host", "TC-DC1"],
+                ["Scope Name", "NY-Scope"],
+                ["Scope Range", "172.16.1.1–172.16.1.100"],
+                ["Subnet Mask", "255.255.255.0"],
+                ["Exclusion Range", "172.16.1.1–172.16.1.20"]
+              ]
+            },
+            {
+              "type": "table",
+              "title": "Scope Options",
+              "headers": ["Option", "Value"],
+              "rows": [
+                ["DNS Servers", "172.16.1.10, 172.16.1.11"],
+                ["Domain Name", "techcongh.local"]
+              ]
+            },
+            {
+              "type": "table",
+              "title": "DHCP Failover Requirements",
+              "headers": ["Item", "Value"],
+              "rows": [
+                ["Failover Partners", "TC-DC1 and TC-DC2"],
+                ["Failover Scope", "NY-Scope"],
+                ["Mode", "Load Balance or Hot Standby"],
+                ["State Switchover", "Enabled"]
+              ]
+            },
+            {
+              "type": "list",
+              "title": "DHCP Expectations",
+              "items": [
+                "DHCP must be installed on both TC-DC1 and TC-DC2.",
+                "DHCP must be authorized in Active Directory.",
+                "The NY-Scope scope must be created for the New York office subnet.",
+                "The exclusion range must protect infrastructure addresses from dynamic assignment.",
+                "Client systems must receive valid DHCP configuration.",
+                "Infrastructure systems must not obtain IP addresses from DHCP.",
+                "DHCP failover must be configured between TC-DC1 and TC-DC2.",
+                "The failover relationship must protect client address assignment if one DHCP server becomes unavailable."
+              ]
+            },
+            {
+              "type": "list",
+              "title": "Reservation Requirement",
+              "items": [
+                "TC-CL1 must always receive the same IP address.",
+                "This must be implemented using a DHCP reservation.",
+                "Static IP configuration on the client is not allowed."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "file-storage",
+          "title": "File and Storage Requirements",
+          "summary": "Storage layout, replicated data design, folder structure, access model, quotas, and file screening.",
+          "blocks": [
+            {
+              "type": "accordion",
+              "items": [
+                {
+                  "title": "Storage Layout Requirements",
+                  "blocks": [
+                    {
+                      "type": "table",
+                      "headers": ["Server", "Volume", "Size", "Purpose"],
+                      "rows": [
+                        ["TC-DC1", "OS", "50 GB", "Operating system and installed roles"],
+                        ["TC-DC1", "Data", "50 GB", "Shared data and replicated business data"],
+                        ["TC-DC1", "Logs", "50 GB", "Storage Replica logs"],
+                        ["TC-DC2", "OS", "50 GB", "Operating system and installed roles"],
+                        ["TC-DC2", "Data", "50 GB", "Shared data and replicated business data"],
+                        ["TC-DC2", "Logs", "50 GB", "Storage Replica logs"]
+                      ]
+                    },
+                    {
+                      "type": "list",
+                      "items": [
+                        "Both servers must have separate volumes for OS, Data, and Logs.",
+                        "All files and folders required by this project must be created on the Data volume.",
+                        "The Logs volume must be reserved for Storage Replica log data."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Storage Replica Requirements",
+                  "blocks": [
+                    {
+                      "type": "table",
+                      "headers": ["Requirement Area", "Specification"],
+                      "rows": [
+                        ["Replica Partners", "TC-DC1 and TC-DC2"],
+                        ["Replicated Volume", "Data"],
+                        ["Log Location", "Logs volume on each server"],
+                        ["Replicated Dataset", "Shared business data structure"]
+                      ]
+                    },
+                    {
+                      "type": "list",
+                      "items": [
+                        "Storage Replica must be configured between TC-DC1 and TC-DC2.",
+                        "The replicated dataset must reside on the Data volume of both servers.",
+                        "Storage Replica logs must use the Logs volume on each server."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Folder Structure Requirements",
+                  "blocks": [
+                    {
+                      "type": "code",
+                      "title": "Required Folder Structure",
+                      "code": "<Data>\\Shares\\\n│\n├── Departments\n│   ├── Sales\n│   │   ├── General\n│   │   ├── Sales-Managers\n│   │   ├── Account-Executives\n│   │   └── Sales-Coordinators\n│   │\n│   ├── Marketing\n│   │   ├── General\n│   │   ├── Marketing-Managers\n│   │   ├── Content-Specialists\n│   │   └── Digital-Marketing-Specialists\n│   │\n│   ├── Operations\n│   │   ├── General\n│   │   ├── Operations-Managers\n│   │   ├── Project-Coordinators\n│   │   ├── Service-Desk-Analysts\n│   │   └── Logistics-Coordinators\n│   │\n│   ├── HR\n│   │   ├── General\n│   │   ├── HR-Managers\n│   │   ├── HR-Officers\n│   │   └── Payroll-Coordinators\n│   │\n│   └── IT\n│       ├── General\n│       ├── IT-Managers\n│       ├── NOC-Engineers\n│       ├── SOC-Analysts\n│       └── Datacenter-Technicians\n│\n└── Home\n    └── %USERNAME%"
+                    },
+                    {
+                      "type": "list",
+                      "items": [
+                        "Folder names must match the corresponding Active Directory group names where role-based access is applied.",
+                        "The top-level shared data structure must be created on the Data volume.",
+                        "The Home folder must contain one home directory per user."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Access Model Requirements",
+                  "blocks": [
+                    {
+                      "type": "table",
+                      "headers": ["Folder", "Assigned Group"],
+                      "rows": [
+                        ["Sales\\General", "Sales-Department"],
+                        ["Sales\\Sales-Managers", "Sales-Managers"],
+                        ["Sales\\Account-Executives", "Account-Executives"],
+                        ["Sales\\Sales-Coordinators", "Sales-Coordinators"],
+                        ["Marketing\\General", "Marketing-Department"],
+                        ["Marketing\\Marketing-Managers", "Marketing-Managers"],
+                        ["Marketing\\Content-Specialists", "Content-Specialists"],
+                        ["Marketing\\Digital-Marketing-Specialists", "Digital-Marketing-Specialists"],
+                        ["Operations\\General", "Operations-Department"],
+                        ["Operations\\Operations-Managers", "Operations-Managers"],
+                        ["Operations\\Project-Coordinators", "Project-Coordinators"],
+                        ["Operations\\Service-Desk-Analysts", "Service-Desk-Analysts"],
+                        ["Operations\\Logistics-Coordinators", "Logistics-Coordinators"],
+                        ["HR\\General", "HR-Department"],
+                        ["HR\\HR-Managers", "HR-Managers"],
+                        ["HR\\HR-Officers", "HR-Officers"],
+                        ["HR\\Payroll-Coordinators", "Payroll-Coordinators"],
+                        ["IT\\General", "IT-Department"],
+                        ["IT\\IT-Managers", "IT-Managers"],
+                        ["IT\\NOC-Engineers", "NOC-Engineers"],
+                        ["IT\\SOC-Analysts", "SOC-Analysts"],
+                        ["IT\\Datacenter-Technicians", "Datacenter-Technicians"]
+                      ]
+                    },
+                    {
+                      "type": "list",
+                      "items": [
+                        "Department folders must use department groups for broad collaboration access.",
+                        "Role folders must use role groups for function-specific access.",
+                        "Permissions must not be assigned directly to user accounts."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Home Folder Requirements",
+                  "blocks": [
+                    {
+                      "type": "table",
+                      "headers": ["Requirement Area", "Specification"],
+                      "rows": [
+                        ["Root Location", "<Data>\\Shares\\Home"],
+                        ["Folder Name", "%USERNAME%"],
+                        ["Intended Use", "User-specific storage and redirected content"]
+                      ]
+                    },
+                    {
+                      "type": "list",
+                      "items": [
+                        "Each user must have a dedicated folder under the Home root.",
+                        "Home folders must be created on the Data volume.",
+                        "Access to each home folder must be limited to the individual user and administrators as required."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Quota Requirements",
+                  "blocks": [
+                    {
+                      "type": "table",
+                      "headers": ["Department", "Limit"],
+                      "rows": [
+                        ["Sales", "2 GB"],
+                        ["Marketing", "3 GB"],
+                        ["Operations", "5 GB"],
+                        ["HR", "2 GB"],
+                        ["IT", "5 GB"]
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "File Screening Requirements",
+                  "blocks": [
+                    {
+                      "type": "list",
+                      "title": "Blocked File Types",
+                      "items": [
+                        ".mp3",
+                        ".mp4",
+                        ".exe"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gpo",
+          "title": "GPO Requirements",
+          "summary": "Account security, auditing, user restrictions, folder redirection, and policy scope.",
+          "blocks": [
+            {
+              "type": "accordion",
+              "items": [
+                {
+                  "title": "GPO Design Requirements",
+                  "blocks": [
+                    {
+                      "type": "list",
+                      "items": [
+                        "GPOs must be linked to the appropriate Organizational Units.",
+                        "Domain-level policies must only be used where required.",
+                        "User settings must be applied through User Configuration.",
+                        "Computer settings must be applied through Computer Configuration.",
+                        "Restrictive user policies must not apply to members of the Datacenter-Technicians group."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Domain Account Policy",
+                  "blocks": [
+                    {
+                      "type": "table",
+                      "headers": ["Setting", "Value"],
+                      "rows": [
+                        ["Minimum Password Length", "14 characters"],
+                        ["Password Complexity", "Enabled"],
+                        ["Maximum Password Age", "60 days"],
+                        ["Minimum Password Age", "1 day"],
+                        ["Password History", "10 passwords remembered"],
+                        ["Lockout Threshold", "5 invalid attempts"],
+                        ["Lockout Duration", "15 minutes"],
+                        ["Reset Counter After", "15 minutes"]
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Advanced Audit Policy",
+                  "blocks": [
+                    {
+                      "type": "table",
+                      "headers": ["Category", "Configuration"],
+                      "rows": [
+                        ["Logon/Logoff", "Success, Failure"],
+                        ["Account Logon", "Success, Failure"],
+                        ["Account Management", "Success"],
+                        ["Object Access", "Success"],
+                        ["Policy Change", "Success"]
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "User Environment Restrictions",
+                  "blocks": [
+                    {
+                      "type": "list",
+                      "items": [
+                        "Disable Control Panel.",
+                        "Disable PC Settings.",
+                        "Prevent access to Command Prompt.",
+                        "Prevent access to Registry Editor."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Desktop Configuration",
+                  "blocks": [
+                    {
+                      "type": "list",
+                      "items": [
+                        "Configure a standard company wallpaper.",
+                        "Prevent users from changing wallpaper."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Folder Redirection",
+                  "blocks": [
+                    {
+                      "type": "list",
+                      "items": [
+                        "Redirect Desktop and Documents.",
+                        "Redirected folders must use the path \\\\TC-DC2\\Shares\\Home\\%USERNAME%.",
+                        "All redirected folders must be stored on the Data volume."
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "Security Hardening Policies",
+                  "blocks": [
+                    {
+                      "type": "table",
+                      "headers": ["Setting", "Value"],
+                      "rows": [
+                        ["Screen Lock Timeout", "10 minutes"],
+                        ["Require Password on Resume", "Enabled"],
+                        ["Removable Storage Access", "Disabled"]
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "GPO Scope Alignment",
+                  "blocks": [
+                    {
+                      "type": "list",
+                      "items": [
+                        "User policies must be linked to Users OUs.",
+                        "Computer policies must be linked to PCs OUs.",
+                        "Domain policies must be applied at domain level.",
+                        "Restrictive user policies must be scoped so that members of Datacenter-Technicians are excluded."
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "client",
+          "title": "Client Requirements",
+          "summary": "Client configuration and behavior that validates the environment from the user perspective.",
+          "blocks": [
+            {
+              "type": "table",
+              "title": "Client System",
+              "headers": ["Setting", "Value"],
+              "rows": [
+                ["Name", "TC-CL1"],
+                ["OS", "Windows 10/11"],
+                ["IP", "DHCP"]
+              ]
+            },
+            {
+              "type": "list",
+              "title": "Requirements",
+              "items": [
+                "The client must join the domain.",
+                "The client computer object must be moved to the correct OU."
+              ]
+            },
+            {
+              "type": "list",
+              "title": "Validation",
+              "items": [
+                "DHCP IP must be assigned correctly.",
+                "DNS resolution must function correctly.",
+                "Policies must apply correctly.",
+                "Folder redirection must function correctly.",
+                "Access must match group membership."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "final-review",
+          "title": "Final Review",
+          "summary": "Completion standards for the Techcon GH LLC infrastructure project.",
+          "blocks": [
+            {
+              "type": "list",
+              "items": [
+                "Domain controllers replicate successfully.",
+                "FSMO roles are correctly assigned.",
+                "DHCP and DNS function correctly.",
+                "Storage Replica is operational.",
+                "Folder structure matches the Active Directory group model.",
+                "Permissions align with Active Directory groups.",
+                "GPOs apply correctly.",
+                "Client behavior reflects policy and access design."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
