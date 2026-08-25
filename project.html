@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Project Runner • Server Admin Academy</title>
+  <link rel="stylesheet" href="./assets/site.css" />
+  <link rel="stylesheet" href="./assets/styles-project.css" />
+  <script defer src="./assets/app.js"></script>
+  <script defer src="./assets/app-project.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="container">
+      <div class="navGlass">
+        <a class="brand" href="./index.html"><span class="brandMark">S</span><span class="brandName">Server Admin Academy</span></a>
+        <nav class="navLinks">
+          <a class="navLink" href="./index.html">Home</a>
+
+          <div class="navDrop">
+            <button class="navDropBtn" type="button">Domains <span class="chev">▾</span></button>
+            <div class="navDropMenu">
+              <a class="navDropItem" href="./support-operations.html">Support Operations</a>
+              <a class="navDropItem" href="./systems-engineering.html">Systems Engineering</a>
+              <a class="navDropItem" href="./security-operations.html">Security Operations</a>
+            </div>
+          </div>
+
+          <div class="navDrop">
+            <button class="navDropBtn" type="button">Engagement Modes <span class="chev">▾</span></button>
+            <div class="navDropMenu">
+              <a class="navDropItem" href="./knowledge-assessments.html">Knowledge Assessments</a>
+              <a class="navDropItem" href="./incident-scenarios.html">Incident Scenarios</a>
+              <a class="navDropItem" href="./guided-practice.html">Guided Practice</a>
+              <a class="navDropItem" href="./simulations.html">Simulations</a>
+              <a class="navDropItem isActive" href="./capstone-projects.html">Capstone Projects</a>
+            </div>
+          </div>
+
+          <a class="navLink" href="./tools/index.html">Tools</a>
+        </nav>
+        <div class="navCta"><a class="btn btnPill" href="./capstone-projects.html">All Projects ✦</a></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="projectShell">
+    <section class="projectHero glowSection">
+      <div class="glowLayer" aria-hidden="true"></div>
+      <div class="container projectHeroInner">
+        <div class="crumbs">
+          <a href="./capstone-projects.html">Capstone Projects</a>
+          <span>•</span>
+          <span id="projectDomain">Systems Engineering</span>
+        </div>
+
+        <div class="projectHeroTop">
+          <div class="projectHeroText">
+            <h1 class="projectTitle" id="projectTitle">Loading project...</h1>
+            <p class="projectSummary" id="projectSummary">Please wait while the project definition loads.</p>
+          </div>
+
+          <div class="projectHeroMeta">
+            <div class="statCard">
+              <div class="statLabel">Difficulty</div>
+              <div class="statValue" id="projectDifficulty">—</div>
+            </div>
+            <div class="statCard">
+              <div class="statLabel">Sections Reviewed</div>
+              <div class="statValue"><span id="reviewedCount">0</span>/<span id="totalSections">0</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="projectLayoutWrap">
+      <div class="container projectLayout">
+        <aside class="projectSidebar card">
+          <div class="sidebarHead">
+            <div class="sidebarTitle">Project Map</div>
+            <div class="sidebarSub">Review each requirement area as you build the environment on your own system.</div>
+          </div>
+          <nav class="sidebarNav" id="sidebarNav"></nav>
+          <div class="sidebarActions">
+            <button class="btn btnGhost btnSquare sidebarBtn" type="button" id="resetProgressBtn">Reset Reviewed</button>
+          </div>
+        </aside>
+
+        <section class="projectMain">
+          <article class="sectionCard card">
+            <div class="sectionHeadBlock">
+              <div class="sectionKicker" id="sectionKicker">Section</div>
+              <h2 class="sectionTitle" id="sectionTitle">Loading...</h2>
+              <p class="sectionIntro" id="sectionIntro">Loading section content.</p>
+            </div>
+
+            <div class="sectionBlocks" id="sectionBlocks"></div>
+
+            <div class="sectionFooter">
+              <div class="sectionFooterLeft">
+                <button class="btn btnGhost btnSquare" type="button" id="prevSectionBtn">Previous</button>
+              </div>
+              <div class="sectionFooterRight">
+                <button class="btn btnGhost btnSquare" type="button" id="markReviewedBtn">Mark as Reviewed</button>
+                <button class="btn btnPill btnSquare" type="button" id="nextSectionBtn">Next Section</button>
+              </div>
+            </div>
+          </article>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
