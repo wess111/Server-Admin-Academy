@@ -1,0 +1,101 @@
+[
+  {
+    "title": "DNS Concepts Practice",
+    "domain": "systems-engineering",
+    "mode": "incident-scenarios",
+    "difficulty": "beginner",
+    "status": "available",
+    "link": "./activity.html?lab=dns",
+    "description": "10 everyday DNS troubleshooting scenarios using progressive triage \u2192 diagnosis \u2192 fix workflow."
+  },
+  {
+    "title": "DHCP Concepts Practice",
+    "domain": "systems-engineering",
+    "mode": "incident-scenarios",
+    "difficulty": "beginner",
+    "status": "available",
+    "link": "./activity.html?lab=dhcp",
+    "description": "10 everyday DHCP troubleshooting scenarios using progressive triage \u2192 diagnosis \u2192 fix workflow."
+  },
+  {
+    "title": "Windows Support I",
+    "domain": "support-operations",
+    "mode": "incident-scenarios",
+    "difficulty": "beginner",
+    "status": "available",
+    "link": "./activity.html?lab=windows-support-1",
+    "description": "Gamified support tickets focused on Windows installation, storage, user accounts, and file sharing."
+  },
+  {
+    "title": "PC Hardware Simulator",
+    "domain": "support-operations",
+    "mode": "simulations",
+    "difficulty": "beginner",
+    "status": "available",
+    "link": "./simulator.html?id=pc-hardware",
+    "description": "Build a desktop PC on an interactive workbench, connect required power, diagnose hardware faults, and validate a successful POST."
+  },
+  {
+    "title": "Cloud Tenant Provisioning",
+    "domain": "systems-engineering",
+    "mode": "knowledge-assessments",
+    "difficulty": "beginner",
+    "status": "available",
+    "link": "./assessment.html?lab=cloud-tenant-provisioning",
+    "description": "Provision a Microsoft 365 tenant, verify subscription readiness, identify core administrative portals, and validate branding workflow."
+  },
+  {
+    "title": "Cloud Users and Groups",
+    "domain": "systems-engineering",
+    "mode": "knowledge-assessments",
+    "difficulty": "beginner",
+    "status": "available",
+    "link": "./assessment.html?lab=cloud-users-groups",
+    "description": "Review cloud-based user and group administration, identity structure, role assignment logic, and membership management steps."
+  },
+  {
+    "title": "Microsoft Entra PowerShell Administration",
+    "domain": "systems-engineering",
+    "mode": "knowledge-assessments",
+    "difficulty": "intermediate",
+    "status": "available",
+    "link": "./assessment.html?lab=powershell-entra",
+    "description": "Interpret Microsoft Entra PowerShell commands, module setup steps, connection workflow, and administrative command usage."
+  },
+  {
+    "title": "Hybrid Identity Configuration",
+    "domain": "systems-engineering",
+    "mode": "knowledge-assessments",
+    "difficulty": "intermediate",
+    "status": "available",
+    "link": "./assessment.html?lab=hybrid-identity",
+    "description": "Evaluate the workflow for hybrid identity deployment, synchronization readiness, device registration, and administrative validation."
+  },
+  {
+    "title": "Mobile Device Management",
+    "domain": "systems-engineering",
+    "mode": "knowledge-assessments",
+    "difficulty": "intermediate",
+    "status": "available",
+    "link": "./assessment.html?lab=mobile-device-management",
+    "description": "Assess mobile device management concepts including enrollment workflow, policy targeting, compliance logic, and verification steps."
+  },
+  {
+    "title": "Security Ops Baseline Verification (Coming Soon)",
+    "domain": "security-operations",
+    "mode": "guided-practice",
+    "difficulty": "beginner",
+    "status": "upcoming",
+    "link": "#",
+    "description": "Least privilege validation steps, access review, and evidence-based documentation."
+  },
+  {
+    "title": "Techcon GH LLC \u2013 Infrastructure Deployment",
+    "domain": "systems-engineering",
+    "mode": "capstone-projects",
+    "difficulty": "advanced",
+    "status": "available",
+    "link": "./project.html?id=techcon-gh-infrastructure",
+    "description": "Build the infrastructure for Techcon GH LLC by designing and deploying a centralized Windows Server environment that supports identity, networking, storage, policy, and client management."
+  }
+]
