@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Policy / Procedure • Tools</title>
+  <meta name="description" content="Generate a policy or procedure Word document from structured fields." />
+  <link rel="stylesheet" href="../assets/site.css" />
+  <link rel="stylesheet" href="../assets/tools.css" />
+  <script defer src="../assets/app.js"></script>
+  <script defer src="../assets/app-tools.js"></script>
+</head>
+
+<body data-page="tools">
+  <header class="top">
+    <div class="container">
+      <div class="navGlass">
+        <a class="brand" href="../index.html" aria-label="Home">
+          <span class="brandMark">S</span>
+          <span class="brandName">Server Admin Academy</span>
+        </a>
+
+        <nav class="navLinks" aria-label="Main navigation">
+          <a class="navLink" href="../index.html">Home</a>
+          <a class="navLink" href="./index.html">Tools</a>
+          <a class="navLink" href="../activity.html">Simulation</a>
+        </nav>
+
+        <div class="navCta">
+          <a class="btn btnPill" href="./index.html">All Tools ✦</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section glowSection toolWrap" data-tool="policy">
+      <div class="glowLayer" aria-hidden="true"></div>
+      <div class="container">
+        <div class="toolHead">
+          <h1 class="toolTitle">Policy / Procedure Generator</h1>
+          <p class="toolSub">
+            Create consistent documentation for governance (policy) or step-by-step execution (procedure).
+            Use one line per bullet item.
+          </p>
+        </div>
+
+        <div class="toolCard">
+          <form>
+            <div class="formGrid">
+              <div class="field third">
+                <label class="label" for="pp_type">Document Type</label>
+                <select class="select" id="pp_type">
+                  <option value="policy">Policy</option>
+                  <option value="procedure">Procedure</option>
+                </select>
+                <div class="hint">Policy = standards & enforcement. Procedure = steps & validation.</div>
+              </div>
+
+              <div class="field" style="grid-column: span 8;">
+                <label class="label" for="pp_title">Title</label>
+                <input class="input" id="pp_title" placeholder="Example: Password Management" />
+              </div>
+
+              <div class="field half">
+                <label class="label" for="pp_dept">Department / Team</label>
+                <input class="input" id="pp_dept" placeholder="Example: NewVue Health IT" />
+              </div>
+
+              <div class="field half">
+                <label class="label" for="pp_owner">Owner</label>
+                <input class="input" id="pp_owner" placeholder="Example: Systems Administration" />
+              </div>
+
+              <div class="field third">
+                <label class="label" for="pp_version">Version</label>
+                <input class="input" id="pp_version" placeholder="1.0" />
+              </div>
+
+              <div class="field third">
+                <label class="label" for="pp_effective">Effective Date</label>
+                <input class="input" id="pp_effective" placeholder="Example: 2026-03-02" />
+              </div>
+
+              <div class="field">
+                <label class="label" for="pp_purpose">Purpose</label>
+                <textarea class="textarea" id="pp_purpose" placeholder="Why does this document exist? What problem does it address?"></textarea>
+              </div>
+
+              <div class="field">
+                <label class="label" for="pp_scope">Scope</label>
+                <textarea class="textarea" id="pp_scope" placeholder="What is covered? What systems/teams/users does it apply to?"></textarea>
+              </div>
+
+              <div class="field">
+                <label class="label" for="pp_roles">Roles & Responsibilities (one line per item)</label>
+                <textarea class="textarea" id="pp_roles" placeholder="System Administrators: implement and maintain\nHelp Desk: escalate exceptions\nUsers: comply with requirements"></textarea>
+              </div>
+
+              <div class="field">
+                <label class="label" for="pp_standards">Standards / Requirements (one line per item)</label>
+                <textarea class="textarea" id="pp_standards" placeholder="Passwords must be 14+ characters\nMFA required for admin accounts\nChanges must be documented"></textarea>
+              </div>
+
+              <div class="field">
+                <label class="label" for="pp_steps">Procedure Steps (procedure only — one step per line)</label>
+                <textarea class="textarea" id="pp_steps" placeholder="1) Verify prerequisites\n2) Apply configuration\n3) Validate expected behavior\n4) Document change"></textarea>
+              </div>
+
+              <div class="field">
+                <label class="label" for="pp_validation">Validation / Verification (procedure only — one line per item)</label>
+                <textarea class="textarea" id="pp_validation" placeholder="Confirm event logs show success\nRun functional test\nCapture evidence screenshot"></textarea>
+              </div>
+
+              <div class="field">
+                <label class="label" for="pp_exceptions">Exceptions (policy only — one line per item)</label>
+                <textarea class="textarea" id="pp_exceptions" placeholder="Emergency changes approved by instructor\nLegacy systems reviewed case-by-case"></textarea>
+              </div>
+
+              <div class="field">
+                <label class="label" for="pp_references">References (one line per item)</label>
+                <textarea class="textarea" id="pp_references" placeholder="Microsoft documentation\nCIS Benchmark\nNewVue Health IT Standards"></textarea>
+              </div>
+            </div>
+
+            <div class="toolActions">
+              <a class="btnGhost2" href="./index.html">Back</a>
+              <button class="btnPrimary" id="btnGenerate" type="submit">Generate Word Document</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footerInner">
+      <div class="footerBrand">
+        <span class="brandMark">S</span>
+        <span>Server Admin Academy</span>
+      </div>
+      <div class="footerLinks">
+        <a href="../index.html">Home</a>
+        <a href="./index.html">Tools</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

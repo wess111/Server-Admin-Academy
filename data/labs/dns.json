@@ -1,0 +1,321 @@
+{
+  "id": "dns",
+  "title": "DNS Systems: Resolution & Records",
+  "track": "Systems Engineering",
+  "description": "Welcome to the DNS Core Lab. DNS is the 'phonebook' of the network. When it fails, users see 'No Internet' even if the wires are perfect. You will handle 12 realistic scenarios focusing on internal resolution, record management, and cloud integration.",
+  "rolePill": "Role: Systems Administrator",
+  "reportOverview": "This report documents your ability to identify DNS zone issues, record typos, cache symptoms, and propagation delays.",
+  "intro": {
+    "objective": "To navigate the DNS hierarchy and master the tools (nslookup, dig, ipconfig) used to verify how names are translated into IP addresses.",
+    "scenario": "You are the primary admin for 'Nexus Corp'. The company uses a hybrid environment with on-prem Active Directory and several cloud-based SaaS tools. Your task is to resolve resolution breaks in the ticket queue.",
+    "workflow_tips": [
+      "Use 'nslookup' to see exactly which server is answering; if it's 8.8.8.8, you might be bypassing internal records.",
+      "Check the 'FQDN' (Fully Qualified Domain Name). A missing dot or a typo in the suffix is a common cause of failure.",
+      "Flush the DNS cache (ipconfig /flushdns) after applying a fix to see immediate results."
+    ]
+  },
+  "tickets": [
+    {
+      "id": "DNS-001",
+      "category": "Active Directory",
+      "title": "The 'Invisible' Domain Controller",
+      "summary": "A technician is trying to join a new server to the domain 'corp.nexus.com', but it keeps saying 'Domain not found', even though they can ping the DC's IP address.",
+      "tags": ["SRV Records", "Domain Join"],
+      "artifact": ["DC IP: 10.0.0.5", "Client DNS: 8.8.8.8 (Public)", "Error: DNS_ERROR_RCODE_NAME_ERROR"],
+      "workflow": {
+        "triage": {
+          "q": "Why can the client ping the DC but fail to join the domain?",
+          "options": ["The DC is turned off", "The client is using a public DNS server that doesn't know internal zones", "Faulty cable"],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "What record type does Windows look for to find a Domain Controller?",
+          "options": ["A Record", "MX Record", "SRV Record"],
+          "correct": 2
+        },
+        "fix": {
+          "q": "What is the correct fix?",
+          "options": ["Reboot DC", "Point client DNS to 10.0.0.5", "Disable Firewall"],
+          "correct": 1
+        }
+      },
+      "debrief": { "summary": "Internal AD resources require internal DNS for SRV records.", "takeaway": "Never use public DNS as primary on AD-joined machines." }
+    },
+    {
+      "id": "DNS-002",
+      "category": "External",
+      "title": "The 'Wait 48 Hours' Myth",
+      "summary": "Marketing updated the IP for the blog 4 hours ago. Some customers see the new site, but the Director still sees the old one.",
+      "tags": ["TTL", "Propagation"],
+      "artifact": ["Old IP: 93.184.216.34", "New IP: 203.0.113.5", "Record TTL: 86400 (24 hours)"],
+      "workflow": {
+        "triage": {
+          "q": "Why is the Director still seeing the old site?",
+          "options": ["Server broken", "ISP cache still has the old record due to high TTL", "Slow internet"],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "What does a TTL of 86400 tell a DNS server?",
+          "options": ["Site size", "Keep record in cache for 24 hours", "Reboot timer"],
+          "correct": 1
+        },
+        "fix": {
+          "q": "What should have been done before migration?",
+          "options": ["Lower TTL to 300", "Delete record", "New domain"],
+          "correct": 0
+        }
+      },
+      "debrief": { "summary": "High TTLs cause propagation delays.", "takeaway": "Lower TTLs 24+ hours before a planned move." }
+    },
+    {
+      "id": "DNS-003",
+      "category": "Email",
+      "title": "Emails Bouncing: SPF Fail",
+      "summary": "A partner rejects emails from your CEO, claiming they are 'Unauthorized'.",
+      "tags": ["SPF", "TXT"],
+      "artifact": ["Email Server IP: 1.2.3.4", "TXT Record: 'v=spf1 ip4:1.2.3.5 -all'"],
+      "workflow": {
+        "triage": {
+          "q": "Why is the mail being rejected?",
+          "options": ["Virus", "SPF record has wrong IP (1.2.3.5)", "Offline server"],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "What does an SPF record do?",
+          "options": ["Speeds delivery", "Lists authorized sender IPs", "Encrypts body"],
+          "correct": 1
+        },
+        "fix": {
+          "q": "How do you fix this?",
+          "options": ["Delete SPF", "Update TXT to 1.2.3.4", "Restart mail service"],
+          "correct": 1
+        }
+      }
+    },
+    {
+      "id": "DNS-004",
+      "category": "Resolution",
+      "title": "Pings Work, Names Don't",
+      "summary": "User can access '\\\\10.0.0.20' but not '\\\\fileserver'.",
+      "tags": ["A Record"],
+      "artifact": ["ping 10.0.0.20: Reply", "ping fileserver: Not found", "DNS: No record for 'fileserver'"],
+      "workflow": {
+        "triage": {
+          "q": "If IP works but name doesn't, where is the failure?",
+          "options": ["Layer 1", "Layer 3", "Layer 7 (Resolution)"],
+          "correct": 2
+        },
+        "diagnosis": {
+          "q": "Which record type is missing?",
+          "options": ["PTR", "CNAME", "A Record"],
+          "correct": 2
+        },
+        "fix": {
+          "q": "Action in DNS Manager?",
+          "options": ["Create A record for 'fileserver' to 10.0.0.20", "Reboot server", "Flush DNS"],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-005",
+      "category": "Redundancy",
+      "title": "The 'Internet is Down' (Except it's not)",
+      "summary": "Primary DNS crashed. Secondary is up, but half the office is offline.",
+      "tags": ["DHCP Options"],
+      "artifact": ["Primary: 10.0.0.1 (Offline)", "Secondary: 10.0.0.2 (Online)", "DHCP Option 006: Only 10.0.0.1 listed"],
+      "workflow": {
+        "triage": {
+          "q": "Why isn't the secondary helping?",
+          "options": ["Too slow", "Clients don't know it exists", "Secondary is empty"],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "How do Windows clients handle DNS lists?",
+          "options": ["Random", "Try first, if timeout, try second", "All at once"],
+          "correct": 1
+        },
+        "fix": {
+          "q": "Long-term fix?",
+          "options": ["Update DHCP to include both 10.0.0.1 and 10.0.0.2", "Manual update", "Third server"],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-006",
+      "category": "Web Services",
+      "title": "The Alias Ambiguity",
+      "summary": "You moved the wiki to SharePoint. You want 'wiki/' to go to 'sharepoint.nexus.internal'.",
+      "tags": ["CNAME"],
+      "artifact": ["Old IP: 10.0.0.50", "New FQDN: sharepoint.nexus.internal"],
+      "workflow": {
+        "triage": {
+          "q": "What record type allows one name to point to another?",
+          "options": ["A Record", "CNAME", "PTR"],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Why use CNAME instead of A record?",
+          "options": ["Faster", "If SharePoint IP changes, wiki record stays valid", "Security"],
+          "correct": 1
+        },
+        "fix": {
+          "q": "Correct record?",
+          "options": ["Alias: wiki, FQDN: sharepoint.nexus.internal", "Alias: sharepoint, FQDN: wiki"],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-007",
+      "category": "Security",
+      "title": "Shadow IT Discovery",
+      "summary": "Security sees traffic to a mystery server. You have the name, you need the IP.",
+      "tags": ["Forward vs Reverse"],
+      "artifact": ["Name: dev-server-01.nexus.com", "Result: 192.168.50.12"],
+      "workflow": {
+        "triage": {
+          "q": "Finding IP from Name is what lookup?",
+          "options": ["Forward", "Reverse", "Recursive"],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "Security wants to find other names for that IP. Where to look?",
+          "options": ["Forward Zone", "Reverse Lookup Zone", "Root Hints"],
+          "correct": 1
+        },
+        "fix": {
+          "q": "What record maps IP back to Name?",
+          "options": ["A Record", "PTR", "MX"],
+          "correct": 1
+        }
+      }
+    },
+    {
+      "id": "DNS-008",
+      "category": "External",
+      "title": "The Website Loop",
+      "summary": "Users get 'Too many redirects' for 'www.nexus.com'.",
+      "tags": ["Logic Errors"],
+      "artifact": ["Record 1: www CNAME shop", "Record 2: shop CNAME www"],
+      "workflow": {
+        "triage": {
+          "q": "What is happening?",
+          "options": ["Server busy", "Circular loop", "DNS offline"],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Why didn't DNS catch this?",
+          "options": ["Servers only check syntax, not logic", "Bypassed safety", "Load balancing"],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Fix?",
+          "options": ["Point 'www' to A-Record IP", "Third CNAME", "Restart DNS"],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-009",
+      "category": "Hygiene",
+      "title": "The Ghost of Servers Past",
+      "summary": "Ping 'accounting' sometimes gives 10.0.0.50 (new) and sometimes 10.0.0.99 (dead).",
+      "tags": ["Round Robin", "Stale Records"],
+      "artifact": ["DNS: Two A-records for 'accounting'", "10.0.0.99 was decommissioned 6 months ago"],
+      "workflow": {
+        "triage": {
+          "q": "Why does result rotate?",
+          "options": ["Round Robin rotating between records", "Haunted network", "Two NICs"],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "Feature to auto-delete old records?",
+          "options": ["Aging and Scavenging", "Disk Cleanup", "AD Deletion"],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Manual fix?",
+          "options": ["Delete stale 10.0.0.99 record", "Reboot DNS", "Format server"],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-010",
+      "category": "Cloud",
+      "title": "Microsoft 365 Verification Failure",
+      "summary": "M365 setup can't find the verification record.",
+      "tags": ["TXT", "Identity"],
+      "artifact": ["Required: MS=ms12345678", "Current: v=spf1 include:outlook.com"],
+      "workflow": {
+        "triage": {
+          "q": "What record is Microsoft looking for?",
+          "options": ["SPF", "TXT starting with 'MS='", "MX"],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Where should this be created?",
+          "options": ["Internal AD", "Public DNS Provider", "Local PC"],
+          "correct": 1
+        },
+        "fix": {
+          "q": "Action?",
+          "options": ["Add TXT 'MS=ms12345678' to public zone", "Wait 7 days", "Disable firewall"],
+          "correct": 0
+        }
+      }
+    },
+    {
+      "id": "DNS-011",
+      "category": "Caching",
+      "title": "The 'Sticky' Mistake",
+      "summary": "You fixed a wrong IP in DNS, but your laptop still hits the old one.",
+      "tags": ["Cache", "Client"],
+      "artifact": ["Server: 1.1.1.1 (Correct)", "Laptop ping: 192.168.1.50 (Wrong)", "TTL: 1 Hour"],
+      "workflow": {
+        "triage": {
+          "q": "Where is wrong info stored?",
+          "options": ["Laptop Resolver Cache", "Laptop RAM", "Router"],
+          "correct": 0
+        },
+        "diagnosis": {
+          "q": "Why hasn't laptop checked server again?",
+          "options": ["Lazy laptop", "TTL hasn't expired", "Server far away"],
+          "correct": 1
+        },
+        "fix": {
+          "q": "Command to clear?",
+          "options": ["ipconfig /renew", "ipconfig /flushdns", "netstat"],
+          "correct": 1
+        }
+      }
+    },
+    {
+      "id": "DNS-012",
+      "category": "Recursion",
+      "title": "Internal Works, External Fails",
+      "summary": "Internal portal works; google.com fails.",
+      "tags": ["Forwarders"],
+      "artifact": ["Internal DNS: Working", "nslookup google.com: 'Server failed'", "Forwarders list: Empty"],
+      "workflow": {
+        "triage": {
+          "q": "Missing component for external names?",
+          "options": ["Faster CPU", "Forwarders or Root Hints", "Secondary zone"],
+          "correct": 1
+        },
+        "diagnosis": {
+          "q": "Default next step for unknown records?",
+          "options": ["Root Hints", "Client PC", "Router"],
+          "correct": 0
+        },
+        "fix": {
+          "q": "Best fix for speed?",
+          "options": ["Add 8.8.8.8 to Forwarders", "Manual IPs", "Disable DNS"],
+          "correct": 0
+        }
+      }
+    }
+  ]
+}
