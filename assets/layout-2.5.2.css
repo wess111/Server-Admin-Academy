@@ -1,0 +1,122 @@
+/* PC Simulator v2.5.2 — motherboard layout reorganization
+   Keeps v2.5.1 functionality intact and replaces ad-hoc nudges with deliberate zones. */
+
+.simBoardInternals{
+  margin:56px 24px 28px;
+}
+
+/* Top power-delivery row */
+.simEpsSocket{
+  left:2.5%!important;
+  top:1.5%!important;
+  width:78px!important;
+  height:26px!important;
+  transform:none!important;
+  z-index:5;
+}
+.simVrm{
+  left:12.5%!important;
+  top:1.5%!important;
+  width:29%!important;
+  height:26px!important;
+}
+
+/* CPU zone gets its own clear block below EPS / VRM */
+.simCpuAssembly{
+  left:4.5%!important;
+  top:10.5%!important;
+  width:38.5%!important;
+  height:43%!important;
+}
+
+/* Memory bank remains a clean upper-right zone */
+.simMemoryBank{
+  right:7%!important;
+  top:9%!important;
+  width:25%!important;
+  height:37%!important;
+}
+
+/* Board-edge power/header placement */
+.simAtxSocket{
+  right:1.8%!important;
+  top:18%!important;
+  height:104px!important;
+}
+.simSysFan{
+  right:4%!important;
+  top:47%!important;
+}
+
+/* Mid-board controller / storage area */
+.simCmos{
+  left:49%!important;
+  top:55%!important;
+}
+.simChipset{
+  right:27%!important;
+  top:53%!important;
+}
+.simSata{
+  right:3%!important;
+  top:58%!important;
+}
+
+/* Lower storage / expansion rows */
+.simSsdZone{
+  left:6%!important;
+  bottom:27%!important;
+  width:41%!important;
+  height:8%!important;
+}
+.simM2Second{
+  left:6.5%!important;
+  bottom:18.5%!important;
+  width:39%!important;
+}
+.simPcieX1{
+  left:51%!important;
+  bottom:19%!important;
+  width:24%!important;
+}
+
+/* Give USB/front-panel headers a dedicated row above PCIe x16 */
+.simUsbHeader{
+  right:17%!important;
+  bottom:13.5%!important;
+  width:88px!important;
+  height:24px!important;
+}
+.simFrontPanel{
+  right:5%!important;
+  bottom:13.5%!important;
+  width:92px!important;
+  height:24px!important;
+}
+
+/* GPU slot sits on its own bottom row */
+.simGpuZone{
+  left:5%!important;
+  right:5%!important;
+  bottom:4.5%!important;
+  height:7.5%!important;
+}
+
+/* Preserve clarity at large desktop widths */
+@media (min-width:1700px){
+  .simBoardInternals{margin:58px 28px 30px}
+  .simCpuAssembly{top:10%;height:43.5%}
+  .simMemoryBank{top:8.5%;height:38%}
+  .simUsbHeader,.simFrontPanel{bottom:14%}
+  .simGpuZone{bottom:4%;height:7.5%}
+}
+
+/* Responsive fallback: keep the same zones, tighten them proportionally */
+@media (max-width:1100px){
+  .simEpsSocket{left:2%!important;width:70px!important}
+  .simVrm{left:13%!important;width:28%!important}
+  .simCpuAssembly{left:4%!important;width:40%!important}
+  .simMemoryBank{right:5%!important;width:27%!important}
+  .simUsbHeader{right:18%!important}
+  .simFrontPanel{right:4%!important}
+}
