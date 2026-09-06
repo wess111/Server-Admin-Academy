@@ -1,0 +1,66 @@
+/* PC Simulator v2.6.1 — CPU assembly polish and accessibility refinements.
+   Layout-only; no simulator logic changes. */
+
+/* Keep the CPU socket visual cue clear of the readable label. */
+.simCpuLayer{
+  position:absolute!important;
+  padding-left:68px!important;
+  padding-right:14px!important;
+  min-height:48px!important;
+}
+.simCpuLayer::before{
+  position:absolute!important;
+  left:14px!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  width:30px!important;
+  height:30px!important;
+  margin:0!important;
+  pointer-events:none!important;
+}
+.simCpuLayer span{
+  margin-left:0!important;
+  position:relative!important;
+  z-index:2!important;
+  white-space:nowrap!important;
+}
+.simCpuLayer small{
+  margin-left:auto!important;
+  position:relative!important;
+  z-index:2!important;
+  padding-left:12px!important;
+  white-space:nowrap!important;
+}
+
+/* Give the CPU Assembly block breathing room below the cooler. */
+.simCpuAssembly{
+  height:45.5%!important;
+  padding-bottom:26px!important;
+}
+.simCpuLayer{top:23%!important;height:20%!important}
+.simPasteLayer{top:49%!important;height:20%!important}
+.simCoolerLayer{top:75%!important;height:20%!important}
+
+/* Maintain a visible lower gutter inside the assembly boundary. */
+.simCoolerLayer{bottom:auto!important}
+
+/* Accessibility: interactive hardware targets remain comfortably operable
+   and keyboard focus remains obvious against the dark board. */
+.simCpuLayer,.simPasteLayer,.simCoolerLayer,.simDimmSlot,.simSsdZone,.simGpuZone{
+  outline-offset:3px;
+}
+.simCpuLayer:focus-visible,.simPasteLayer:focus-visible,.simCoolerLayer:focus-visible,
+.simDimmSlot:focus-visible,.simSsdZone:focus-visible,.simGpuZone:focus-visible{
+  outline:3px solid #f8fafc!important;
+  box-shadow:0 0 0 6px rgba(124,58,237,.55)!important;
+}
+
+/* Keep labels readable under browser zoom/high-density displays. */
+.simCpuLayer span,.simPasteLayer span,.simCoolerLayer span{
+  line-height:1.25!important;
+}
+
+@media (max-width:1150px){
+  .simCpuLayer{padding-left:62px!important}
+  .simCpuLayer::before{left:12px!important;width:28px!important;height:28px!important}
+}

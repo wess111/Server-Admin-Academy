@@ -1,0 +1,44 @@
+/* Server Admin Academy — project-wide uniform background pass
+   Keeps hierarchy in panels/cards instead of large page glows. */
+
+html,body{
+  background:#080b14!important;
+  background-image:none!important;
+}
+
+/* Retire page-level glow treatments so every area belongs to one visual system. */
+.glowLayer{display:none!important}
+.glowSection,
+.sectionBandAlt,
+.footer,
+.simHero{
+  background:transparent!important;
+  background-image:none!important;
+}
+
+/* Keep section separation structural, not luminous. */
+.sectionDivider{
+  background:rgba(255,255,255,.09)!important;
+}
+
+/* Panels/cards retain subtle depth against the same global canvas. */
+.card,
+.navGlass,
+.simPanel,
+.simBench,
+.simCase,
+.simScenarioCard,
+.simActivityRecord{
+  box-shadow:none!important;
+}
+
+/* Purple remains an interaction/accent color rather than a background spotlight. */
+.navLink.isActive,
+.navDropItem.isActive,
+.chip.isActive{
+  background:rgba(139,92,246,.14)!important;
+}
+
+@media (prefers-reduced-transparency: reduce){
+  .navGlass{backdrop-filter:none!important}
+}

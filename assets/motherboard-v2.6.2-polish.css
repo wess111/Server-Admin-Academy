@@ -1,0 +1,73 @@
+/* PC Simulator v2.6.2 — final motherboard spacing/header polish.
+   Layout-only; simulator behavior unchanged. */
+
+/* Give the chipset clear separation from the memory enclosure. */
+.simChipset{
+  top:60.5%!important;
+  height:88px!important;
+}
+
+/* Compact USB/front-panel connectors: fewer visible pins, readable labels below. */
+.simUsbHeader,
+.simFrontPanel{
+  bottom:6.5%!important;
+  height:34px!important;
+  border-radius:6px!important;
+  overflow:visible!important;
+}
+
+.simUsbHeader{
+  left:64%!important;
+  width:11.5%!important;
+  background:
+    radial-gradient(circle,#60a5fa 0 2.2px,transparent 3px) 10px 7px/18px 14px repeat-x,
+    rgba(18,31,55,.72)!important;
+}
+.simFrontPanel{
+  left:82%!important;
+  width:12.5%!important;
+  background:
+    radial-gradient(circle,#f59e0b 0 2.2px,transparent 3px) 10px 7px/18px 14px repeat-x,
+    rgba(46,30,12,.60)!important;
+}
+
+/* Put connector names under the physical pin block instead of over the pins. */
+.simUsbHeader strong,
+.simFrontPanel strong{
+  position:absolute!important;
+  top:calc(100% + 6px)!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  width:max-content!important;
+  max-width:140px!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  font-size:.58rem!important;
+  line-height:1.2!important;
+  letter-spacing:.02em!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+}
+.simUsbHeader strong{color:#dbeafe!important}
+.simFrontPanel strong{color:#fde68a!important}
+
+/* Preserve a clear gutter between connector labels and board boundary. */
+.simGpuZone{bottom:4.5%!important}
+
+/* Accessibility: don't encode the connector only through pin color. */
+.simUsbHeader{border:2px solid rgba(147,197,253,.60)!important}
+.simFrontPanel{border:2px solid rgba(252,211,77,.52)!important}
+
+@media (min-width:1700px){
+  .simChipset{top:60%!important}
+  .simUsbHeader,.simFrontPanel{bottom:7%!important}
+}
+
+@media (max-width:1150px){
+  .simChipset{top:61%!important}
+  .simUsbHeader{left:61%!important;width:14%!important}
+  .simFrontPanel{left:80%!important;width:15%!important}
+  .simUsbHeader strong,.simFrontPanel strong{font-size:.54rem!important}
+}

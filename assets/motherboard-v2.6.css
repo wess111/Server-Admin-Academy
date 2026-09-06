@@ -1,0 +1,332 @@
+/* PC Simulator v2.6.0 — organized motherboard layout
+   Built from the v2.5.x visual language. No images; HTML/CSS only. */
+
+/* Keep the motherboard clean and diagram-like rather than hyper-realistic. */
+.simBoardInternals{
+  margin:58px 24px 24px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+/* ---------------------------------------------------------
+   TOP POWER DELIVERY ROW
+   EPS + VRM align with the left edge of the CPU assembly.
+   --------------------------------------------------------- */
+.simEpsSocket{
+  left:2%!important;
+  top:1.5%!important;
+  width:22%!important;
+  height:54px!important;
+  transform:none!important;
+  writing-mode:initial!important;
+  border-radius:9px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  padding:0 12px!important;
+  background:rgba(10,12,22,.78)!important;
+  border:1px solid rgba(203,213,225,.18)!important;
+}
+.simEpsSocket strong{
+  font-size:.62rem!important;
+  letter-spacing:.04em!important;
+}
+.simEpsSocket::before{
+  content:"";
+  width:38px;
+  height:27px;
+  margin-right:10px;
+  border-radius:5px;
+  border:1px solid rgba(203,213,225,.28);
+  background:
+    radial-gradient(circle at 25% 28%,#05070d 0 3px,transparent 4px),
+    radial-gradient(circle at 75% 28%,#05070d 0 3px,transparent 4px),
+    radial-gradient(circle at 25% 72%,#05070d 0 3px,transparent 4px),
+    radial-gradient(circle at 75% 72%,#05070d 0 3px,transparent 4px),
+    linear-gradient(180deg,#202433,#0f1220);
+  box-shadow:inset 0 0 0 3px rgba(255,255,255,.025);
+  flex:0 0 auto;
+}
+
+.simVrm{
+  left:26%!important;
+  top:1.5%!important;
+  width:31%!important;
+  height:54px!important;
+  border-radius:9px!important;
+  justify-content:flex-start!important;
+  padding:0 12px 0 76px!important;
+  background:rgba(10,12,22,.78)!important;
+  border:1px solid rgba(203,213,225,.18)!important;
+}
+.simVrm::before{
+  content:"";
+  position:absolute;
+  left:12px;
+  top:12px;
+  width:52px;
+  height:30px;
+  background:repeating-linear-gradient(90deg,#424755 0 8px,#242936 8px 12px);
+  border-radius:4px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);
+}
+.simVrm strong{font-size:.64rem!important;color:#e8e9f0!important}
+.simVrm small{font-size:.54rem!important;color:#b6bac9!important}
+
+/* ---------------------------------------------------------
+   CPU ASSEMBLY — clear left-hand block
+   --------------------------------------------------------- */
+.simCpuAssembly{
+  left:2%!important;
+  top:14%!important;
+  width:50%!important;
+  height:43%!important;
+  border:1px solid rgba(167,139,250,.14)!important;
+  border-radius:15px!important;
+  background:rgba(7,9,17,.26)!important;
+  padding:38px 18px 16px!important;
+}
+.simAssemblyTitle{
+  left:18px!important;
+  top:14px!important;
+  font-size:.72rem!important;
+  font-weight:800!important;
+  letter-spacing:.08em!important;
+  color:#d9dbea!important;
+}
+.simCpuLayer,.simPasteLayer,.simCoolerLayer{
+  left:7%!important;
+  width:86%!important;
+  height:22%!important;
+  padding:0 14px!important;
+  border-radius:10px!important;
+}
+.simCpuLayer{top:24%!important}
+.simPasteLayer{top:51%!important}
+.simCoolerLayer{top:78%!important}
+
+/* Give the CPU socket a small physical cue without using an image. */
+.simCpuLayer::before{
+  content:"";
+  width:28px;
+  height:28px;
+  margin-right:10px;
+  border:2px solid rgba(203,213,225,.28);
+  border-radius:4px;
+  background:linear-gradient(145deg,#252a36,#0e111a);
+  box-shadow:inset 0 0 0 5px rgba(255,255,255,.03);
+  flex:0 0 auto;
+}
+.simCpuLayer{justify-content:flex-start!important}
+.simCpuLayer small{margin-left:auto!important}
+
+/* ---------------------------------------------------------
+   MEMORY — upper-right zone, narrow DIMMs retained
+   --------------------------------------------------------- */
+.simMemoryBank{
+  right:4%!important;
+  top:13%!important;
+  width:35%!important;
+  height:42%!important;
+  border:1px solid rgba(167,139,250,.12)!important;
+  border-radius:15px!important;
+  background:rgba(7,9,17,.20)!important;
+  padding:42px 16px 14px!important;
+  grid-template-columns:repeat(4,20px)!important;
+  gap:14px!important;
+  justify-content:center!important;
+}
+.simBoardLabel{
+  left:18px!important;
+  top:14px!important;
+  font-size:.72rem!important;
+  font-weight:800!important;
+  color:#d9dbea!important;
+}
+.simDimmSlot{
+  width:20px!important;
+  min-width:20px!important;
+  max-width:20px!important;
+  border-radius:3px!important;
+}
+
+/* 24-pin power stays at the board edge beside the memory bank. */
+.simAtxSocket{
+  right:1.2%!important;
+  top:22%!important;
+  width:22px!important;
+  height:104px!important;
+}
+
+/* ---------------------------------------------------------
+   MID-BOARD CONTROLLERS
+   --------------------------------------------------------- */
+.simCmos{
+  left:54%!important;
+  top:61%!important;
+  width:72px!important;
+  height:62px!important;
+}
+.simBattery{width:31px!important;height:31px!important}
+
+.simChipset{
+  left:65%!important;
+  right:auto!important;
+  top:56%!important;
+  width:105px!important;
+  height:94px!important;
+  border-radius:12px!important;
+}
+.simChipset strong{font-size:.67rem!important}
+.simChipset small{font-size:.51rem!important}
+
+.simSysFan{
+  right:4%!important;
+  top:58%!important;
+  width:68px!important;
+  height:24px!important;
+}
+.simSata{
+  right:2.5%!important;
+  top:68%!important;
+  width:78px!important;
+  height:72px!important;
+}
+.simSata i{width:22px!important;height:11px!important}
+
+/* ---------------------------------------------------------
+   STORAGE ROWS
+   --------------------------------------------------------- */
+.simSsdZone{
+  left:2%!important;
+  bottom:27%!important;
+  width:47%!important;
+  height:8%!important;
+  border-radius:8px!important;
+  padding:0 14px!important;
+}
+.simSsdZone::before{
+  content:"●";
+  color:rgba(203,213,225,.38);
+  margin-right:9px;
+  font-size:.62rem;
+}
+.simM2Second{
+  left:2%!important;
+  bottom:18%!important;
+  width:47%!important;
+  height:7%!important;
+  border-radius:8px!important;
+  justify-content:flex-start!important;
+  padding:0 14px!important;
+}
+.simM2Second::before{
+  content:"●";
+  color:rgba(203,213,225,.28);
+  margin-right:9px;
+}
+.simM2Second small{margin-left:auto!important}
+
+/* The small PCIe x1 is contextual only; keep it subtle and out of the way. */
+.simPcieX1{
+  left:55%!important;
+  bottom:18.5%!important;
+  width:16%!important;
+  height:20px!important;
+  opacity:.55!important;
+}
+
+/* ---------------------------------------------------------
+   BOTTOM ROW — shorter PCIe x16 + USB + Front Panel
+   --------------------------------------------------------- */
+.simGpuZone{
+  left:2%!important;
+  right:auto!important;
+  bottom:3%!important;
+  width:56%!important;
+  height:10%!important;
+  border-radius:7px!important;
+  padding:0 14px!important;
+}
+.simGpuZone::before{
+  content:""!important;
+  position:absolute!important;
+  left:12px!important;
+  right:80px!important;
+  top:50%!important;
+  height:10px!important;
+  transform:translateY(-50%)!important;
+  border:1px solid rgba(203,213,225,.20)!important;
+  border-radius:2px!important;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 2px,transparent 2px 6px)!important;
+}
+.simGpuZone span,.simGpuZone small{position:relative;z-index:2}
+.simGpuZone small{margin-left:auto}
+
+.simUsbHeader{
+  left:62%!important;
+  right:auto!important;
+  bottom:3%!important;
+  width:15%!important;
+  height:10%!important;
+  border-radius:8px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:
+    radial-gradient(circle,#60a5fa 0 2px,transparent 3px) 12px 11px/14px 14px repeat,
+    rgba(18,31,55,.70)!important;
+  border:1px solid rgba(96,165,250,.45)!important;
+}
+.simUsbHeader strong{
+  background:rgba(5,9,18,.68);
+  padding:3px 5px;
+  border-radius:4px;
+  color:#dbeafe!important;
+}
+
+.simFrontPanel{
+  left:80%!important;
+  right:auto!important;
+  bottom:3%!important;
+  width:17%!important;
+  height:10%!important;
+  border-radius:8px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:
+    radial-gradient(circle,#f59e0b 0 2px,transparent 3px) 12px 11px/14px 14px repeat,
+    rgba(46,30,12,.58)!important;
+  border:1px solid rgba(245,158,11,.34)!important;
+}
+.simFrontPanel strong{
+  background:rgba(5,9,18,.68);
+  padding:3px 5px;
+  border-radius:4px;
+  color:#fde68a!important;
+}
+
+/* Make contextual labels consistently legible. */
+.simBoardContext strong{font-size:.58rem}
+.simBoardContext small{font-size:.50rem;color:#b8bdcb}
+
+/* Large desktop refinement for the 4K monitor. */
+@media (min-width:1700px){
+  .simBoardInternals{margin:60px 30px 26px!important}
+  .simCpuAssembly{top:14%!important;height:44%!important}
+  .simMemoryBank{top:13%!important;height:43%!important;grid-template-columns:repeat(4,22px)!important;gap:16px!important}
+  .simDimmSlot{width:22px!important;min-width:22px!important;max-width:22px!important}
+  .simGpuZone,.simUsbHeader,.simFrontPanel{bottom:3.5%!important}
+}
+
+/* Responsive desktop fallback. */
+@media (max-width:1150px){
+  .simEpsSocket{width:24%!important}
+  .simVrm{left:28%!important;width:30%!important}
+  .simCpuAssembly{width:52%!important}
+  .simMemoryBank{right:3%!important;width:34%!important}
+  .simGpuZone{width:54%!important}
+  .simUsbHeader{left:59%!important;width:17%!important}
+  .simFrontPanel{left:79%!important;width:18%!important}
+}
