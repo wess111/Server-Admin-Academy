@@ -1,12 +1,10 @@
-// PC Simulator v2.5.1 compatibility hotfix.
+// PC Simulator compatibility hotfix retained from v2.5.1.
 // v2.5 migrated memory state from a single `ram` value to the `rams` collection,
-// but one compatibility expression still referenced the removed global identifier.
-// Exposing this truthy compatibility shim prevents that stale reference from
-// interrupting rendering until the expression is removed from app-simulator.js.
+// but one compatibility expression still references the removed global identifier.
 window.ram = true;
 
-// Load the v2.5.1 motherboard spacing polish without changing simulator logic.
-const polish = document.createElement('link');
-polish.rel = 'stylesheet';
-polish.href = './assets/styles-simulator-polish.css?v=2.5.1a';
-document.head.appendChild(polish);
+// Keep the visible build marker synchronized with the deployed development layout.
+document.addEventListener('DOMContentLoaded',()=>{
+  const version=document.querySelector('.simVersionFooter strong');
+  if(version) version.textContent='v2.6.0';
+});
