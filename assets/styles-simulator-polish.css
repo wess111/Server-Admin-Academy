@@ -1,0 +1,45 @@
+/* v2.5.1 motherboard spacing polish
+   Keeps functional geometry unchanged while separating board-context labels
+   from the CPU assembly and PCIe x16 installation target. */
+
+/* Top-left board power area: keep EPS and VRM above/left of CPU assembly. */
+.simEpsSocket{
+  left:1.5%!important;
+  top:-1.5%!important;
+  width:68px!important;
+  height:22px!important;
+  transform:none!important;
+  z-index:5;
+}
+.simVrm{
+  left:12.5%!important;
+  top:-1.5%!important;
+  width:27%!important;
+  height:22px!important;
+  z-index:4;
+}
+.simCpuAssembly{
+  top:6.5%!important;
+  height:44%!important;
+}
+
+/* Bottom-board headers: lift them away from the PCIe x16 slot. */
+.simUsbHeader,
+.simFrontPanel{
+  bottom:15.5%!important;
+}
+.simUsbHeader{left:54%!important}
+.simFrontPanel{right:5%!important}
+
+/* Preserve a clean visual channel above the expansion slot. */
+.simGpuZone{
+  bottom:2.5%!important;
+  height:9.5%!important;
+}
+
+@media (min-width:1700px){
+  .simEpsSocket{top:-1%!important}
+  .simVrm{top:-1%!important}
+  .simCpuAssembly{top:7%!important}
+  .simUsbHeader,.simFrontPanel{bottom:16.5%!important}
+}
