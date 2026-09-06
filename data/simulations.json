@@ -1,0 +1,289 @@
+[
+  {
+    "id": "pc-hardware",
+    "title": "Finance Department Workstation Replacement",
+    "shortTitle": "PC Hardware Simulator",
+    "domain": "Support Operations",
+    "summary": "Select compatible components, assemble a business workstation, connect required power, and validate the finished system through POST.",
+    "story": "A finance department workstation has failed and must be replaced before the next business day. The employee uses Microsoft 365, QuickBooks, browser-based finance applications, and two office monitors. Build a reliable replacement without purchasing unnecessary hardware.",
+    "requirements": {
+      "memoryGB": 16,
+      "storageGB": 1000,
+      "storageType": "ssd",
+      "displayOutputs": 2,
+      "budget": 700,
+      "dedicatedGpuRequired": false
+    },
+    "requirementLabels": [
+      "At least 16 GB RAM",
+      "At least 1 TB SSD storage",
+      "Two display outputs",
+      "Budget: $700 maximum",
+      "Compatible hardware",
+      "Successful POST"
+    ],
+    "components": [
+      {
+        "id": "mb-b760",
+        "type": "motherboard",
+        "name": "MSI PRO B760-P WIFI",
+        "detail": "ATX \u2022 LGA1700 \u2022 DDR5 \u2022 HDMI + DisplayPort",
+        "socket": "LGA1700",
+        "memoryType": "DDR5",
+        "displayOutputs": 2,
+        "price": 145,
+        "researchUrl": "https://us.msi.com/Motherboard/PRO-B760-P-WIFI",
+        "model": "PRO B760-P WIFI",
+        "chipset": "B760"
+      },
+      {
+        "id": "mb-b560",
+        "type": "motherboard",
+        "name": "MSI PRO B760-P WIFI DDR4",
+        "detail": "ATX \u2022 LGA1700 \u2022 DDR4 \u2022 HDMI + DisplayPort",
+        "socket": "LGA1700",
+        "memoryType": "DDR4",
+        "displayOutputs": 2,
+        "price": 115,
+        "researchUrl": "https://us.msi.com/Motherboard/PRO-B760-P-WIFI-DDR4",
+        "model": "PRO B760-P WIFI DDR4",
+        "chipset": "B760"
+      },
+      {
+        "id": "mb-b650",
+        "type": "motherboard",
+        "name": "ASUS PRIME B650-PLUS",
+        "detail": "ATX \u2022 AM5 \u2022 DDR5 \u2022 HDMI + DisplayPort",
+        "socket": "AM5",
+        "memoryType": "DDR5",
+        "displayOutputs": 2,
+        "price": 160,
+        "researchUrl": "https://www.asus.com/us/motherboards-components/motherboards/prime/prime-b650-plus/",
+        "model": "PRIME B650-PLUS",
+        "chipset": "B650"
+      },
+      {
+        "id": "cpu-i5-14400",
+        "type": "cpu",
+        "name": "Intel Core i5-14400",
+        "detail": "LGA 1700 \u2022 integrated graphics",
+        "socket": "LGA1700",
+        "integratedGraphics": true,
+        "price": 215,
+        "model": "Intel Core i5-14400",
+        "researchUrl": "https://www.intel.com/content/www/us/en/products/sku/236788/intel-core-i5-processor-14400-20m-cache-up-to-4-70-ghz/specifications.html"
+      },
+      {
+        "id": "cpu-i5-10400",
+        "type": "cpu",
+        "name": "Intel Core i5-10400",
+        "detail": "LGA 1200 \u2022 integrated graphics",
+        "socket": "LGA1200",
+        "integratedGraphics": true,
+        "price": 120,
+        "model": "Intel Core i5-10400"
+      },
+      {
+        "id": "cpu-r5-7600",
+        "type": "cpu",
+        "name": "AMD Ryzen 5 7600",
+        "detail": "AM5 \u2022 integrated graphics",
+        "socket": "AM5",
+        "integratedGraphics": true,
+        "price": 195,
+        "model": "AMD Ryzen 5 7600",
+        "researchUrl": "https://www.amd.com/en/products/processors/desktops/ryzen/7000-series/amd-ryzen-5-7600.html"
+      },
+      {
+        "id": "paste-standard",
+        "type": "paste",
+        "name": "ARCTIC MX-6 Thermal Compound",
+        "detail": "Thermal interface material \u2022 CPU application",
+        "price": 6,
+        "researchUrl": "https://www.arctic.de/us/MX-6",
+        "model": "MX-6"
+      },
+      {
+        "id": "cooler-1700",
+        "type": "cooler",
+        "name": "ARCTIC Freezer 36",
+        "detail": "Tower cooler \u2022 LGA1700 / AM5 / AM4",
+        "sockets": [
+          "LGA1700",
+          "AM5"
+        ],
+        "price": 35,
+        "researchUrl": "https://www.arctic.de/us/Freezer-36",
+        "model": "Freezer 36"
+      },
+      {
+        "id": "cooler-1200",
+        "type": "cooler",
+        "name": "Cooler Master Hyper 212 Black Edition",
+        "detail": "Tower CPU cooler \u2022 LGA1200 compatible",
+        "sockets": [
+          "LGA1200"
+        ],
+        "price": 30,
+        "model": "Hyper 212 Black Edition"
+      },
+      {
+        "id": "cooler-am5",
+        "type": "cooler",
+        "name": "AMD Wraith Stealth",
+        "detail": "AMD stock CPU cooler \u2022 AM5",
+        "sockets": [
+          "AM5"
+        ],
+        "price": 20,
+        "model": "Wraith Stealth"
+      },
+      {
+        "id": "ram-8-d5",
+        "type": "ram",
+        "name": "Crucial 8GB DDR5-5600 UDIMM",
+        "detail": "DDR5-5600 \u2022 8 GB UDIMM",
+        "memoryType": "DDR5",
+        "capacityGB": 8,
+        "price": 28,
+        "model": "Crucial DDR5-5600 8GB UDIMM"
+      },
+      {
+        "id": "ram-16-d5",
+        "type": "ram",
+        "name": "Crucial Pro 16GB DDR5-5600 UDIMM",
+        "detail": "DDR5-5600 \u2022 16 GB UDIMM",
+        "memoryType": "DDR5",
+        "capacityGB": 16,
+        "price": 45,
+        "model": "Crucial Pro DDR5-5600 16GB"
+      },
+      {
+        "id": "ram-32-d5",
+        "type": "ram",
+        "name": "Crucial Pro 32GB DDR5-5600 UDIMM",
+        "detail": "DDR5-5600 \u2022 32 GB UDIMM",
+        "memoryType": "DDR5",
+        "capacityGB": 32,
+        "price": 82,
+        "model": "Crucial Pro DDR5-5600 32GB"
+      },
+      {
+        "id": "ram-16-d4",
+        "type": "ram",
+        "name": "Crucial 16GB DDR4-3200 UDIMM",
+        "detail": "DDR4-3200 \u2022 16 GB UDIMM",
+        "memoryType": "DDR4",
+        "capacityGB": 16,
+        "price": 34,
+        "model": "Crucial DDR4-3200 16GB UDIMM"
+      },
+      {
+        "id": "storage-512-nvme",
+        "type": "storage",
+        "name": "WD Blue SN580 500GB NVMe SSD",
+        "detail": "M.2 2280 \u2022 PCIe 4.0 NVMe \u2022 500 GB",
+        "storageType": "ssd",
+        "interface": "NVMe",
+        "capacityGB": 500,
+        "price": 39,
+        "model": "WD Blue SN580 500GB"
+      },
+      {
+        "id": "storage-1tb-nvme",
+        "type": "storage",
+        "name": "WD Blue SN580 1TB NVMe SSD",
+        "detail": "M.2 2280 \u2022 PCIe 4.0 NVMe \u2022 1 TB",
+        "storageType": "ssd",
+        "interface": "NVMe",
+        "capacityGB": 1000,
+        "price": 65,
+        "model": "WD Blue SN580 1TB"
+      },
+      {
+        "id": "storage-1tb-sata",
+        "type": "storage",
+        "name": "Samsung 870 EVO 1TB SATA SSD",
+        "detail": "2.5-inch \u2022 SATA 6 Gb/s \u2022 1 TB",
+        "storageType": "ssd",
+        "interface": "SATA",
+        "capacityGB": 1000,
+        "price": 58,
+        "model": "Samsung 870 EVO 1TB"
+      },
+      {
+        "id": "storage-1tb-hdd",
+        "type": "storage",
+        "name": "WD Blue 1TB Desktop HDD",
+        "detail": "3.5-inch \u2022 SATA HDD \u2022 1 TB",
+        "storageType": "hdd",
+        "interface": "SATA",
+        "capacityGB": 1000,
+        "price": 35,
+        "model": "WD Blue 1TB Desktop HDD"
+      },
+      {
+        "id": "gpu-basic",
+        "type": "gpu",
+        "name": "ASUS Dual GeForce RTX 3050 6GB",
+        "detail": "PCIe 4.0 \u2022 3 display outputs \u2022 no external GPU power",
+        "displayOutputs": 3,
+        "wattage": 70,
+        "requiresPower": false,
+        "price": 135,
+        "researchUrl": "https://www.asus.com/us/motherboards-components/graphics-cards/dual/dual-rtx3050-6g/techspec/",
+        "model": "DUAL-RTX3050-6G"
+      },
+      {
+        "id": "gpu-mid",
+        "type": "gpu",
+        "name": "ASUS Dual GeForce RTX 4060 8GB",
+        "detail": "PCIe \u2022 4 display outputs \u2022 external GPU power",
+        "displayOutputs": 4,
+        "wattage": 115,
+        "requiresPower": true,
+        "price": 260,
+        "model": "DUAL-RTX4060-8G"
+      },
+      {
+        "id": "psu-450",
+        "type": "psu",
+        "name": "Corsair CX450 450W",
+        "detail": "ATX \u2022 80 PLUS Bronze",
+        "wattage": 450,
+        "hasGpuPower": true,
+        "price": 48,
+        "model": "CX450"
+      },
+      {
+        "id": "psu-550",
+        "type": "psu",
+        "name": "Corsair CX550 550W",
+        "detail": "ATX \u2022 80 PLUS Bronze \u2022 EPS + PCIe power",
+        "wattage": 550,
+        "hasGpuPower": true,
+        "price": 55,
+        "researchUrl": "https://www.corsair.com/us/en/p/psu/cp-9020277-na/cx-series-cx550-550-watt-80-plus-bronze-atx-power-supply-cp-9020277-na",
+        "model": "CX550"
+      },
+      {
+        "id": "psu-750",
+        "type": "psu",
+        "name": "Corsair RM750e 750W",
+        "detail": "ATX \u2022 80 PLUS Gold \u2022 modular",
+        "wattage": 750,
+        "hasGpuPower": true,
+        "price": 92,
+        "model": "RM750e"
+      },
+      {
+        "id": "fan-120",
+        "type": "casefan",
+        "name": "ARCTIC P12 PWM PST",
+        "detail": "120 mm PWM case fan \u2022 rear exhaust",
+        "price": 15,
+        "model": "P12 PWM PST"
+      }
+    ]
+  }
+]

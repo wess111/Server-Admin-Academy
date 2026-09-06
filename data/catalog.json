@@ -1,0 +1,106 @@
+{
+  "version": "1.0",
+  "updated": "2026-02-22",
+  "tracks": [
+    {
+      "id": "HelpDesk",
+      "title": "Help Desk Support",
+      "level": "Intro → Intermediate",
+      "description": "Foundational troubleshooting: endpoints, users, disk/storage, file sharing, and service desk workflow."
+    },
+    {
+      "id": "ServerAdmin",
+      "title": "Server Administration",
+      "level": "Intermediate",
+      "description": "Windows Server services, infrastructure troubleshooting, and enterprise operations."
+    },
+    {
+      "id": "Security",
+      "title": "Security",
+      "level": "Intermediate → Advanced",
+      "description": "Security operations, hardening, and response-aligned practice."
+    }
+  ],
+  "labs": [
+    {
+      "id": "windows-support-1",
+      "title": "Windows Support I",
+      "track": "HelpDesk",
+      "subject": "Windows Fundamentals",
+      "status": "active",
+      "tickets": 8,
+      "description": "8 gamified support tickets around Windows installation, disk storage, local accounts, file sharing, and technician workflows.",
+      "tags": [
+        "Windows Setup",
+        "Disk Management",
+        "Partitions",
+        "NTFS",
+        "USB",
+        "Local Users",
+        "File Sharing",
+        "Permissions",
+        "DiskPart",
+        "Bootable Media"
+      ]
+    },
+    {
+      "id": "dns-dhcp",
+      "title": "DNS & DHCP Troubleshooting",
+      "track": "ServerAdmin",
+      "subject": "Networking Services",
+      "status": "active",
+      "tickets": 30,
+      "description": "30 enterprise tickets (15 DNS, 15 DHCP) using the 4-step triage workflow.",
+      "tags": [
+        "DNS",
+        "DHCP",
+        "SRV records",
+        "Secure Dynamic Updates",
+        "CNAME",
+        "Scavenging",
+        "MAC Filters",
+        "Failover",
+        "Scopes",
+        "Relay Agents"
+      ]
+    }
+  ],
+  "knowledgeChecks": [
+    {
+      "id": "serveradmin-dns-basics",
+      "title": "DNS Fundamentals Knowledge Check",
+      "track": "ServerAdmin",
+      "subject": "Networking Services",
+      "status": "soon",
+      "description": "Records, resolution flow, troubleshooting patterns (coming soon).",
+      "types": ["Matching", "Ordering", "Multiple Choice"]
+    },
+    {
+      "id": "serveradmin-dhcp-basics",
+      "title": "DHCP Fundamentals Knowledge Check",
+      "track": "ServerAdmin",
+      "subject": "Networking Services",
+      "status": "soon",
+      "description": "Scopes, options, relays, and failover (coming soon).",
+      "types": ["Multiple Choice", "Ordering", "Select All That Apply"]
+    },
+    {
+      "id": "helpdesk-ticket-triage",
+      "title": "Help Desk Ticket Triage Knowledge Check",
+      "track": "HelpDesk",
+      "subject": "Service Desk",
+      "status": "soon",
+      "description": "Prioritization, symptoms vs. root cause, and escalation cues (coming soon).",
+      "types": ["Ordering", "Multiple Choice"]
+    },
+    {
+      "id": "security-ports-protocols",
+      "title": "Security Ports & Protocols Knowledge Check",
+      "track": "Security",
+      "subject": "Networking",
+      "status": "soon",
+      "description": "Ports, services, and investigative cues (coming soon).",
+      "types": ["Matching", "Drag & Drop", "Multiple Choice"]
+    }
+  ]
+}

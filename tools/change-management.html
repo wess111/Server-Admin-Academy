@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Change Management • Tools</title>
+  <meta name="description" content="Generate a structured Change Request Word document." />
+  <link rel="stylesheet" href="../assets/site.css" />
+  <link rel="stylesheet" href="../assets/tools.css" />
+  <script defer src="../assets/app.js"></script>
+  <script defer src="../assets/app-tools.js"></script>
+</head>
+
+<body data-page="tools">
+  <header class="top">
+    <div class="container">
+      <div class="navGlass">
+        <a class="brand" href="../index.html" aria-label="Home">
+          <span class="brandMark">S</span>
+          <span class="brandName">Server Admin Academy</span>
+        </a>
+
+        <nav class="navLinks" aria-label="Main navigation">
+          <a class="navLink" href="../index.html">Home</a>
+          <a class="navLink" href="./index.html">Tools</a>
+          <a class="navLink" href="../activity.html">Simulation</a>
+        </nav>
+
+        <div class="navCta">
+          <a class="btn btnPill" href="./index.html">All Tools ✦</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section glowSection toolWrap" data-tool="change">
+      <div class="glowLayer" aria-hidden="true"></div>
+      <div class="container">
+        <div class="toolHead">
+          <h1 class="toolTitle">Change Management</h1>
+          <p class="toolSub">
+            Enter a change request and export a Word document using a structured template.
+            Use bullet lines for plans (one line per step).
+          </p>
+        </div>
+
+        <div class="toolCard">
+          <form>
+            <div class="formGrid">
+              <div class="field">
+                <label class="label" for="cr_title">Change Title</label>
+                <input class="input" id="cr_title" placeholder="Example: Update DNS forwarder on NV-DC1" />
+              </div>
+
+              <div class="field half">
+                <label class="label" for="cr_system">System / Service</label>
+                <input class="input" id="cr_system" placeholder="Example: NV-DC1 • DNS" />
+              </div>
+
+              <div class="field half">
+                <label class="label" for="cr_env">Environment</label>
+                <select class="select" id="cr_env">
+                  <option value="">Select…</option>
+                  <option>Lab</option>
+                  <option>Development</option>
+                  <option>Test</option>
+                  <option>Production</option>
+                </select>
+              </div>
+
+              <div class="field third">
+                <label class="label" for="cr_window">Maintenance Window</label>
+                <input class="input" id="cr_window" placeholder="Example: Wed 4:00–4:30 PM" />
+              </div>
+
+              <div class="field third">
+                <label class="label" for="cr_risk">Risk Level</label>
+                <select class="select" id="cr_risk">
+                  <option value="">Select…</option>
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                </select>
+              </div>
+
+              <div class="field third">
+                <label class="label" for="cr_requestor">Requested By</label>
+                <input class="input" id="cr_requestor" placeholder="Student / Team" />
+              </div>
+
+              <div class="field half">
+                <label class="label" for="cr_owner">Change Owner</label>
+                <input class="input" id="cr_owner" placeholder="Example: Systems Engineering" />
+              </div>
+
+              <div class="field">
+                <label class="label" for="cr_justification">Business Justification</label>
+                <textarea class="textarea" id="cr_justification" placeholder="Why is this change needed? What risk does it reduce? What benefit does it provide?"></textarea>
+              </div>
+
+              <div class="field">
+                <label class="label" for="cr_scope">Scope</label>
+                <textarea class="textarea" id="cr_scope" placeholder="What systems/users are impacted? What is in-scope and out-of-scope?"></textarea>
+              </div>
+
+              <div class="field">
+                <label class="label" for="cr_impl">Implementation Plan (one step per line)</label>
+                <textarea class="textarea" id="cr_impl" placeholder="1) Backup current config\n2) Apply change\n3) Restart service if required\n4) Validate"></textarea>
+              </div>
+
+              <div class="field">
+                <label class="label" for="cr_rollback">Rollback Plan (one step per line)</label>
+                <textarea class="textarea" id="cr_rollback" placeholder="1) Restore previous config\n2) Restart service\n3) Confirm recovery"></textarea>
+              </div>
+
+              <div class="field">
+                <label class="label" for="cr_validation">Validation Plan (one step per line)</label>
+                <textarea class="textarea" id="cr_validation" placeholder="1) Run nslookup\n2) Confirm SRV records resolve\n3) Confirm domain join succeeds"></textarea>
+              </div>
+
+              <div class="field">
+                <label class="label" for="cr_comms">Communication Plan (one line per item)</label>
+                <textarea class="textarea" id="cr_comms" placeholder="Notify instructor\nNotify impacted users\nPost completion update"></textarea>
+              </div>
+
+              <div class="field">
+                <label class="label" for="cr_dependencies">Dependencies / Preconditions (one line per item)</label>
+                <textarea class="textarea" id="cr_dependencies" placeholder="Approved maintenance window\nAdmin credentials available\nRecent snapshot exists"></textarea>
+              </div>
+            </div>
+
+            <div class="toolActions">
+              <a class="btnGhost2" href="./index.html">Back</a>
+              <button class="btnPrimary" id="btnGenerate" type="submit">Generate Word Document</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footerInner">
+      <div class="footerBrand">
+        <span class="brandMark">S</span>
+        <span>Server Admin Academy</span>
+      </div>
+      <div class="footerLinks">
+        <a href="../index.html">Home</a>
+        <a href="./index.html">Tools</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
