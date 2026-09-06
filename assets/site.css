@@ -48,15 +48,31 @@ a{color:inherit;text-decoration:none}
 .brandName{font-weight:650;letter-spacing:.2px}
 .navLinks{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 
+/* Standardized main navigation typography. Buttons do not reliably inherit
+   page typography from the browser, so links and dropdown triggers are set
+   explicitly to the same family, size, weight, line-height, and spacing. */
+.navLink,
+.navDropBtn,
+.navDropItem{
+  font-family:var(--sans);
+  font-size:.95rem;
+  line-height:1.2;
+  letter-spacing:0;
+}
+
 /* links */
 .navLink, .navDropBtn{
   font-weight:500;color:rgba(238,240,255,.78);
   padding:8px 10px;border-radius:999px;border:1px solid transparent;
   background:transparent;cursor:pointer;
 }
+.navDropBtn{
+  appearance:none;
+  -webkit-appearance:none;
+}
 .navLink:hover, .navDropBtn:hover{color:var(--ink);background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10)}
 .navLink.isActive{background:var(--pSoft);border-color:var(--pLine);color:var(--ink)}
-.chev{opacity:.8;margin-left:6px}
+.chev{opacity:.8;margin-left:6px;font-size:.85em;line-height:1}
 
 /* dropdown */
 .navDrop{position:relative}
@@ -74,11 +90,17 @@ a{color:inherit;text-decoration:none}
   padding:10px 12px;border-radius:12px;
   color:rgba(238,240,255,.82);
   border:1px solid transparent;
+  font-weight:500;
 }
 .navDropItem:hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10);color:var(--ink)}
 .navDropItem.isActive{background:var(--pSoft);border-color:var(--pLine);color:var(--ink)}
 
 .navCta{display:flex;align-items:center}
+.navCta .btn{
+  font-family:var(--sans);
+  font-size:.95rem;
+  line-height:1.2;
+}
 
 /* Buttons */
 .btn{
