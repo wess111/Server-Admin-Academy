@@ -1,9 +1,9 @@
-/* PC Simulator v2.6.2 — final motherboard spacing/header polish.
-   Layout-only; simulator behavior unchanged. */
+/* PC Simulator v2.7 — shared motherboard spacing/header polish.
+   Layout-only; applies to every PC build scenario. */
 
-/* Give the chipset clear separation from the memory enclosure. */
+/* Keep the chipset clearly separated from the memory enclosure on every board. */
 .simChipset{
-  top:60.5%!important;
+  top:64%!important;
   height:88px!important;
 }
 
@@ -61,12 +61,12 @@
 .simFrontPanel{border:2px solid rgba(252,211,77,.52)!important}
 
 @media (min-width:1700px){
-  .simChipset{top:60%!important}
+  .simChipset{top:63.5%!important}
   .simUsbHeader,.simFrontPanel{bottom:7%!important}
 }
 
 @media (max-width:1150px){
-  .simChipset{top:61%!important}
+  .simChipset{top:64.5%!important}
   .simUsbHeader{left:61%!important;width:14%!important}
   .simFrontPanel{left:80%!important;width:15%!important}
   .simUsbHeader strong,.simFrontPanel strong{font-size:.54rem!important}
