@@ -1,289 +1,96 @@
 [
   {
-    "id": "pc-hardware",
-    "title": "Finance Department Workstation Replacement",
-    "shortTitle": "PC Hardware Simulator",
-    "domain": "Support Operations",
-    "summary": "Select compatible components, assemble a business workstation, connect required power, and validate the finished system through POST.",
-    "story": "A finance department workstation has failed and must be replaced before the next business day. The employee uses Microsoft 365, QuickBooks, browser-based finance applications, and two office monitors. Build a reliable replacement without purchasing unnecessary hardware.",
-    "requirements": {
-      "memoryGB": 16,
-      "storageGB": 1000,
-      "storageType": "ssd",
-      "displayOutputs": 2,
-      "budget": 700,
-      "dedicatedGpuRequired": false
-    },
-    "requirementLabels": [
-      "At least 16 GB RAM",
-      "At least 1 TB SSD storage",
-      "Two display outputs",
-      "Budget: $700 maximum",
-      "Compatible hardware",
-      "Successful POST"
-    ],
-    "components": [
-      {
-        "id": "mb-b760",
-        "type": "motherboard",
-        "name": "MSI PRO B760-P WIFI",
-        "detail": "ATX \u2022 LGA1700 \u2022 DDR5 \u2022 HDMI + DisplayPort",
-        "socket": "LGA1700",
-        "memoryType": "DDR5",
-        "displayOutputs": 2,
-        "price": 145,
-        "researchUrl": "https://us.msi.com/Motherboard/PRO-B760-P-WIFI",
-        "model": "PRO B760-P WIFI",
-        "chipset": "B760"
-      },
-      {
-        "id": "mb-b560",
-        "type": "motherboard",
-        "name": "MSI PRO B760-P WIFI DDR4",
-        "detail": "ATX \u2022 LGA1700 \u2022 DDR4 \u2022 HDMI + DisplayPort",
-        "socket": "LGA1700",
-        "memoryType": "DDR4",
-        "displayOutputs": 2,
-        "price": 115,
-        "researchUrl": "https://us.msi.com/Motherboard/PRO-B760-P-WIFI-DDR4",
-        "model": "PRO B760-P WIFI DDR4",
-        "chipset": "B760"
-      },
-      {
-        "id": "mb-b650",
-        "type": "motherboard",
-        "name": "ASUS PRIME B650-PLUS",
-        "detail": "ATX \u2022 AM5 \u2022 DDR5 \u2022 HDMI + DisplayPort",
-        "socket": "AM5",
-        "memoryType": "DDR5",
-        "displayOutputs": 2,
-        "price": 160,
-        "researchUrl": "https://www.asus.com/us/motherboards-components/motherboards/prime/prime-b650-plus/",
-        "model": "PRIME B650-PLUS",
-        "chipset": "B650"
-      },
-      {
-        "id": "cpu-i5-14400",
-        "type": "cpu",
-        "name": "Intel Core i5-14400",
-        "detail": "LGA 1700 \u2022 integrated graphics",
-        "socket": "LGA1700",
-        "integratedGraphics": true,
-        "price": 215,
-        "model": "Intel Core i5-14400",
-        "researchUrl": "https://www.intel.com/content/www/us/en/products/sku/236788/intel-core-i5-processor-14400-20m-cache-up-to-4-70-ghz/specifications.html"
-      },
-      {
-        "id": "cpu-i5-10400",
-        "type": "cpu",
-        "name": "Intel Core i5-10400",
-        "detail": "LGA 1200 \u2022 integrated graphics",
-        "socket": "LGA1200",
-        "integratedGraphics": true,
-        "price": 120,
-        "model": "Intel Core i5-10400"
-      },
-      {
-        "id": "cpu-r5-7600",
-        "type": "cpu",
-        "name": "AMD Ryzen 5 7600",
-        "detail": "AM5 \u2022 integrated graphics",
-        "socket": "AM5",
-        "integratedGraphics": true,
-        "price": 195,
-        "model": "AMD Ryzen 5 7600",
-        "researchUrl": "https://www.amd.com/en/products/processors/desktops/ryzen/7000-series/amd-ryzen-5-7600.html"
-      },
-      {
-        "id": "paste-standard",
-        "type": "paste",
-        "name": "ARCTIC MX-6 Thermal Compound",
-        "detail": "Thermal interface material \u2022 CPU application",
-        "price": 6,
-        "researchUrl": "https://www.arctic.de/us/MX-6",
-        "model": "MX-6"
-      },
-      {
-        "id": "cooler-1700",
-        "type": "cooler",
-        "name": "ARCTIC Freezer 36",
-        "detail": "Tower cooler \u2022 LGA1700 / AM5 / AM4",
-        "sockets": [
-          "LGA1700",
-          "AM5"
-        ],
-        "price": 35,
-        "researchUrl": "https://www.arctic.de/us/Freezer-36",
-        "model": "Freezer 36"
-      },
-      {
-        "id": "cooler-1200",
-        "type": "cooler",
-        "name": "Cooler Master Hyper 212 Black Edition",
-        "detail": "Tower CPU cooler \u2022 LGA1200 compatible",
-        "sockets": [
-          "LGA1200"
-        ],
-        "price": 30,
-        "model": "Hyper 212 Black Edition"
-      },
-      {
-        "id": "cooler-am5",
-        "type": "cooler",
-        "name": "AMD Wraith Stealth",
-        "detail": "AMD stock CPU cooler \u2022 AM5",
-        "sockets": [
-          "AM5"
-        ],
-        "price": 20,
-        "model": "Wraith Stealth"
-      },
-      {
-        "id": "ram-8-d5",
-        "type": "ram",
-        "name": "Crucial 8GB DDR5-5600 UDIMM",
-        "detail": "DDR5-5600 \u2022 8 GB UDIMM",
-        "memoryType": "DDR5",
-        "capacityGB": 8,
-        "price": 28,
-        "model": "Crucial DDR5-5600 8GB UDIMM"
-      },
-      {
-        "id": "ram-16-d5",
-        "type": "ram",
-        "name": "Crucial Pro 16GB DDR5-5600 UDIMM",
-        "detail": "DDR5-5600 \u2022 16 GB UDIMM",
-        "memoryType": "DDR5",
-        "capacityGB": 16,
-        "price": 45,
-        "model": "Crucial Pro DDR5-5600 16GB"
-      },
-      {
-        "id": "ram-32-d5",
-        "type": "ram",
-        "name": "Crucial Pro 32GB DDR5-5600 UDIMM",
-        "detail": "DDR5-5600 \u2022 32 GB UDIMM",
-        "memoryType": "DDR5",
-        "capacityGB": 32,
-        "price": 82,
-        "model": "Crucial Pro DDR5-5600 32GB"
-      },
-      {
-        "id": "ram-16-d4",
-        "type": "ram",
-        "name": "Crucial 16GB DDR4-3200 UDIMM",
-        "detail": "DDR4-3200 \u2022 16 GB UDIMM",
-        "memoryType": "DDR4",
-        "capacityGB": 16,
-        "price": 34,
-        "model": "Crucial DDR4-3200 16GB UDIMM"
-      },
-      {
-        "id": "storage-512-nvme",
-        "type": "storage",
-        "name": "WD Blue SN580 500GB NVMe SSD",
-        "detail": "M.2 2280 \u2022 PCIe 4.0 NVMe \u2022 500 GB",
-        "storageType": "ssd",
-        "interface": "NVMe",
-        "capacityGB": 500,
-        "price": 39,
-        "model": "WD Blue SN580 500GB"
-      },
-      {
-        "id": "storage-1tb-nvme",
-        "type": "storage",
-        "name": "WD Blue SN580 1TB NVMe SSD",
-        "detail": "M.2 2280 \u2022 PCIe 4.0 NVMe \u2022 1 TB",
-        "storageType": "ssd",
-        "interface": "NVMe",
-        "capacityGB": 1000,
-        "price": 65,
-        "model": "WD Blue SN580 1TB"
-      },
-      {
-        "id": "storage-1tb-sata",
-        "type": "storage",
-        "name": "Samsung 870 EVO 1TB SATA SSD",
-        "detail": "2.5-inch \u2022 SATA 6 Gb/s \u2022 1 TB",
-        "storageType": "ssd",
-        "interface": "SATA",
-        "capacityGB": 1000,
-        "price": 58,
-        "model": "Samsung 870 EVO 1TB"
-      },
-      {
-        "id": "storage-1tb-hdd",
-        "type": "storage",
-        "name": "WD Blue 1TB Desktop HDD",
-        "detail": "3.5-inch \u2022 SATA HDD \u2022 1 TB",
-        "storageType": "hdd",
-        "interface": "SATA",
-        "capacityGB": 1000,
-        "price": 35,
-        "model": "WD Blue 1TB Desktop HDD"
-      },
-      {
-        "id": "gpu-basic",
-        "type": "gpu",
-        "name": "ASUS Dual GeForce RTX 3050 6GB",
-        "detail": "PCIe 4.0 \u2022 3 display outputs \u2022 no external GPU power",
-        "displayOutputs": 3,
-        "wattage": 70,
-        "requiresPower": false,
-        "price": 135,
-        "researchUrl": "https://www.asus.com/us/motherboards-components/graphics-cards/dual/dual-rtx3050-6g/techspec/",
-        "model": "DUAL-RTX3050-6G"
-      },
-      {
-        "id": "gpu-mid",
-        "type": "gpu",
-        "name": "ASUS Dual GeForce RTX 4060 8GB",
-        "detail": "PCIe \u2022 4 display outputs \u2022 external GPU power",
-        "displayOutputs": 4,
-        "wattage": 115,
-        "requiresPower": true,
-        "price": 260,
-        "model": "DUAL-RTX4060-8G"
-      },
-      {
-        "id": "psu-450",
-        "type": "psu",
-        "name": "Corsair CX450 450W",
-        "detail": "ATX \u2022 80 PLUS Bronze",
-        "wattage": 450,
-        "hasGpuPower": true,
-        "price": 48,
-        "model": "CX450"
-      },
-      {
-        "id": "psu-550",
-        "type": "psu",
-        "name": "Corsair CX550 550W",
-        "detail": "ATX \u2022 80 PLUS Bronze \u2022 EPS + PCIe power",
-        "wattage": 550,
-        "hasGpuPower": true,
-        "price": 55,
-        "researchUrl": "https://www.corsair.com/us/en/p/psu/cp-9020277-na/cx-series-cx550-550-watt-80-plus-bronze-atx-power-supply-cp-9020277-na",
-        "model": "CX550"
-      },
-      {
-        "id": "psu-750",
-        "type": "psu",
-        "name": "Corsair RM750e 750W",
-        "detail": "ATX \u2022 80 PLUS Gold \u2022 modular",
-        "wattage": 750,
-        "hasGpuPower": true,
-        "price": 92,
-        "model": "RM750e"
-      },
-      {
-        "id": "fan-120",
-        "type": "casefan",
-        "name": "ARCTIC P12 PWM PST",
-        "detail": "120 mm PWM case fan \u2022 rear exhaust",
-        "price": 15,
-        "model": "P12 PWM PST"
-      }
+    "id":"pc-hardware","title":"Finance Department Workstation Replacement","shortTitle":"Business Workstation","domain":"Support Operations","summary":"Select compatible components, assemble a business workstation, connect required power, and validate the finished system through POST.","story":"A finance department workstation has failed and must be replaced before the next business day. The employee uses Microsoft 365, QuickBooks, browser-based finance applications, and two office monitors. Build a reliable replacement without purchasing unnecessary hardware.",
+    "requirements":{"memoryGB":16,"storageGB":1000,"storageType":"ssd","displayOutputs":2,"budget":700,"dedicatedGpuRequired":false},
+    "requirementLabels":["At least 16 GB RAM","At least 1 TB SSD storage","Two display outputs","Budget: $700 maximum","Compatible hardware","Successful POST"],
+    "components":[
+      {"id":"mb-b760","type":"motherboard","name":"MSI PRO B760-P WIFI","detail":"ATX • LGA1700 • DDR5 • HDMI + DisplayPort","socket":"LGA1700","memoryType":"DDR5","displayOutputs":2,"price":145,"model":"PRO B760-P WIFI","chipset":"B760"},
+      {"id":"mb-b760-d4","type":"motherboard","name":"MSI PRO B760-P WIFI DDR4","detail":"ATX • LGA1700 • DDR4 • HDMI + DisplayPort","socket":"LGA1700","memoryType":"DDR4","displayOutputs":2,"price":115,"model":"PRO B760-P WIFI DDR4","chipset":"B760"},
+      {"id":"mb-b650","type":"motherboard","name":"ASUS PRIME B650-PLUS","detail":"ATX • AM5 • DDR5 • HDMI + DisplayPort","socket":"AM5","memoryType":"DDR5","displayOutputs":2,"price":160,"model":"PRIME B650-PLUS","chipset":"B650"},
+      {"id":"cpu-i5-14400","type":"cpu","name":"Intel Core i5-14400","detail":"10 cores / 16 threads • LGA1700 • Intel UHD Graphics","socket":"LGA1700","cores":10,"threads":16,"performanceTier":2,"integratedGraphics":true,"integratedGraphicsName":"Intel UHD Graphics 730","price":215},
+      {"id":"cpu-r5-7600","type":"cpu","name":"AMD Ryzen 5 7600","detail":"6 cores / 12 threads • AM5 • Radeon Graphics","socket":"AM5","cores":6,"threads":12,"performanceTier":2,"integratedGraphics":true,"integratedGraphicsName":"AMD Radeon Graphics","price":195},
+      {"id":"paste-standard","type":"paste","name":"ARCTIC MX-6 Thermal Compound","detail":"Thermal interface material • CPU application","price":6},
+      {"id":"cooler-main","type":"cooler","name":"ARCTIC Freezer 36","detail":"Tower cooler • LGA1700 / AM5","sockets":["LGA1700","AM5"],"coolingTier":2,"price":35},
+      {"id":"ram-8-d5","type":"ram","name":"Crucial 8GB DDR5-5600 UDIMM","detail":"DDR5-5600 • 8 GB","memoryType":"DDR5","capacityGB":8,"price":28},
+      {"id":"ram-16-d5","type":"ram","name":"Crucial Pro 16GB DDR5-5600 UDIMM","detail":"DDR5-5600 • 16 GB","memoryType":"DDR5","capacityGB":16,"price":45},
+      {"id":"ram-16-d4","type":"ram","name":"Crucial 16GB DDR4-3200 UDIMM","detail":"DDR4-3200 • 16 GB","memoryType":"DDR4","capacityGB":16,"price":34},
+      {"id":"storage-500","type":"storage","name":"WD Blue SN580 500GB NVMe SSD","detail":"PCIe 4.0 NVMe • 500 GB","storageType":"ssd","interface":"NVMe","capacityGB":500,"price":39},
+      {"id":"storage-1tb","type":"storage","name":"WD Blue SN580 1TB NVMe SSD","detail":"PCIe 4.0 NVMe • 1 TB","storageType":"ssd","interface":"NVMe","capacityGB":1000,"price":65},
+      {"id":"gpu-3050","type":"gpu","name":"ASUS Dual GeForce RTX 3050 6GB","detail":"6 GB VRAM • 3 display outputs","displayOutputs":3,"vramGB":6,"performanceTier":1,"wattage":70,"requiresPower":false,"price":135},
+      {"id":"psu-450","type":"psu","name":"Corsair CX450 450W","detail":"ATX • 80 PLUS Bronze","wattage":450,"hasGpuPower":true,"price":48},
+      {"id":"psu-550","type":"psu","name":"Corsair CX550 550W","detail":"ATX • EPS + PCIe power","wattage":550,"hasGpuPower":true,"price":55},
+      {"id":"fan-120","type":"casefan","name":"ARCTIC P12 PWM PST","detail":"120 mm PWM rear exhaust","price":15}
+    ]
+  },
+  {
+    "id":"pc-architect","title":"Architectural Design Workstation","shortTitle":"Architect Workstation","domain":"Support Operations","summary":"Design a high-performance workstation for CAD, BIM, 3D modeling, rendering, and heavy multitasking.","story":"A senior architect regularly works in AutoCAD, Revit, SketchUp and rendering applications while keeping large project files and reference material open. Build a responsive workstation with strong multicore CPU performance, dual-channel memory, dedicated graphics and fast NVMe storage.",
+    "requirements":{"memoryGB":32,"dualChannelRequired":true,"storageGB":2000,"storageType":"ssd","storageInterface":"NVMe","displayOutputs":2,"budget":1800,"dedicatedGpuRequired":true,"gpuVramGB":8,"minCpuCores":8,"minCpuThreads":16,"minCpuTier":3,"minCoolingTier":2},
+    "requirementLabels":["At least 32 GB RAM","Dual-channel memory required","At least 2 TB NVMe SSD","8+ core / 16+ thread performance-class CPU","Dedicated GPU with at least 8 GB VRAM","Two display outputs","Budget: $1,800 maximum","Successful POST"],
+    "components":[
+      {"id":"mb-z790","type":"motherboard","name":"ASUS ProArt Z790-CREATOR WIFI","detail":"ATX • LGA1700 • DDR5 • creator platform","socket":"LGA1700","memoryType":"DDR5","displayOutputs":2,"price":420,"model":"ProArt Z790-CREATOR WIFI","chipset":"Z790"},
+      {"id":"mb-x670e","type":"motherboard","name":"ASUS ProArt X670E-CREATOR WIFI","detail":"ATX • AM5 • DDR5 • creator platform","socket":"AM5","memoryType":"DDR5","displayOutputs":2,"price":430,"model":"ProArt X670E-CREATOR WIFI","chipset":"X670E"},
+      {"id":"mb-b760-arch","type":"motherboard","name":"MSI PRO B760-P WIFI","detail":"ATX • LGA1700 • DDR5 • mainstream platform","socket":"LGA1700","memoryType":"DDR5","displayOutputs":2,"price":145,"model":"PRO B760-P WIFI","chipset":"B760"},
+      {"id":"cpu-i5-14400-arch","type":"cpu","name":"Intel Core i5-14400","detail":"10 cores / 16 threads • LGA1700 • Intel UHD Graphics","socket":"LGA1700","cores":10,"threads":16,"performanceTier":2,"integratedGraphics":true,"integratedGraphicsName":"Intel UHD Graphics 730","price":215},
+      {"id":"cpu-i7-14700","type":"cpu","name":"Intel Core i7-14700","detail":"20 cores / 28 threads • LGA1700 • Intel UHD Graphics","socket":"LGA1700","cores":20,"threads":28,"performanceTier":4,"integratedGraphics":true,"integratedGraphicsName":"Intel UHD Graphics 770","price":390},
+      {"id":"cpu-r7-7700","type":"cpu","name":"AMD Ryzen 7 7700","detail":"8 cores / 16 threads • AM5 • Radeon Graphics","socket":"AM5","cores":8,"threads":16,"performanceTier":3,"integratedGraphics":true,"integratedGraphicsName":"AMD Radeon Graphics","price":290},
+      {"id":"cpu-r9-7900","type":"cpu","name":"AMD Ryzen 9 7900","detail":"12 cores / 24 threads • AM5 • Radeon Graphics","socket":"AM5","cores":12,"threads":24,"performanceTier":4,"integratedGraphics":true,"integratedGraphicsName":"AMD Radeon Graphics","price":390},
+      {"id":"paste-arch","type":"paste","name":"ARCTIC MX-6 Thermal Compound","detail":"Thermal interface material","price":6},
+      {"id":"cooler-arch-mid","type":"cooler","name":"ARCTIC Freezer 36","detail":"Tower cooler • LGA1700 / AM5","sockets":["LGA1700","AM5"],"coolingTier":2,"price":35},
+      {"id":"cooler-arch-high","type":"cooler","name":"Noctua NH-D15 G2","detail":"High-performance dual-tower cooler • LGA1700 / AM5","sockets":["LGA1700","AM5"],"coolingTier":4,"price":150},
+      {"id":"ram-16-arch","type":"ram","name":"Crucial Pro 16GB DDR5-5600","detail":"DDR5-5600 • 16 GB","memoryType":"DDR5","capacityGB":16,"price":45},
+      {"id":"ram-32-arch","type":"ram","name":"Crucial Pro 32GB DDR5-5600","detail":"DDR5-5600 • 32 GB","memoryType":"DDR5","capacityGB":32,"price":82},
+      {"id":"storage-1tb-arch","type":"storage","name":"Samsung 990 PRO 1TB NVMe SSD","detail":"PCIe 4.0 NVMe • 1 TB","storageType":"ssd","interface":"NVMe","capacityGB":1000,"price":110},
+      {"id":"storage-2tb-arch","type":"storage","name":"Samsung 990 PRO 2TB NVMe SSD","detail":"PCIe 4.0 NVMe • 2 TB","storageType":"ssd","interface":"NVMe","capacityGB":2000,"price":180},
+      {"id":"gpu-4060-arch","type":"gpu","name":"GeForce RTX 4060 8GB","detail":"8 GB VRAM • dedicated graphics","displayOutputs":4,"vramGB":8,"performanceTier":2,"wattage":115,"requiresPower":true,"price":300},
+      {"id":"gpu-4070s-arch","type":"gpu","name":"GeForce RTX 4070 SUPER 12GB","detail":"12 GB VRAM • dedicated graphics","displayOutputs":4,"vramGB":12,"performanceTier":4,"wattage":220,"requiresPower":true,"price":600},
+      {"id":"gpu-rx7700xt-arch","type":"gpu","name":"Radeon RX 7700 XT 12GB","detail":"12 GB VRAM • dedicated Radeon graphics","displayOutputs":4,"vramGB":12,"performanceTier":3,"wattage":245,"requiresPower":true,"price":430},
+      {"id":"psu-650-arch","type":"psu","name":"Corsair RM650e 650W","detail":"80 PLUS Gold • modular","wattage":650,"hasGpuPower":true,"price":90},
+      {"id":"psu-750-arch","type":"psu","name":"Corsair RM750e 750W","detail":"80 PLUS Gold • modular","wattage":750,"hasGpuPower":true,"price":110},
+      {"id":"fan-arch","type":"casefan","name":"ARCTIC P12 PWM PST","detail":"120 mm PWM rear exhaust","price":15}
+    ]
+  },
+  {
+    "id":"pc-gaming","title":"1440p Gaming PC Build","shortTitle":"Gaming PC","domain":"Support Operations","summary":"Build a balanced gaming system where CPU, GPU, memory, cooling and power choices must work together within budget.","story":"A customer already owns a 1440p high-refresh-rate monitor and wants a new PC for modern games. Build a balanced system that prioritizes gaming performance rather than simply choosing the most expensive processor.",
+    "requirements":{"memoryGB":32,"dualChannelRequired":true,"storageGB":1000,"storageType":"ssd","storageInterface":"NVMe","displayOutputs":1,"budget":1500,"dedicatedGpuRequired":true,"gpuVramGB":12,"minGpuTier":3,"minCpuTier":3,"minCoolingTier":2},
+    "requirementLabels":["32 GB dual-channel RAM","At least 1 TB NVMe SSD","Performance-class CPU","Dedicated GPU with at least 12 GB VRAM","Appropriate cooling and PSU","Budget: $1,500 maximum","Successful POST"],
+    "components":[
+      {"id":"mb-z790-game","type":"motherboard","name":"ASUS TUF GAMING Z790-PLUS WIFI","detail":"ATX • LGA1700 • DDR5","socket":"LGA1700","memoryType":"DDR5","displayOutputs":2,"price":230,"chipset":"Z790"},
+      {"id":"mb-b650-game","type":"motherboard","name":"MSI MAG B650 TOMAHAWK WIFI","detail":"ATX • AM5 • DDR5","socket":"AM5","memoryType":"DDR5","displayOutputs":2,"price":220,"chipset":"B650"},
+      {"id":"cpu-i5-14600k","type":"cpu","name":"Intel Core i5-14600K","detail":"14 cores / 20 threads • LGA1700 • Intel UHD Graphics","socket":"LGA1700","cores":14,"threads":20,"performanceTier":3,"integratedGraphics":true,"integratedGraphicsName":"Intel UHD Graphics 770","price":300},
+      {"id":"cpu-i7-14700kf","type":"cpu","name":"Intel Core i7-14700KF","detail":"20 cores / 28 threads • LGA1700 • no integrated graphics","socket":"LGA1700","cores":20,"threads":28,"performanceTier":4,"integratedGraphics":false,"price":370},
+      {"id":"cpu-r7-7700-game","type":"cpu","name":"AMD Ryzen 7 7700","detail":"8 cores / 16 threads • AM5 • Radeon Graphics","socket":"AM5","cores":8,"threads":16,"performanceTier":3,"integratedGraphics":true,"integratedGraphicsName":"AMD Radeon Graphics","price":290},
+      {"id":"cpu-r7-7800x3d","type":"cpu","name":"AMD Ryzen 7 7800X3D","detail":"8 cores / 16 threads • AM5 • Radeon Graphics • gaming-focused","socket":"AM5","cores":8,"threads":16,"performanceTier":5,"integratedGraphics":true,"integratedGraphicsName":"AMD Radeon Graphics","price":400},
+      {"id":"paste-game","type":"paste","name":"ARCTIC MX-6 Thermal Compound","detail":"Thermal interface material","price":6},
+      {"id":"cooler-game","type":"cooler","name":"Thermalright Phantom Spirit 120 SE","detail":"Dual-tower cooler • LGA1700 / AM5","sockets":["LGA1700","AM5"],"coolingTier":3,"price":45},
+      {"id":"ram-16-game","type":"ram","name":"Corsair Vengeance 16GB DDR5-6000","detail":"DDR5-6000 • 16 GB","memoryType":"DDR5","capacityGB":16,"price":50},
+      {"id":"ram-32-game","type":"ram","name":"Corsair Vengeance 32GB DDR5-6000","detail":"DDR5-6000 • 32 GB","memoryType":"DDR5","capacityGB":32,"price":90},
+      {"id":"storage-1tb-game","type":"storage","name":"WD Black SN850X 1TB NVMe SSD","detail":"PCIe 4.0 NVMe • 1 TB","storageType":"ssd","interface":"NVMe","capacityGB":1000,"price":90},
+      {"id":"storage-2tb-game","type":"storage","name":"WD Black SN850X 2TB NVMe SSD","detail":"PCIe 4.0 NVMe • 2 TB","storageType":"ssd","interface":"NVMe","capacityGB":2000,"price":160},
+      {"id":"gpu-4060-game","type":"gpu","name":"GeForce RTX 4060 8GB","detail":"8 GB VRAM • entry 1440p option","displayOutputs":4,"vramGB":8,"performanceTier":2,"wattage":115,"requiresPower":true,"price":300},
+      {"id":"gpu-4070s-game","type":"gpu","name":"GeForce RTX 4070 SUPER 12GB","detail":"12 GB VRAM • strong 1440p graphics","displayOutputs":4,"vramGB":12,"performanceTier":4,"wattage":220,"requiresPower":true,"price":600},
+      {"id":"gpu-rx7800xt","type":"gpu","name":"Radeon RX 7800 XT 16GB","detail":"16 GB VRAM • high-performance 1440p Radeon graphics","displayOutputs":4,"vramGB":16,"performanceTier":4,"wattage":263,"requiresPower":true,"price":500},
+      {"id":"psu-550-game","type":"psu","name":"Corsair CX550 550W","detail":"80 PLUS Bronze","wattage":550,"hasGpuPower":true,"price":55},
+      {"id":"psu-750-game","type":"psu","name":"Corsair RM750e 750W","detail":"80 PLUS Gold • modular","wattage":750,"hasGpuPower":true,"price":110},
+      {"id":"psu-850-game","type":"psu","name":"Corsair RM850e 850W","detail":"80 PLUS Gold • modular","wattage":850,"hasGpuPower":true,"price":130},
+      {"id":"fan-game","type":"casefan","name":"ARCTIC P12 PWM PST","detail":"120 mm PWM rear exhaust","price":15}
+    ]
+  },
+  {
+    "id":"pc-demo","title":"Instructor Demonstration: Guided PC Build","shortTitle":"Instructor Demo","domain":"Support Operations","summary":"A simplified guided build for demonstrating the complete technician workflow before students begin assessed scenarios.","story":"Use this build to demonstrate how a technician reads requirements, researches parts, checks compatibility, installs components, connects power, performs POST, validates the customer requirement and generates a completion report.",
+    "requirements":{"memoryGB":16,"storageGB":500,"storageType":"ssd","displayOutputs":1,"budget":850,"dedicatedGpuRequired":false},
+    "requirementLabels":["At least 16 GB RAM","At least 500 GB SSD","At least one display output","Budget: $850 maximum","Compatible hardware","Successful POST"],
+    "components":[
+      {"id":"mb-demo-intel","type":"motherboard","name":"MSI PRO B760-P WIFI","detail":"ATX • LGA1700 • DDR5","socket":"LGA1700","memoryType":"DDR5","displayOutputs":2,"price":145,"chipset":"B760"},
+      {"id":"mb-demo-amd","type":"motherboard","name":"ASUS PRIME B650-PLUS","detail":"ATX • AM5 • DDR5","socket":"AM5","memoryType":"DDR5","displayOutputs":2,"price":160,"chipset":"B650"},
+      {"id":"cpu-demo-intel","type":"cpu","name":"Intel Core i5-14400","detail":"LGA1700 • Intel UHD Graphics","socket":"LGA1700","cores":10,"threads":16,"performanceTier":2,"integratedGraphics":true,"price":215},
+      {"id":"cpu-demo-amd","type":"cpu","name":"AMD Ryzen 5 7600","detail":"AM5 • Radeon Graphics","socket":"AM5","cores":6,"threads":12,"performanceTier":2,"integratedGraphics":true,"price":195},
+      {"id":"paste-demo","type":"paste","name":"ARCTIC MX-6 Thermal Compound","detail":"Thermal interface material","price":6},
+      {"id":"cooler-demo","type":"cooler","name":"ARCTIC Freezer 36","detail":"LGA1700 / AM5 tower cooler","sockets":["LGA1700","AM5"],"coolingTier":2,"price":35},
+      {"id":"ram-demo","type":"ram","name":"Crucial Pro 16GB DDR5-5600","detail":"DDR5 • 16 GB","memoryType":"DDR5","capacityGB":16,"price":45},
+      {"id":"storage-demo","type":"storage","name":"WD Blue SN580 1TB NVMe SSD","detail":"NVMe • 1 TB","storageType":"ssd","interface":"NVMe","capacityGB":1000,"price":65},
+      {"id":"gpu-demo","type":"gpu","name":"GeForce RTX 3050 6GB","detail":"Optional dedicated graphics","displayOutputs":3,"vramGB":6,"performanceTier":1,"wattage":70,"requiresPower":false,"price":135},
+      {"id":"psu-demo","type":"psu","name":"Corsair CX550 550W","detail":"ATX • EPS + PCIe power","wattage":550,"hasGpuPower":true,"price":55},
+      {"id":"fan-demo","type":"casefan","name":"ARCTIC P12 PWM PST","detail":"120 mm PWM rear exhaust","price":15}
     ]
   }
 ]
