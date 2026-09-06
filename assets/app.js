@@ -3,6 +3,12 @@
    - Data-driven cards + filter chips on Domain / Engagement Mode pages
 */
 
+// Project-wide visual system: one uniform page background, with depth handled by panels/cards.
+const uniformTheme = document.createElement("link");
+uniformTheme.rel = "stylesheet";
+uniformTheme.href = "./assets/uniform-theme.css?v=1.0.0";
+document.head.appendChild(uniformTheme);
+
 const MODES = [
   { key: "all", label: "All" },
   { key: "knowledge-assessments", label: "Knowledge Assessments" },
@@ -37,7 +43,6 @@ function initDropdowns() {
     drops.forEach(d => d.classList.remove("isOpen"));
   });
 
-  // Escape closes menus
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") drops.forEach(d => d.classList.remove("isOpen"));
   });
@@ -62,7 +67,6 @@ function renderChips(rowEl, items, activeKey, onPick) {
 }
 
 function badgeLabelFor(item, pageType) {
-  // show the "other axis" badge
   if (pageType === "domain") {
     const mode = MODES.find(m => m.key === item.mode);
     return mode ? mode.label : item.mode;
@@ -118,7 +122,6 @@ function buildCard(item, pageType) {
   a.appendChild(footer);
 
   if (!isAvailable(item)) {
-    // prevent jumping to top
     a.addEventListener("click", (e) => e.preventDefault());
   }
 
@@ -136,7 +139,6 @@ function applyFilters(activities, pageType, pageKey, activeFilterKey) {
     if (activeFilterKey !== "all") base = base.filter(x => x.domain === activeFilterKey);
   }
 
-  // Sort: available first, then title
   base.sort((a, b) => {
     const av = isAvailable(a) ? 0 : 1;
     const bv = isAvailable(b) ? 0 : 1;
