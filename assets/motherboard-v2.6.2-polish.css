@@ -1,10 +1,14 @@
-/* PC Simulator v2.6.2 — final motherboard spacing/header polish.
-   Layout-only; simulator behavior unchanged. */
+/* PC Simulator v2.7.1 — shared motherboard spacing/header polish.
+   Layout-only; applies to every PC build scenario. */
 
-/* Give the chipset clear separation from the memory enclosure. */
+/* Chipset sits in the clear mid-board pocket: below memory, above bottom connectors,
+   and to the right of the PCIe x1 so no elements overlap. */
 .simChipset{
-  top:60.5%!important;
-  height:88px!important;
+  left:66.5%!important;
+  right:auto!important;
+  top:58.5%!important;
+  width:96px!important;
+  height:82px!important;
 }
 
 /* Compact USB/front-panel connectors: fewer visible pins, readable labels below. */
@@ -31,7 +35,6 @@
     rgba(46,30,12,.60)!important;
 }
 
-/* Put connector names under the physical pin block instead of over the pins. */
 .simUsbHeader strong,
 .simFrontPanel strong{
   position:absolute!important;
@@ -53,20 +56,18 @@
 .simUsbHeader strong{color:#dbeafe!important}
 .simFrontPanel strong{color:#fde68a!important}
 
-/* Preserve a clear gutter between connector labels and board boundary. */
 .simGpuZone{bottom:4.5%!important}
 
-/* Accessibility: don't encode the connector only through pin color. */
 .simUsbHeader{border:2px solid rgba(147,197,253,.60)!important}
 .simFrontPanel{border:2px solid rgba(252,211,77,.52)!important}
 
 @media (min-width:1700px){
-  .simChipset{top:60%!important}
+  .simChipset{left:66.5%!important;top:58.5%!important}
   .simUsbHeader,.simFrontPanel{bottom:7%!important}
 }
 
 @media (max-width:1150px){
-  .simChipset{top:61%!important}
+  .simChipset{left:66%!important;top:59%!important;width:90px!important;height:78px!important}
   .simUsbHeader{left:61%!important;width:14%!important}
   .simFrontPanel{left:80%!important;width:15%!important}
   .simUsbHeader strong,.simFrontPanel strong{font-size:.54rem!important}

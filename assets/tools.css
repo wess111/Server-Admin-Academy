@@ -1,111 +1,161 @@
-/* Tools pages: lightweight form styling (keeps main site aesthetic) */
+/* Server Admin Academy Tools — unified visual system.
+   Uses the same deep navy base, neutral panels, purple interaction accents,
+   typography and focus treatment as the rest of the Academy. */
 
-.toolWrap {
-  padding: 26px 0 56px;
+body[data-page="tools"]{
+  background:#070912!important;
+  color:var(--ink);
 }
 
-.toolHead {
-  margin-bottom: 16px;
+/* Tools should not reintroduce the old page-level glow treatment. */
+body[data-page="tools"] .glowLayer{display:none!important}
+body[data-page="tools"] .glowSection{background:transparent!important}
+
+.toolWrap{
+  padding:34px 0 64px;
 }
 
-.toolTitle {
-  font-size: 28px;
-  letter-spacing: -0.02em;
-  margin: 0 0 6px;
+.toolHead{
+  margin-bottom:22px;
 }
 
-.toolSub {
-  margin: 0;
-  opacity: 0.88;
-  max-width: 920px;
+.toolTitle{
+  font-family:var(--sans);
+  font-size:clamp(1.9rem,3vw,2.35rem);
+  line-height:1.1;
+  font-weight:650;
+  letter-spacing:-.02em;
+  margin:0 0 8px;
+  color:var(--ink);
 }
 
-.formGrid {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 12px;
-  margin-top: 16px;
+.toolSub{
+  margin:0;
+  max-width:920px;
+  color:var(--muted);
+  font-size:1rem;
+  line-height:1.7;
+  font-weight:400;
 }
 
-.field {
-  grid-column: span 12;
+.formGrid{
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:14px;
+  margin-top:18px;
 }
 
-.field.half { grid-column: span 6; }
-.field.third { grid-column: span 4; }
+.field{grid-column:span 12}
+.field.half{grid-column:span 6}
+.field.third{grid-column:span 4}
 
-.label {
-  display: block;
-  font-weight: 700;
-  font-size: 13px;
-  margin: 0 0 6px;
-  opacity: 0.95;
+.label{
+  display:block;
+  margin:0 0 7px;
+  font-family:var(--sans);
+  font-weight:650;
+  font-size:.84rem;
+  color:rgba(238,240,255,.88);
 }
 
-.input, .textarea, .select {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(0,0,0,0.18);
-  color: #fff;
-  outline: none;
+.input,.textarea,.select{
+  width:100%;
+  padding:11px 13px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.11);
+  background:rgba(255,255,255,.025);
+  color:var(--ink);
+  font:inherit;
+  outline:none;
+  transition:border-color .15s ease,background .15s ease,box-shadow .15s ease;
 }
 
-.textarea { min-height: 120px; resize: vertical; line-height: 1.35; }
-
-.hint {
-  font-size: 12px;
-  opacity: 0.8;
-  margin-top: 6px;
+.input:hover,.textarea:hover,.select:hover{
+  border-color:rgba(255,255,255,.18);
+  background:rgba(255,255,255,.035);
 }
 
-.toolCard {
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(0,0,0,0.22);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
-  padding: 18px;
+.input:focus-visible,.textarea:focus-visible,.select:focus-visible{
+  border-color:rgba(139,92,246,.72);
+  box-shadow:0 0 0 3px rgba(139,92,246,.18);
+  background:rgba(255,255,255,.04);
 }
 
-.toolActions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 14px;
+.input::placeholder,.textarea::placeholder{color:rgba(238,240,255,.38)}
+.select option{background:#0a0d18;color:var(--ink)}
+.textarea{min-height:120px;resize:vertical;line-height:1.5}
+
+.hint{
+  margin-top:7px;
+  font-size:.76rem;
+  line-height:1.5;
+  color:var(--muted2);
 }
 
-.btnPrimary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.16);
-  background: rgba(110, 231, 183, 0.16);
-  color: #fff;
-  font-weight: 800;
-  cursor: pointer;
+.toolCard{
+  padding:22px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.025);
+  box-shadow:0 12px 34px rgba(0,0,0,.22);
 }
 
-.btnPrimary:hover { background: rgba(110, 231, 183, 0.22); }
-
-.btnGhost2 {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(0,0,0,0.18);
-  color: #fff;
-  font-weight: 800;
-  cursor: pointer;
-  text-decoration: none;
+.toolActions{
+  display:flex;
+  gap:10px;
+  justify-content:flex-end;
+  margin-top:18px;
+  flex-wrap:wrap;
 }
 
-.btnGhost2:hover { background: rgba(0,0,0,0.26); }
+/* Primary tool actions now use the Academy purple accent instead of legacy green. */
+.btnPrimary,
+.btnGhost2{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:42px;
+  padding:10px 15px;
+  border-radius:999px;
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:.92rem;
+  font-weight:600;
+  cursor:pointer;
+  text-decoration:none;
+  transition:transform .15s ease,filter .15s ease,border-color .15s ease,background .15s ease,box-shadow .15s ease;
+}
 
-@media (max-width: 860px) {
-  .field.half, .field.third { grid-column: span 12; }
+.btnPrimary{
+  border:1px solid rgba(139,92,246,.55);
+  background:linear-gradient(180deg,rgba(139,92,246,.45),rgba(139,92,246,.22));
+}
+.btnPrimary:hover{filter:brightness(1.08);transform:translateY(-1px)}
+
+.btnGhost2{
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.03);
+}
+.btnGhost2:hover{background:rgba(255,255,255,.055);border-color:rgba(255,255,255,.22)}
+
+.btnPrimary:focus-visible,.btnGhost2:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 3px rgba(139,92,246,.24);
+}
+
+/* Tool landing-page cards use the same restrained panel hierarchy. */
+body[data-page="tools"] .card{
+  background:rgba(255,255,255,.025);
+  border-color:rgba(255,255,255,.10);
+  box-shadow:0 10px 32px rgba(0,0,0,.22);
+}
+body[data-page="tools"] .card:hover{
+  border-color:rgba(139,92,246,.38);
+  background:rgba(255,255,255,.035);
+}
+
+@media(max-width:860px){
+  .field.half,.field.third{grid-column:span 12}
+  .toolActions{justify-content:stretch}
+  .toolActions>*{flex:1 1 auto}
 }
