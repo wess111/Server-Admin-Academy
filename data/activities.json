@@ -6,7 +6,7 @@
     "difficulty": "beginner",
     "status": "available",
     "link": "./activity.html?lab=dns",
-    "description": "10 everyday DNS troubleshooting scenarios using progressive triage \u2192 diagnosis \u2192 fix workflow."
+    "description": "10 everyday DNS troubleshooting scenarios using progressive triage → diagnosis → fix workflow."
   },
   {
     "title": "DHCP Concepts Practice",
@@ -15,7 +15,7 @@
     "difficulty": "beginner",
     "status": "available",
     "link": "./activity.html?lab=dhcp",
-    "description": "10 everyday DHCP troubleshooting scenarios using progressive triage \u2192 diagnosis \u2192 fix workflow."
+    "description": "10 everyday DHCP troubleshooting scenarios using progressive triage → diagnosis → fix workflow."
   },
   {
     "title": "Windows Support I",
@@ -90,12 +90,21 @@
     "description": "Least privilege validation steps, access review, and evidence-based documentation."
   },
   {
-    "title": "Techcon GH LLC \u2013 Infrastructure Deployment",
+    "title": "Techcon GH LLC – Infrastructure Deployment",
     "domain": "systems-engineering",
     "mode": "capstone-projects",
     "difficulty": "advanced",
     "status": "available",
     "link": "./project.html?id=techcon-gh-infrastructure",
     "description": "Build the infrastructure for Techcon GH LLC by designing and deploying a centralized Windows Server environment that supports identity, networking, storage, policy, and client management."
+  },
+  {
+    "title": "Power & PSU Troubleshooting",
+    "domain": "support-operations",
+    "mode": "simulations",
+    "difficulty": "beginner",
+    "status": "available",
+    "link": "./power-simulator.html",
+    "description": "Diagnose workstation shutdowns by evaluating component power demand, PSU capacity, operating headroom, and GPU power connections."
   }
 ]
