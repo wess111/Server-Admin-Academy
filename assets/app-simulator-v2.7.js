@@ -16,7 +16,7 @@
   const setConsole=(message,code="INFO")=>{$("#consoleMessage").textContent=message;$("#consoleCode").textContent=code};
   const installedRams=()=>Object.entries(state.ramSlots).map(([slot,id])=>({slot,component:comp(id)})).filter(x=>x.component);
   const totalMemoryGB=()=>installedRams().reduce((sum,x)=>sum+(x.component.capacityGB||0),0);
-  const memoryMode=()=>{const used=installedRams().map(x=>x.slot),hasA=used.some(x=>x.startsWith("A")),hasB=used.some(x=>x.startsWith("B"));return used.length>=2&&hasA&&hasB?"Dual Channel":used.length?"Single Channel":"None"};
+  const memoryMode=()=>{const rams=installedRams();if(!rams.length)return"None";const bySlot=Object.fromEntries(rams.map(x=>[x.slot,x.component]));const matched=(a,b)=>bySlot[a]&&bySlot[b]&&bySlot[a].id===bySlot[b].id;return matched("A2","B2")||matched("A1","B1")||rams.length===4&&matched("A1","B1")&&matched("A2","B2")?"Dual Channel":"Single Channel"};
   const totalCost=()=>slotTypes.filter(t=>t!=="ram").reduce((sum,t)=>sum+(installed(t)?.price||0),0)+installedRams().reduce((sum,x)=>sum+(x.component.price||0),0);
   const installedCount=()=>slotTypes.filter(t=>t!=="ram"&&state.installed[t]).length+installedRams().length;
 
@@ -31,7 +31,11 @@
     return issues;
   }
 
-  const requiredWattage=()=>250+(installed("gpu")?.wattage||0);
+  const estimatedLoad=()=>{const cpu=installed("cpu"),gpu=installed("gpu");return (cpu?.wattage||125)+(gpu?.wattage||0)+100};
+  const requiredHeadroomPercent=()=>Number(scenario?.requirements?.minPsuHeadroomPercent||0);
+  const minimumPsuCapacity=()=>Math.ceil(estimatedLoad()*(1+requiredHeadroomPercent()/100));
+  const psuHeadroomPercent=()=>{const psu=installed("psu"),load=estimatedLoad();return psu&&load?Math.round((psu.wattage-load)/load*100):null};
+  const requiredWattage=()=>minimumPsuCapacity();
 
   function postBlockingIssues(){
     const issues=[],mb=installed("motherboard"),cpu=installed("cpu"),rams=installedRams(),psu=installed("psu"),gpu=installed("gpu"),cooler=installed("cooler");
@@ -39,7 +43,7 @@
     issues.push(...compatibilityIssues());
     if(mb&&!state.cables.atx)issues.push("24-pin ATX power disconnected");if(cpu&&!state.cables.eps)issues.push("8-pin EPS CPU power disconnected");
     if(cpu&&!state.installed.paste)issues.push("thermal compound missing");if(cpu&&!cooler)issues.push("CPU cooler missing");if(cooler&&!state.cables.cpuFan)issues.push("CPU_FAN disconnected");
-    if(psu&&psu.wattage<requiredWattage())issues.push(`power supply capacity is below the estimated ${requiredWattage()} W requirement`);
+    if(psu&&psu.wattage<minimumPsuCapacity())issues.push(`power supply capacity is below the ${minimumPsuCapacity()} W minimum needed for the estimated ${estimatedLoad()} W load${requiredHeadroomPercent()?` with ${requiredHeadroomPercent()}% operating headroom`:""}`);
     const videoAvailable=(cpu?.integratedGraphics&&mb?.displayOutputs>0)||!!gpu;if(!videoAvailable)issues.push("no graphics output available");
     if(gpu?.requiresPower&&!state.cables.gpu)issues.push("GPU power disconnected");
     return [...new Set(issues)];
@@ -57,12 +61,12 @@
     if(r.gpuVramGB!=null)results.push({key:"gpu-vram",label:`Graphics memory: at least ${r.gpuVramGB} GB VRAM`,detail:gpu?`${gpu.name} • ${gpu.vramGB||0} GB VRAM`:"No dedicated GPU installed",pass:!!gpu&&(gpu.vramGB||0)>=r.gpuVramGB});
     if(r.minGpuTier!=null)results.push({key:"gpu-performance",label:`GPU performance: tier ${r.minGpuTier}+`,detail:gpu?`${gpu.name} • performance tier ${gpu.performanceTier||0}`:"No dedicated GPU installed",pass:!!gpu&&(gpu.performanceTier||0)>=r.minGpuTier});
     if(r.minCoolingTier!=null)results.push({key:"cooling",label:`CPU cooling: tier ${r.minCoolingTier}+`,detail:cooler?`${cooler.name} • cooling tier ${cooler.coolingTier||0}`:"No CPU cooler installed",pass:!!cooler&&(cooler.coolingTier||0)>=r.minCoolingTier});
-    if(r.minPsuWattage!=null)results.push({key:"psu",label:`Power supply: at least ${r.minPsuWattage} W`,detail:psu?`${psu.name} • ${psu.wattage||0} W`:"No power supply installed",pass:!!psu&&(psu.wattage||0)>=r.minPsuWattage});
+    if(r.minPsuWattage!=null)results.push({key:"psu",label:`Power supply: at least ${r.minPsuWattage} W`,detail:psu?`${psu.name} • ${psu.wattage||0} W`:"No power supply installed",pass:!!psu&&(psu.wattage||0)>=r.minPsuWattage});if(r.minPsuHeadroomPercent!=null)results.push({key:"psu-headroom",label:`PSU operating headroom: at least ${r.minPsuHeadroomPercent}%`,detail:psu?`Estimated system load ${estimatedLoad()} W • ${psu.wattage} W PSU • ${psuHeadroomPercent()}% headroom • minimum capacity ${minimumPsuCapacity()} W`:"No power supply installed",pass:!!psu&&psu.wattage>=minimumPsuCapacity()});
     if(r.displayOutputs!=null)results.push({key:"display",label:`Display support: ${r.displayOutputs} output${r.displayOutputs===1?"":"s"}`,detail:gpu?`${videoOutputs||0} usable output(s) through dedicated graphics`:cpu?.integratedGraphics?`${videoOutputs||0} usable output(s) through ${cpu.integratedGraphicsName||"integrated graphics"}`:"No usable graphics output",pass:(videoOutputs||0)>=r.displayOutputs});
     if(r.budget!=null)results.push({key:"budget",label:`Budget: ${money(r.budget)} maximum`,detail:`Current component cost: ${money(totalCost())}`,pass:totalCost()>0&&totalCost()<=r.budget});
     results.push({key:"compat",label:"Hardware compatibility",detail:compat.length?compat[0]:"Installed platform components are physically compatible",pass:compat.length===0&&!!mb&&!!cpu&&rams.length>0&&!!cooler});
-    const assemblySafe=!!mb&&!!cpu&&!!state.installed.paste&&!!cooler&&rams.length>0&&!!storage&&!!psu&&!!installed("casefan")&&state.cables.atx&&state.cables.eps&&state.cables.cpuFan&&(!gpu?.requiresPower||state.cables.gpu)&&psu.wattage>=requiredWattage();
-    results.push({key:"assembly",label:"Complete and safe assembly",detail:assemblySafe?`Required hardware, cooling and power connections complete • estimated load ${requiredWattage()} W`:"Build or required connections are incomplete",pass:assemblySafe});
+    const assemblySafe=!!mb&&!!cpu&&!!state.installed.paste&&!!cooler&&rams.length>0&&!!storage&&!!psu&&!!installed("casefan")&&state.cables.atx&&state.cables.eps&&state.cables.cpuFan&&(!gpu?.requiresPower||state.cables.gpu)&&psu.wattage>=minimumPsuCapacity();
+    results.push({key:"assembly",label:"Complete and safe assembly",detail:assemblySafe?`Required hardware, cooling and power connections complete • estimated load ${estimatedLoad()} W • PSU ${psu.wattage} W • headroom ${psuHeadroomPercent()}%`:"Build or required connections are incomplete",pass:assemblySafe});
     results.push({key:"post",label:"Successful POST",detail:state.post===true?"POST completed successfully":state.post===false?"POST failed":"POST not yet tested",pass:state.post===true});
     return results;
   }
