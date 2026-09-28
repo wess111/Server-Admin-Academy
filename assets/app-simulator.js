@@ -6,7 +6,7 @@
     if(version)version.textContent='v2.8.0';
   });
   const script=document.createElement('script');
-  script.src='./assets/app-simulator-v2.8.js?v=2.7.0';
+  script.src='./assets/app-simulator-v2.8.js?v=2.8.0';
   script.async=false;
   document.head.appendChild(script);
 })();
