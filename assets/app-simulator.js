@@ -3,7 +3,7 @@
 (() => {
   document.addEventListener('DOMContentLoaded',()=>{
     const version=document.querySelector('.simVersionFooter strong');
-    if(version)version.textContent='v2.7.0';
+    if(version)version.textContent='v2.7.2';
   });
   const script=document.createElement('script');
   script.src='./assets/app-simulator-v2.7.js?v=2.7.0';
