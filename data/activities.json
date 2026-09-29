@@ -27,13 +27,13 @@
     "description": "Gamified support tickets focused on Windows installation, storage, user accounts, and file sharing."
   },
   {
-    "title": "Case 001: The Restarting Computer",
+    "title": "Recurring System Crash",
     "domain": "support-operations",
-    "mode": "simulations",
+    "mode": "incident-scenarios",
     "difficulty": "intermediate",
     "status": "available",
     "link": "./troubleshooting-case.html",
-    "description": "Investigate a real recurring Windows BSOD using Reliability Monitor, Event Viewer, crash-dump analysis, software correlation, and remediation."
+    "description": "Investigate a recurring Windows BSOD through staged triage, real evidence, WinDbg crash-dump analysis, software correlation, remediation, and validation."
   },
   {
     "title": "Instructor Demonstration: Guided PC Build",
