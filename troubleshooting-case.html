@@ -23,9 +23,23 @@
 <input class="input" id="eventid" placeholder="Event ID"><input class="input" id="bugcheck" placeholder="Bugcheck code"><input class="input" id="dumpname" placeholder="Dump filename or path"><div class="actions"><button class="btn2 primary" onclick="advance(2)">Acquire Diagnostic Evidence</button></div><div class="feedback" id="evfb" hidden></div></div>
 
 <div class="stage" id="s3"><div class="kicker">Stage 3</div><h2>Analyze the Crash Dump</h2><p>The event log confirms that Windows captured crash evidence. Use the real dump in <strong>WinDbg</strong> on your workstation.</p>
-<div class="prompt"><strong>WinDbg field guide</strong><br>Open the dump, allow symbols to load, then run <code>!analyze -v</code>. Focus on the bugcheck, process, module/driver, failure bucket, and stack. A named module is evidence—not automatically proof of root cause.</div>
+<div class="prompt"><strong>WinDbg investigation workflow</strong><br>
+<strong>1.</strong> Download the crash dump below and note where it is saved.<br>
+<strong>2.</strong> Launch WinDbg.<br>
+<strong>3.</strong> Select <strong>File → Open dump file</strong>.<br>
+<strong>4.</strong> Browse to <code>051326-10687-01.dmp</code>, select it, and click <strong>Open</strong>.<br>
+<strong>5.</strong> Allow the dump and symbols to finish loading.<br>
+<strong>6.</strong> In the initial analysis output, click the <code>!analyze -v</code> link to run the detailed Bugcheck Analysis.<br><br>
+Review the resulting analysis carefully. The Academy will ask you to extract evidence from the output; it will not identify the answer for you.</div>
 <a class="btn2 download" href="./case-assets/051326-10687-01.dmp" download>Download 051326-10687-01.dmp</a>
-<input class="input" id="process" placeholder="Relevant process / service from your analysis"><input class="input" id="module" placeholder="Relevant module / driver"><textarea id="dumpnotes" rows="4" placeholder="What in the WinDbg output supports your hypothesis?"></textarea><div class="actions"><button class="btn2 primary" onclick="advance(3)">Submit Analysis & Correlate</button></div></div>
+<h3>Crash Analysis Worksheet</h3>
+<p class="mini">Record exactly what WinDbg reports. Separate the debugger's evidence from your team's interpretation.</p>
+<label><strong>Bugcheck</strong></label><input class="input" id="windbgBugcheck" placeholder="Code or bugcheck name reported by WinDbg">
+<label><strong>What died?</strong></label><select id="objectDied"><option value="">Interpret Arg2…</option><option value="process">A process died</option><option value="thread">A thread died</option></select>
+<label><strong>Critical process</strong></label><input class="input" id="criticalProcess" placeholder="Value reported for the critical process">
+<label><strong>Failure bucket</strong></label><input class="input" id="failureBucket" placeholder="FAILURE_BUCKET_ID">
+<label><strong>Initial hypothesis</strong></label><textarea id="dumpnotes" rows="4" placeholder="Based only on the crash-dump analysis, what component, service, or software should your team investigate next? Explain briefly."></textarea>
+<div class="actions"><button class="btn2 primary" onclick="advance(3)">Validate Crash Analysis & Correlate</button></div><div class="feedback" id="windbgfb" hidden></div></div>
 
 <div class="stage" id="s4"><div class="kicker">Stage 4</div><h2>Correlate the Findings</h2><p>Compare your WinDbg findings with the software actually installed on the affected machine.</p>
 <div class="artifact"><img src="./case-assets/installed-programs.png" alt="Actual Windows Programs and Features evidence" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><div class="missing" style="display:none">Installed Programs artifact is being attached to this case.</div></div>
@@ -40,7 +54,20 @@ let current=1;function show(n){document.querySelectorAll('.stage').forEach(x=>x.
 function unlock(id){document.getElementById(id).classList.remove('locked');document.getElementById(id).textContent='✓ '+document.getElementById(id).textContent}
 function advance(n){if(n===1){if(document.getElementById('obs1').value.trim().length<20)return alert('Record a meaningful team observation before continuing.');unlock('l2');unlock('l3');show(2)}
 if(n===2){let a=document.getElementById('eventid').value.trim(),b=document.getElementById('bugcheck').value.toLowerCase(),c=document.getElementById('dumpname').value.toLowerCase();let fb=document.getElementById('evfb');if(a!=='1001'||!b.includes('ef')||!c.includes('.dmp')){fb.hidden=false;fb.innerHTML='<strong>Evidence not yet confirmed.</strong><br>Re-read the Event Viewer artifact. Your team must correctly extract the event, bugcheck, and dump evidence before proceeding.';return}unlock('l4');show(3)}
-if(n===3){if(document.getElementById('module').value.trim().length<2||document.getElementById('dumpnotes').value.trim().length<20)return alert('Record the relevant WinDbg finding and supporting notes before correlating software.');unlock('l5');show(4)}}
+if(n===3){
+let b=document.getElementById('windbgBugcheck').value.trim().toLowerCase();
+let d=document.getElementById('objectDied').value;
+let p=document.getElementById('criticalProcess').value.trim().toLowerCase().replace(/\s/g,'');
+let f=document.getElementById('failureBucket').value.trim().toLowerCase().replace(/\s/g,'');
+let h=document.getElementById('dumpnotes').value.trim();
+let fb=document.getElementById('windbgfb');
+let bugOk=b.includes('0xef')||b==='ef'||b.includes('critical_process_died')||b.includes('critical process died');
+let procOk=p.includes('dellsupportass');
+let bucketOk=f.includes('0xef_dellsupportass_image_dellsupportass');
+if(!bugOk||d!=='process'||!procOk||!bucketOk||h.length<20){
+fb.hidden=false;fb.innerHTML='<strong>Crash analysis not yet confirmed.</strong><br>Return to the WinDbg <code>!analyze -v</code> output and verify each requested field. Your interpretation must also explain what the dump evidence suggests investigating next.';return}
+fb.hidden=false;fb.innerHTML='<strong>Crash evidence confirmed.</strong><br>Your team has extracted the required debugger findings. Installed-software evidence is now available for correlation.';
+unlock('l5');setTimeout(()=>show(4),650)}}
 function remediate(){let comp=document.getElementById('component').value.toLowerCase(),r=document.getElementById('remedy').value,why=document.getElementById('reason').value.trim(),fb=document.getElementById('fixfb');if(!r||why.length<20){fb.hidden=false;fb.textContent='Document the evidence chain and select a remediation before applying a change.';return}fb.hidden=false;if(r==='remove'&&comp.includes('supportassist')&&(comp.includes('remediation')||comp.includes('dell'))){fb.innerHTML='<strong>Remediation applied.</strong><br>The selected component has been removed. The system is now entering an extended stability-monitoring period.';setTimeout(()=>show(5),700)}else if(r==='investigate'){fb.innerHTML='<strong>No production change made.</strong><br>The incident remains open. Revisit your collected evidence and WinDbg analysis.'}else{fb.innerHTML='<strong>Change applied.</strong><br><span style="color:#f87171">47 minutes later: SYSTEM CRASH DETECTED.</span><br>The incident remains open. Reassess the evidence before making another change.'}}
 function closeCase(){let n=document.getElementById('closeNote').value.trim(),fb=document.getElementById('closefb');fb.hidden=false;if(n.length<80){fb.textContent='The change note is incomplete. Document the full evidence-to-resolution chain before closing.';return}document.getElementById('caseStatus').textContent='RESOLVED';fb.innerHTML='<strong>INC-001 CLOSED</strong><br>Your team documented the investigation, remediation, and stability validation.';localStorage.setItem('saa_inc001_closed','1')}
 </script></body></html>
