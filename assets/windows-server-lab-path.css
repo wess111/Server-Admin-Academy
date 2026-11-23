@@ -15,3 +15,11 @@ body:has(.labPath) { height: auto; min-height: 100vh; }
 .labPanel label + label { margin-top: .5rem; }
 .labPanel input { accent-color: #a78bfa; }
 .labProgress { padding: .65rem 1rem; }
+
+.labPanel details { margin-block: .75rem; border: 1px solid var(--pLine); border-radius: .65rem; padding: .7rem 1rem; }
+.labPanel summary { cursor: pointer; font-weight: 700; }
+.labPanel details ol { padding-left: 1.5rem; }
+.labTable { overflow-x: auto; }
+.labTable table { border-collapse: collapse; text-align: left; width: 100%; }
+.labTable caption { text-align: left; font-weight: 700; padding-bottom: .35rem; }
+.labTable th, .labTable td { border: 1px solid var(--pLine); padding: .5rem; }
