@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Windows Server Lab Path • Server Admin Academy</title>
   <link rel="stylesheet" href="./assets/site.css">
-  <link rel="stylesheet" href="./assets/windows-server-lab-path.css?v=2">
+  <link rel="stylesheet" href="./assets/windows-server-lab-path.css?v=3">
   <script defer src="./assets/app.js"></script>
-  <script defer src="./assets/windows-server-lab-path.js?v=2"></script>
+  <script defer src="./assets/windows-server-lab-path.js?v=3"></script>
 </head>
 <body>
   <header class="top">
@@ -47,8 +47,9 @@
 <main class="container labPath">
   <header class="labHero">
     <div>
-      <p class="labEyebrow">Systems Engineering · Guided Practice</p>
+      <p class="labEyebrow">Systems Engineering / Guided Lab Room</p>
       <h1>Windows Server Lab Path</h1>
+      <p class="labMission">Cedarline Distribution · Warehouse IT pilot</p>
       <p>Build Cedarline Distribution’s pilot network on three VMs you run locally. Follow the instructions here and confirm each result in your own environment.</p>
       <details class="labBrief"><summary>Client brief and acceptance criteria</summary>
       <p>Cedarline Distribution is opening a regional warehouse. The Finance team currently keeps shipment reconciliation spreadsheets on individual PCs. The IT manager wants a central location, consistent sign-in, and proof that staff outside Finance cannot open the share. You are the junior administrator building a proof of concept before the warehouse opens.</p>
@@ -64,6 +65,7 @@
   </header>
   <div class="labWorkspace">
     <aside class="labRail">
+      <h2 class="labRailTitle">Room stages</h2>
   <nav aria-label="Labs in order">
     <ol><li><a href="#virtual-lab">Build the virtual lab</a></li><li><a href="#domain">Build the Active Directory domain</a></li><li><a href="#identities">Create department users and groups</a></li><li><a href="#files">Configure and verify a departmental share</a></li><li><a href="#handoff">Handoff</a></li></ol>
   </nav>
@@ -93,6 +95,12 @@
     <fieldset data-lab="virtual-lab">
       <legend>Verify in your VMs</legend>
       <label><input type="checkbox" id="virtual-lab-check-1"><span>All three VMs boot and their local administrator credentials work.</span></label><label><input type="checkbox" id="virtual-lab-check-2"><span>The VMs have distinct names and addresses and share the same isolated virtual switch.</span></label>
+    <form class="labQuestion" data-question="virtual-lab" hidden>
+        <label for="answer-virtual-lab">Which IPv4 address did you assign to SA-DC1?</label>
+        <div class="labAnswer"><input id="answer-virtual-lab" name="answer" type="text" required spellcheck="false" autocomplete="off"><button class="btn btnPill" type="submit">Check answer</button></div>
+        <p role="status"></p>
+        <details><summary>Show hint</summary><p>Read the IPv4 entry for the connected adapter on SA-DC1 with ipconfig /all.</p></details>
+      </form>
     </fieldset>
     <h3>Evidence and what to keep</h3>
     <p>Keep the three VMs, the switch, and a record of computer names and addresses.</p>
@@ -107,6 +115,12 @@
     <fieldset data-lab="domain">
       <legend>Verify in your VMs</legend>
       <label><input type="checkbox" id="domain-check-1"><span>Both member machines resolve the domain controller’s SRV record.</span></label><label><input type="checkbox" id="domain-check-2"><span>SA-FS1 and SA-CL1 both report ad.academy.test as their domain.</span></label>
+    <form class="labQuestion" data-question="domain" hidden>
+        <label for="answer-domain">What DNS domain do both joined machines report?</label>
+        <div class="labAnswer"><input id="answer-domain" name="answer" type="text" required spellcheck="false" autocomplete="off"><button class="btn btnPill" type="submit">Check answer</button></div>
+        <p role="status"></p>
+        <details><summary>Show hint</summary><p>On SA-CL1 or SA-FS1, check the Domain property of Win32_ComputerSystem.</p></details>
+      </form>
     </fieldset>
     <h3>Evidence and what to keep</h3>
     <p>Keep the domain controller, DNS settings, and both domain members. Record successful lookup and join results.</p>
@@ -121,6 +135,12 @@
     <fieldset data-lab="identities">
       <legend>Verify in your VMs</legend>
       <label><input type="checkbox" id="identities-check-1"><span>Both standard domain users can sign in on SA-CL1.</span></label><label><input type="checkbox" id="identities-check-2"><span>Only finance.test is in GG-Finance, and GG-Finance is nested in DL-Finance-Modify.</span></label>
+    <form class="labQuestion" data-question="identities" hidden>
+        <label for="answer-identities">Which domain-local group grants Finance access?</label>
+        <div class="labAnswer"><input id="answer-identities" name="answer" type="text" required spellcheck="false" autocomplete="off"><button class="btn btnPill" type="submit">Check answer</button></div>
+        <p role="status"></p>
+        <details><summary>Show hint</summary><p>In Active Directory Users and Computers, look for the group containing GG-Finance.</p></details>
+      </form>
     </fieldset>
     <h3>Evidence and what to keep</h3>
     <p>Keep the test accounts, group memberships, and joined workstation for the access tests.</p>
@@ -135,6 +155,12 @@
     <fieldset data-lab="files">
       <legend>Verify in your VMs</legend>
       <label><input type="checkbox" id="files-check-1"><span>finance.test can read the share and create a test file.</span></label><label><input type="checkbox" id="files-check-2"><span>outsider.test receives access denied at the same path in a separate sign-in.</span></label>
+    <form class="labQuestion" data-question="files" hidden>
+        <label for="answer-files">Which account should receive Access Denied on the Finance share?</label>
+        <div class="labAnswer"><input id="answer-files" name="answer" type="text" required spellcheck="false" autocomplete="off"><button class="btn btnPill" type="submit">Check answer</button></div>
+        <p role="status"></p>
+        <details><summary>Show hint</summary><p>Compare the two standard test users’ group memberships. Enter only the username.</p></details>
+      </form>
     </fieldset>
     <h3>Evidence and what to keep</h3>
     <p>Submit the share and NTFS permissions, both client test results, and a short configuration handoff. Keep the domain for future Academy labs.</p>

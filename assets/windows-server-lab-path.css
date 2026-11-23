@@ -59,3 +59,20 @@ body:has(.labPath) { height: auto; min-height: 100vh; }
   .labTopology ul { display: flex; flex-wrap: wrap; gap: .5rem; }
   .labTopology li { margin: 0; }
 }
+
+.labPath { --pLine: #39536e; --pSoft: #1c3448; --bg2: #101e2c; }
+.labHero { background: linear-gradient(115deg, #152c40, #101e2c 65%); border: 1px solid var(--pLine); border-radius: 1.25rem; padding: clamp(1rem, 4vw, 2rem); margin-bottom: 1rem; }
+.labEyebrow, .labMission, .labBrief summary { color: #9edbe5; }
+.labMission { font-weight: 700; margin: 0; }
+.labProgress progress { accent-color: #73d9d0; }
+.labRailTitle { font-size: 1rem; margin: 0 0 .5rem .65rem; }
+.labTaskHeading { margin: 0; align-self: center; color: #9edbe5; font-weight: 700; }
+.labTaskToggle { background: #16283a; color: #eef0ff; font: inherit; font-weight: 700; text-align: left; border: 1px solid var(--pLine); border-radius: .6rem; padding: .65rem 2.25rem .65rem .85rem; width: 100%; cursor: pointer; position: relative; margin-top: .45rem; }
+.labTaskToggle::after { content: "+"; position: absolute; right: .85rem; }
+.labTaskToggle[aria-expanded="true"] { border-color: #73d9d0; background: #1c3448; }
+.labTaskToggle[aria-expanded="true"]::after { content: "−"; }
+.labTask { padding: .65rem .9rem 1rem; }
+.labAnswer { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .35rem; }
+.labAnswer input { flex: 1 1 12rem; min-width: 0; width: 100%; padding: .55rem; font: inherit; color: var(--ink); background: #0b1723; border: 1px solid var(--pLine); border-radius: .5rem; }
+.labQuestion { border-top: 1px solid var(--pLine); margin-top: 1rem; padding-top: .8rem; }
+.labQuestion [role="status"] { color: #b0eae6; margin: .5rem 0; }

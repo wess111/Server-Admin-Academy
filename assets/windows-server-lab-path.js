@@ -38,6 +38,7 @@
       if (!current || node.matches("h3, fieldset")) {
         current = document.createElement("div");
         current.className = "labTask";
+        current.id = panel.id + "-task-" + (result.length + 1);
         current.dataset.title = node.matches("fieldset")
           ? "Verify in your VMs"
           : node.matches("h3") ? node.textContent.split(" · ")[0] : "Review the deliverables";
@@ -50,20 +51,31 @@
   });
 
   toolbar.innerHTML = `
-    <div class="labTaskHeading">
-      <label for="lab-task-select">Current task</label>
-      <select id="lab-task-select"></select>
-    </div>
+    <p class="labTaskHeading" aria-live="polite"></p>
     <div class="labControls">
       <button class="btn btnGhost" type="button" data-direction="-1">Previous</button>
       <button class="btn btnPill" type="button" data-direction="1">Continue</button>
     </div>`;
-  const taskSelect = toolbar.querySelector("select");
+  const taskHeading = toolbar.querySelector(".labTaskHeading");
   const previous = toolbar.querySelector('[data-direction="-1"]');
   const next = toolbar.querySelector('[data-direction="1"]');
 
   let stage = 0;
   let task = 0;
+  const taskButtons = tasks.map((items, stageIndex) => items.map((item, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "labTaskToggle";
+    button.textContent = `Task ${index + 1} · ${item.dataset.title}`;
+    button.setAttribute("aria-controls", item.id);
+    item.before(button);
+    button.addEventListener("click", () => {
+      stage = stageIndex;
+      task = index;
+      draw();
+    });
+    return button;
+  }));
 
   function updateProgress() {
     const verified = groups.findIndex(group => !group.every(check => check.checked));
@@ -80,13 +92,15 @@
 
   function draw(focus = false) {
     panels.forEach((panel, index) => { panel.hidden = index !== stage; });
-    tasks[stage].forEach((item, index) => { item.hidden = index !== task; });
+    tasks[stage].forEach((item, index) => {
+      item.hidden = index !== task;
+      taskButtons[stage][index].setAttribute("aria-expanded", String(index === task));
+    });
     links.forEach((link, index) => {
       if (index === stage) link.setAttribute("aria-current", "step");
       else link.removeAttribute("aria-current");
     });
-    taskSelect.replaceChildren(...tasks[stage].map((item, index) => new Option(item.dataset.title, index)));
-    taskSelect.value = task;
+    taskHeading.textContent = `Task ${task + 1} of ${tasks[stage].length}`;
     previous.disabled = stage === 0 && task === 0;
     next.disabled = stage === panels.length - 1 && task === tasks[stage].length - 1;
     next.textContent = next.disabled ? "End of path" : task === tasks[stage].length - 1
@@ -136,7 +150,35 @@
   checks.forEach(check => check.addEventListener("change", () => { save(); updateProgress(); }));
   previous.addEventListener("click", () => move(-1));
   next.addEventListener("click", () => move(1));
-  taskSelect.addEventListener("change", () => { task = Number(taskSelect.value); draw(); });
+
+  const expected = {
+    "virtual-lab": "192.168.77.10",
+    domain: "ad.academy.test",
+    identities: "dl-finance-modify",
+    files: "outsider.test"
+  };
+  if (!state.answers || typeof state.answers !== "object") state.answers = {};
+  for (const form of document.querySelectorAll("[data-question]")) {
+    const key = form.dataset.question;
+    const input = form.elements.answer;
+    const feedback = form.querySelector("[role=status]");
+    let correct = state.answers[key] === true;
+    if (correct) {
+      input.value = expected[key];
+      feedback.textContent = "Correct. Confirm the result in your VMs.";
+    }
+    form.addEventListener("input", () => { feedback.textContent = ""; });
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      correct = input.value.trim().toLowerCase() === expected[key];
+      state.answers[key] = correct;
+      feedback.textContent = correct
+        ? "Correct. Confirm the result in your VMs."
+        : "Try again. Use the hint to find the value in your lab.";
+      save();
+    });
+    form.hidden = false;
+  }
 
   document.querySelector(".labWorkspace").addEventListener("click", event => {
     const link = event.target.closest('a[href^="#"]');
