@@ -23,3 +23,39 @@ body:has(.labPath) { height: auto; min-height: 100vh; }
 .labTable table { border-collapse: collapse; text-align: left; width: 100%; }
 .labTable caption { text-align: left; font-weight: 700; padding-bottom: .35rem; }
 .labTable th, .labTable td { border: 1px solid var(--pLine); padding: .5rem; }
+
+.labPath { max-width: 1320px; }
+.labPath [hidden] { display: none !important; }
+.labHero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); gap: 2rem; align-items: start; padding: 1rem 0 2rem; }
+.labEyebrow { color: #cbbbfa; margin: 0 0 .45rem; font-size: .9rem; font-weight: 700; }
+.labBrief summary { cursor: pointer; font-weight: 700; color: #ddd0ff; }
+.labProgress { display: grid; gap: .5rem; }
+.labProgress progress { width: 100%; accent-color: #ae93ff; }
+.labWorkspace { display: grid; grid-template-columns: minmax(210px, 260px) minmax(0, 1fr); gap: 1rem; align-items: start; }
+.labRail, .labBench { min-width: 0; }
+.labRail nav, .labTopology, #lab-taskbar { border: 1px solid var(--pLine); background: var(--bg2); border-radius: 1rem; padding: 1rem; }
+.labRail nav ol { list-style: none; margin: 0; padding: 0; }
+.labRail nav a { display: block; padding: .65rem; border-radius: .55rem; text-decoration: none; }
+.labRail nav a[aria-current] { background: var(--pSoft); box-shadow: inset 0 0 0 1px var(--pLine); color: var(--ink); }
+.labRail small, .labTopology span { display: block; font-size: .86rem; color: var(--muted); }
+.labTopology { margin-top: 1rem; }
+.labTopology h2 { font-size: 1rem; margin: 0; }
+.labTopology p { margin: 0 0 .7rem; color: var(--muted); }
+.labTopology ul { list-style: none; padding: 0 0 0 .75rem; margin: 0; border-left: 2px solid var(--pLine); }
+.labTopology li { background: var(--pSoft); border-radius: .45rem; padding: .45rem .6rem; }
+.labBench .labPanel { margin-block: .75rem; }
+#lab-taskbar { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; justify-content: space-between; }
+.labTaskHeading { flex: 1 1 230px; min-width: 0; }
+.labTaskHeading label, #hypervisor-picker label { display: block; font-size: .9rem; font-weight: 700; }
+.labPath select { width: 100%; min-width: 0; color: var(--ink); background: var(--bg); border: 1px solid var(--pLine); border-radius: .55rem; padding: .5rem; font: inherit; }
+.labControls { display: flex; flex-wrap: wrap; gap: .5rem; }
+.labControls button { cursor: pointer; }
+.labControls button:disabled { opacity: .5; cursor: default; }
+#hypervisor-picker { max-width: 30rem; }
+@media (max-width: 760px) {
+  .labHero, .labWorkspace { grid-template-columns: minmax(0, 1fr); gap: .75rem; }
+  .labRail nav ol { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; }
+  .labRail nav li { margin: 0; }
+  .labTopology ul { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .labTopology li { margin: 0; }
+}
