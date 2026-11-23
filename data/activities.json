@@ -133,5 +133,14 @@
     "status": "available",
     "link": "./project.html?id=techcon-gh-infrastructure",
     "description": "Build the infrastructure for Techcon GH LLC by designing and deploying a centralized Windows Server environment that supports identity, networking, storage, policy, and client management."
+  },
+  {
+    "title": "Windows Server Lab Path",
+    "domain": "systems-engineering",
+    "mode": "guided-practice",
+    "difficulty": "beginner",
+    "status": "available",
+    "link": "./windows-server-lab-path.html",
+    "description": "Build a local virtual network, deploy Active Directory, create test identities, and verify departmental file access."
   }
 ]

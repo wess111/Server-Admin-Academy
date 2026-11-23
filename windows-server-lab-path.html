@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Windows Server Lab Path • Server Admin Academy</title>
+  <link rel="stylesheet" href="./assets/site.css">
+  <link rel="stylesheet" href="./assets/windows-server-lab-path.css">
+  <script defer src="./assets/app.js"></script>
+  <script defer src="./assets/windows-server-lab-path.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="container">
+      <div class="navGlass">
+        <a class="brand" href="./index.html"><span class="brandMark">S</span><span class="brandName">Server Admin Academy</span></a>
+        <nav class="navLinks">
+          <a class="navLink" href="./index.html">Home</a>
+
+          <div class="navDrop">
+            <button class="navDropBtn" type="button">Domains <span class="chev">▾</span></button>
+            <div class="navDropMenu">
+              <a class="navDropItem" href="./support-operations.html">Support Operations</a>
+              <a class="navDropItem" href="./systems-engineering.html">Systems Engineering</a>
+              <a class="navDropItem" href="./security-operations.html">Security Operations</a>
+            </div>
+          </div>
+
+          <div class="navDrop">
+            <button class="navDropBtn" type="button">Engagement Modes <span class="chev">▾</span></button>
+            <div class="navDropMenu">
+              <a class="navDropItem" href="./knowledge-assessments.html">Knowledge Assessments</a>
+              <a class="navDropItem" href="./incident-scenarios.html">Incident Scenarios</a>
+              <a class="navDropItem isActive" href="./guided-practice.html">Guided Practice</a>
+              <a class="navDropItem" href="./simulations.html">Simulations</a>
+              <a class="navDropItem" href="./capstone-projects.html">Capstone Projects</a>
+            </div>
+          </div>
+
+          <a class="navLink" href="./tools/index.html">Tools</a>
+        </nav>
+        <div class="navCta"><a class="btn btnPill" href="./index.html#modes">All modes</a></div>
+      </div>
+    </div>
+  </header>
+
+<main class="container labPath">
+  <header>
+    <h1>Windows Server Lab Path</h1>
+    <p>Build a Windows Server environment on your own hardware or campus lab computers. Use the same virtual machines from setup through file access testing. You’ll need access to a hypervisor and Windows installation media.</p>
+    <p>Check off the results you observe in your VMs. Progress is saved in this browser when storage is available.</p>
+    <div class="labProgress" aria-live="polite" id="lab-progress" hidden></div>
+  </header>
+  <nav aria-label="Labs in order">
+    <ol><li><a href="#virtual-lab">Build the virtual lab</a></li><li><a href="#domain">Build the Active Directory domain</a></li><li><a href="#identities">Create department users and groups</a></li><li><a href="#files">Configure and verify a departmental share</a></li></ol>
+  </nav>
+  <section class="labPanel" id="virtual-lab" aria-labelledby="virtual-lab-title">
+    <h2 id="virtual-lab-title">Lab 1 · Build the virtual lab</h2>
+    <h3>Required setup</h3>
+    
+    <p>A virtualization-capable computer with enough RAM and disk to run three VMs. Obtain licensed or evaluation Windows Server installation media and Windows 11 Pro or Enterprise media. You build and run all VMs on your own computer or in a campus lab.</p>
+    <h3>Build steps</h3>
+    <ol><li>Enable hardware virtualization and install your hypervisor. Create a private virtual switch (or the equivalent VM-only network). Connect all three VMs to that switch. Use the VM consoles for management.</li><li>Install Windows Server with Desktop Experience on SA-DC1 and SA-FS1. Install Windows 11 Pro or Enterprise on SA-CL1. Set each computer name and restart.</li><li>Assign IPv4 addresses 192.168.77.10 to SA-DC1, 192.168.77.20 to SA-FS1, and 192.168.77.30 to SA-CL1, each with prefix length 24. Leave the default gateway blank. Choose another private subnet if it conflicts with your lab and update the addresses throughout the path.</li><li>Run <code>ipconfig /all</code> in the three VM consoles. Check the intended adapter, address, and prefix. In the hypervisor, confirm each VM is attached to the same private switch and has no other active network adapter.</li></ol>
+    <fieldset data-lab="virtual-lab">
+      <legend>Verify in your VMs</legend>
+      <label><input type="checkbox" id="virtual-lab-check-1"><span>All three VMs boot and their local administrator credentials work.</span></label><label><input type="checkbox" id="virtual-lab-check-2"><span>The VMs have distinct names and addresses and share the same isolated virtual switch.</span></label>
+    </fieldset>
+    <h3>Evidence and what to keep</h3>
+    <p>Keep the three VMs, the switch, and a record of computer names and addresses.</p>
+    <p><a href="#domain">Next lab · Build the Active Directory domain</a></p>
+  </section>
+<section class="labPanel" id="domain" aria-labelledby="domain-title">
+    <h2 id="domain-title">Lab 2 · Build the Active Directory domain</h2>
+    <h3>Required setup</h3>
+    <p>Complete <a href="#virtual-lab">Lab 1 · Build the virtual lab</a> and use the environment it produces.</p>
+    <p>Use the three running VMs from Lab 1. Confirm the addresses and switch attachments before starting.</p>
+    <h3>Build steps</h3>
+    <ol><li>On SA-DC1, add the Active Directory Domain Services role in Server Manager. Promote the server using Add a new forest and the root domain <code>ad.academy.test</code>. Include DNS, record the suggested NetBIOS name (AD), set a DSRM password, and reboot.</li><li>Set SA-DC1’s preferred DNS to its own address. On SA-FS1 and SA-CL1 set preferred DNS to <code>192.168.77.10</code>. Use only the internal DNS server for this lab.</li><li>On both member machines, run <code>Resolve-DnsName -Type SRV _ldap._tcp.dc._msdcs.ad.academy.test</code>. If it fails, check the adapter’s DNS address, the virtual switch, and the DNS role on SA-DC1.</li><li>Using the computer’s System Properties, join SA-FS1 and SA-CL1 to <code>ad.academy.test</code> with authorized domain credentials. Reboot both, then run <code>(Get-CimInstance Win32_ComputerSystem).Domain</code> on each.</li></ol>
+    <fieldset data-lab="domain">
+      <legend>Verify in your VMs</legend>
+      <label><input type="checkbox" id="domain-check-1"><span>Both member machines resolve the domain controller’s SRV record.</span></label><label><input type="checkbox" id="domain-check-2"><span>SA-FS1 and SA-CL1 both report ad.academy.test as their domain.</span></label>
+    </fieldset>
+    <h3>Evidence and what to keep</h3>
+    <p>Keep the domain controller, DNS settings, and both domain members. Record successful lookup and join results.</p>
+    <p><a href="#identities">Next lab · Create department users and groups</a></p>
+  </section>
+<section class="labPanel" id="identities" aria-labelledby="identities-title">
+    <h2 id="identities-title">Lab 3 · Create department users and groups</h2>
+    <h3>Required setup</h3>
+    <p>Complete <a href="#domain">Lab 2 · Build the Active Directory domain</a> and use the environment it produces.</p>
+    <p>Use the working domain and joined client from Lab 2. Confirm SA-CL1 can discover the domain controller.</p>
+    <h3>Build steps</h3>
+    <ol><li>In Active Directory Users and Computers, create an OU named <strong>Departments</strong> and a child OU named <strong>Finance</strong>. Create a global security group named <strong>GG-Finance</strong> in Finance.</li><li>Create two standard test accounts, <strong>finance.test</strong> and <strong>outsider.test</strong>. Add finance.test to GG-Finance. Leave outsider.test outside GG-Finance. Confirm neither account is an administrator.</li><li>Create a domain-local security group called <strong>DL-Finance-Modify</strong> and add GG-Finance to it. Use this resource group for permissions in the next lab.</li><li>On SA-CL1, sign in as each domain user in a separate session. Run <code>whoami /groups</code> to verify that finance.test has the expected finance group membership and outsider.test does not. Sign out and back in after membership changes.</li></ol>
+    <fieldset data-lab="identities">
+      <legend>Verify in your VMs</legend>
+      <label><input type="checkbox" id="identities-check-1"><span>Both standard domain users can sign in on SA-CL1.</span></label><label><input type="checkbox" id="identities-check-2"><span>Only finance.test is in GG-Finance, and GG-Finance is nested in DL-Finance-Modify.</span></label>
+    </fieldset>
+    <h3>Evidence and what to keep</h3>
+    <p>Keep the test accounts, group memberships, and joined workstation for the access tests.</p>
+    <p><a href="#files">Next lab · Configure and verify a departmental share</a></p>
+  </section>
+<section class="labPanel" id="files" aria-labelledby="files-title">
+    <h2 id="files-title">Lab 4 · Configure and verify a departmental share</h2>
+    <h3>Required setup</h3>
+    <p>Complete <a href="#identities">Lab 3 · Create department users and groups</a> and use the environment it produces.</p>
+    <p>Use the same domain, joined file server and client, and two test identities from Labs 1–3. Confirm SA-CL1 resolves SA-FS1 by name and both test accounts can sign in.</p>
+    <h3>Build steps</h3>
+    <ol><li>On SA-FS1, create a fresh <code>C:\LabShares\Finance</code> folder and put a sample file in it. In Advanced Security, review inherited permissions. Preserve SYSTEM and Administrators with Full Control, grant <strong>AD\DL-Finance-Modify</strong> Modify, and remove broad access entries inherited by this lab folder. Work only on this new folder.</li><li>Share the folder as <strong>Finance</strong>. Grant <strong>AD\DL-Finance-Modify</strong> Change and Administrators Full Control at the share. Remove the default Everyone share entry if present. Enable the File and Printer Sharing SMB-In firewall rule for the Domain profile if needed.</li><li>On SA-CL1, sign in as finance.test. Open <code>\\SA-FS1.ad.academy.test\Finance</code>, read the sample file, and create a new test file. Sign out completely.</li><li>Sign in as outsider.test and open the same path. Capture the access-denied result. If both tests fail, verify name resolution and SMB connectivity with <code>Test-NetConnection SA-FS1.ad.academy.test -Port 445</code> before changing permissions.</li></ol>
+    <fieldset data-lab="files">
+      <legend>Verify in your VMs</legend>
+      <label><input type="checkbox" id="files-check-1"><span>finance.test can read the share and create a test file.</span></label><label><input type="checkbox" id="files-check-2"><span>outsider.test receives access denied at the same path in a separate sign-in.</span></label>
+    </fieldset>
+    <h3>Evidence and what to keep</h3>
+    <p>Submit the share and NTFS permissions, both client test results, and a short configuration handoff. Keep the domain for future Academy labs.</p>
+    <p><a href="./project.html?id=techcon-gh-infrastructure">Explore the Techcon capstone</a></p>
+  </section>
+  <p>Setup references · <a href="https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/get-started/install-hyper-v">Install Hyper-V</a> · <a href="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/join-computer-to-domain">Join a computer to a domain</a></p>
+</main>
+</body>
+</html>
