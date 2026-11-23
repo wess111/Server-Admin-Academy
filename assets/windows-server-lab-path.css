@@ -1,0 +1,17 @@
+body:has(.labPath) { height: auto; min-height: 100vh; }
+.labPath { max-width: 960px; padding-top: 2rem; padding-bottom: 3rem; line-height: 1.65; }
+.labPath a { color: #ddd0ff; text-decoration: underline; text-underline-offset: .2em; }
+.labPath :focus-visible { outline: 2px solid #ddd0ff; outline-offset: 4px; }
+.labPath h1 { line-height: 1.15; font-size: clamp(2rem, 6vw, 3.25rem); margin: 0 0 1rem; }
+.labPath h2, .labPath h3 { line-height: 1.3; }
+.labPath h2 { margin-top: 0; }
+.labPath li + li { margin-top: .55rem; }
+.labPanel, .labProgress { padding: clamp(1rem, 4vw, 2rem); border: 1px solid var(--pLine); border-radius: 1rem; background: var(--bg2); }
+.labPanel { margin-block: 1.5rem; scroll-margin-top: 1rem; }
+.labPanel code { overflow-wrap: anywhere; }
+.labPanel fieldset { min-inline-size: 0; border: 1px solid var(--pLine); border-radius: .65rem; padding: .75rem 1rem 1rem; }
+.labPanel legend { font-weight: 700; padding-inline: .35rem; }
+.labPanel label { display: flex; align-items: baseline; gap: .65rem; cursor: pointer; }
+.labPanel label + label { margin-top: .5rem; }
+.labPanel input { accent-color: #a78bfa; }
+.labProgress { padding: .65rem 1rem; }
